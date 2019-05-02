@@ -1,0 +1,655 @@
+---
+title: "Experiment 4 (Nonconvex penalties)"
+author: "Youngseok Kim"
+date: "4/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to reproduce the result for Figure . 
+
+### Load libraries, packages and codes
+
+We load libraries, packages and codes for the simulation and for the plotting.
+
+#### Draw shrinkage/thresholding operator
+
+```{r}
+draw_operator = function(X, y, X.test, y.test, c = 1) {
+  t.scad            = system.time(
+  fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+    
+  t.mcp             = system.time(
+  fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+    
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+    
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  
+  t.caisa           = system.time(
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g",
+                                stepsize = 1, max.iter = 2000, min.iter = 1, standardize = TRUE,
+                                tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+                 "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                 "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+  cat(pred)
+  
+  mcp.lambda            = fit.mcp$lambda.min
+  mcp.gamma             = 3.7
+  scad.lambda           = fit.scad$lambda.min
+  scad.gamma            = 3
+  lasso.lambda          = fit.lasso$lambda.1se
+  L0Learn.lambda        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pi                    = c(fit.caisa$pi)
+  sigma2                = fit.caisa$sigma2
+  
+  posterior_shrinkage_operator = function(b, n, pi, sa2 = sa2, sigma2 = 1){
+    phi       = outer(b^2, n^2 / 2 / (n + 1 / sa2) / sigma2);
+    phi       = exp(phi - apply(phi, 1, max))
+    
+    phi       = t(pi * t(phi) / sqrt(1 + n * sa2));
+    phi       = phi / rowSums(phi);
+    out       = c(colSums(t(phi) / (1 + 1 / sa2 / n))) * b
+    out[0]    = 0
+    return (out)
+  }
+  
+  scad = function(b, lambda = 4, a = 2.1) {
+    b1 = pmax(abs(b) - lambda, 0) * sign(b) * (abs(b) <= 2 * lambda)
+    b2 = ((a-1) * b - sign(b) * a * lambda) / (a-2) * (abs(b) <= a * lambda) * (abs(b) > 2 * lambda)
+    b3 = b * (abs(b) > a * lambda)
+    return (b1+b2+b3)
+  }
+  
+  mcp = function(b, lambda = 4, a = 1.1) {
+    b1 = pmax(abs(b) - lambda, 0) * sign(b) * (b <= a * lambda) * a / (a-1)
+    b2 = b * (abs(b) > a * lambda)
+    return (b1+b2)
+  }
+  
+  softt = function(b, lambda = 4) {
+    return (pmax(abs(b) - lambda, 0) * sign(b))
+  }
+  
+  hardt = function(b, lambda = 4) {
+    return (b * (abs(b) >= lambda))
+  }
+  
+  b = seq(0,1, by = 0.01) * c
+  df   = data.frame(b = c(b,b,b,b,b),
+                      sb = c(posterior_shrinkage_operator(b, n = dim(X)[1], pi = pi, sa2 = sa2, sigma2 = sigma2),
+                             scad(b, lambda = scad.lambda, a = scad.gamma),
+                             mcp(b, lambda = mcp.lambda, a = mcp.gamma),
+                             softt(b, lambda = lasso.lambda),
+                             hardt(b, lambda = L0Learn.lambda)),
+                      prior = rep(c("CAISA","SCAD","MCP","SOFT","HARD"), each = length(b)))
+  p = ggplot(df) + geom_line(aes(x = b, y = sb, color = prior)) +
+    geom_point(aes(x = b, y = sb, shape = prior, color = prior), size = 1) + 
+    labs(y = "S(b)") + guides(color=guide_legend(title="method"),
+                              shape=guide_legend(title="method"))
+  
+  return(list(b = b, df = df, p = p, pred = pred))
+}
+```
+
+## Run simulation
+
+#### Case 1: EquiCorrGauss + SparseNormal
+
+```{r}
+library(ncvreg)
+pred1 = matrix(0,20,5)
+time1 = matrix(0,20,5)
+
+for (i in 1:20) {
+seed              = 2010 + i
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+beta[nzind]       = rnorm(length(nzind)) * 2
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+t.scad            = system.time(
+fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+
+t.mcp             = system.time(
+fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+
+t.caisa           = system.time(
+fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g",
+                              stepsize = 1, max.iter = 2000, standardize = TRUE,
+                              tol = list(epstol = 1e-12, convtol = 1e-8)))
+
+t.lasso           = system.time(
+fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+t.L0Learn         = system.time(
+fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+
+pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+               "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+               "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+               "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+               "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+time      =  c("caisa"      = t.caisa[3],
+               "scad"       = t.scad[3],
+               "mcp"        = t.mcp[3],
+               "lasso"      = t.lasso[3],
+               "L0Learn"    = t.L0Learn[3])
+pred1[i,] = pred
+time1[i,] = time
+cat(pred," ",time,"\n")
+}
+```
+
+#### Case 2: EquiCorrGauss + TwoMassSignal
+
+```{r}
+library(ncvreg)
+pred2 = matrix(0,20,5)
+time2 = matrix(0,20,5)
+
+for (i in 1:20) {
+seed              = 2010 + i
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+beta[1:50]        = 10
+beta[51:200]      = 1
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+t.scad            = system.time(
+fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+
+t.mcp             = system.time(
+fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+
+t.caisa           = system.time(
+fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g",
+                              stepsize = 1, max.iter = 2000, standardize = TRUE,
+                              tol = list(epstol = 1e-12, convtol = 1e-8)))
+
+t.lasso           = system.time(
+fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+t.L0Learn         = system.time(
+fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+
+pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+               "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+               "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+               "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+               "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+time      =  c("caisa"      = t.caisa[3],
+               "scad"       = t.scad[3],
+               "mcp"        = t.mcp[3],
+               "lasso"      = t.lasso[3],
+               "L0Learn"    = t.L0Learn[3])
+pred2[i,] = pred
+time2[i,] = time
+cat(pred," ",time,"\n")
+}
+```
+
+#### Case 3: EquiCorrGauss + SparseHeavytail
+
+```{r}
+pred3 = matrix(0,20,5)
+time3 = matrix(0,20,5)
+
+for (i in 1:20) {
+seed              = 2010 + i
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+beta[1:100]       = rexp(100,.5) * sign(rnorm(100))
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+t.scad            = system.time(
+fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+
+t.mcp             = system.time(
+fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+
+t.caisa           = system.time(
+fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g",
+                              stepsize = 1, max.iter = 2000, standardize = TRUE,
+                              tol = list(epstol = 1e-12, convtol = 1e-8)))
+
+t.lasso           = system.time(
+fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+t.L0Learn         = system.time(
+fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+
+pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+               "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+               "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+               "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+               "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+time      =  c("caisa"      = t.caisa[3],
+               "scad"       = t.scad[3],
+               "mcp"        = t.mcp[3],
+               "lasso"      = t.lasso[3],
+               "L0Learn"    = t.L0Learn[3])
+pred3[i,] = pred
+time3[i,] = time
+cat(pred," ",time,"\n")
+}
+```
+
+#### Case 4: IndepLowdimGauss + SparseNormal
+
+```{r}
+pred4 = matrix(0,20,5)
+time4 = matrix(0,20,5)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  y                <- X %*% beta + rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  y.test           <- X.test %*% beta + rnorm(1010)
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  
+  t.scad            = system.time(
+  fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+  
+  t.mcp             = system.time(
+  fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+  
+  t.caisa           = system.time(
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g", beta.init = NULL,
+                                stepsize = 1, max.iter = 2000, min.iter = 1, standardize = TRUE,
+                                tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  
+  pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+                 "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                 "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+  time      =  c("caisa"      = t.caisa[3],
+                 "scad"       = t.scad[3],
+                 "mcp"        = t.mcp[3],
+                 "lasso"      = t.lasso[3],
+                 "L0Learn"    = t.L0Learn[3])
+  
+  pred4[i,] = pred
+  time4[i,] = time
+  cat(pred," ",time,"\n")
+}
+```
+
+#### Case 5: IndepLowdimGauss + TwoMassSignal
+
+```{r}
+pred5 = matrix(0,20,5)
+time5 = matrix(0,20,5)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  beta[1:50]       <- 5
+  beta[51:200]     <- 1
+  y                <- X %*% beta + rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  y.test           <- X.test %*% beta + rnorm(1010)
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  
+  t.scad            = system.time(
+  fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+  
+  t.mcp             = system.time(
+  fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+  
+  t.caisa           = system.time(
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g", beta.init = NULL,
+                                stepsize = 1, max.iter = 2000, min.iter = 1, standardize = TRUE,
+                                tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  
+  pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+                 "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                 "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+  time      =  c("caisa"      = t.caisa[3],
+                 "scad"       = t.scad[3],
+                 "mcp"        = t.mcp[3],
+                 "lasso"      = t.lasso[3],
+                 "L0Learn"    = t.L0Learn[3])
+  
+  pred5[i,] = pred
+  time5[i,] = time
+  cat(pred," ",time,"\n")
+}
+```
+
+#### Case 6: IndepLowdimGauss + SparseHeavytail
+
+```{r}
+pred6 = matrix(0,20,5)
+time6 = matrix(0,20,5)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  set.seed(seed)
+  beta              = double(p)
+  beta[1:100]       = rexp(100,.5) * sign(rnorm(100))
+  y                <- X %*% beta + rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  y.test           <- X.test %*% beta + rnorm(1010)
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  
+  t.scad            = system.time(
+  fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+  
+  t.mcp             = system.time(
+  fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))
+  
+  t.caisa           = system.time(
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, method = "update_g", beta.init = NULL,
+                                stepsize = 1, max.iter = 2000, min.iter = 1, standardize = TRUE,
+                                tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = TRUE))
+  
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  
+  pred      =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+                 "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                 "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+  time      =  c("caisa"      = t.caisa[3],
+                 "scad"       = t.scad[3],
+                 "mcp"        = t.mcp[3],
+                 "lasso"      = t.lasso[3],
+                 "L0Learn"    = t.L0Learn[3])
+  
+  pred6[i,] = pred
+  time6[i,] = time
+  cat(pred," ",time,"\n")
+}
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+beta[nzind]       = rnorm(length(nzind)) * 2
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out1              = draw_operator(X, y, X.test, y.test)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+beta[nzind]       = rnorm(length(nzind)) * 2
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out1              = draw_operator(X, y, X.test, y.test, c = 5)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+beta[1:50]        = 10
+beta[51:200]      = 1
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out2              = draw_operator(X, y, X.test, y.test, c = 20)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+n.total           = dim(data$X)[1];
+p                 = dim(data$X)[2]
+
+train.index       = sample(n.total, floor(n.total * 0.5))
+test.index        = (1:n.total)[-train.index]
+X                 = data$X[train.index,]
+X.test            = data$X[test.index,]
+
+standardize       = TRUE
+
+set.seed(seed)
+beta              = double(p)
+beta[1:100]       = rexp(100,.5) * sign(rnorm(100))
+y.total           = data$X %*% beta + rnorm(n.total)
+
+y                 = y.total[train.index]
+y.test            = y.total[test.index]
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out3              = draw_operator(X, y, X.test, y.test, c = 7)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+p                 = 1000
+beta              = double(p)
+nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+beta[nzind]       = rnorm(length(nzind)) * 2
+y                <- X %*% beta + rnorm(1010)
+X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+y.test           <- X.test %*% beta + rnorm(1010)
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out4              = draw_operator(X, y, X.test, y.test, c = 0.4)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+p                 = 1000
+beta             <- rep(0, 1000)
+beta[1:50]       <- 5
+beta[51:200]     <- 1
+y                <- X %*% beta + rnorm(1010)
+X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+y.test           <- X.test %*% beta + rnorm(1010)
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out5              = draw_operator(X, y, X.test, y.test, c = 0.4)
+```
+
+```{r}
+seed              = 2019
+set.seed(seed)
+X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+p                 = 1000
+set.seed(seed)
+beta              = double(p)
+beta[1:100]       = rexp(100,.5) * sign(rnorm(100))
+y                <- X %*% beta + rnorm(1010)
+X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+y.test           <- X.test %*% beta + rnorm(1010)
+sa2               = (sqrt(1.5)^(0:19) - 1)^2
+out6              = draw_operator(X, y, X.test, y.test, c = 0.4)
+```
+
+```{r}
+write.table(out1$df, "~/git/caisar/output/shrinkage1.txt", sep = ",")
+write.table(out2$df, "~/git/caisar/output/shrinkage2.txt", sep = ",")
+write.table(out3$df, "~/git/caisar/output/shrinkage3.txt", sep = ",")
+write.table(out4$df, "~/git/caisar/output/shrinkage4.txt", sep = ",")
+write.table(out5$df, "~/git/caisar/output/shrinkage5.txt", sep = ",")
+write.table(out6$df, "~/git/caisar/output/shrinkage6.txt", sep = ",")
+```
+
+```{r}
+df.pred1 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred1 / sqrt(500)))
+df.pred2 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred2 / sqrt(500)))
+df.pred3 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred3 / sqrt(500)))
+df.pred4 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred4 / sqrt(1010)))
+df.pred5 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred5 / sqrt(1010)))
+df.pred6 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(pred6 / sqrt(1010)))
+df.time1 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "time" = c(time1))
+df.time2 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(time2))
+df.time3 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(time3))
+df.time4 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(time4))
+df.time5 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(time5))
+df.time6 = data.frame("fit" = rep(c("CAISA","SCAD","MCP","LASSO","L0Learn"), each = 20),
+                      "pred" = c(time6))
+write.table(df.pred1, "~/git/caisar/output/Nonconvex_pred1.txt", sep = ",")
+write.table(df.pred2, "~/git/caisar/output/Nonconvex_pred2.txt", sep = ",")
+write.table(df.pred3, "~/git/caisar/output/Nonconvex_pred3.txt", sep = ",")
+write.table(df.pred4, "~/git/caisar/output/Nonconvex_pred4.txt", sep = ",")
+write.table(df.pred5, "~/git/caisar/output/Nonconvex_pred5.txt", sep = ",")
+write.table(df.pred6, "~/git/caisar/output/Nonconvex_pred6.txt", sep = ",")
+write.table(df.time1, "~/git/caisar/output/Nonconvex_time1.txt", sep = ",")
+write.table(df.time2, "~/git/caisar/output/Nonconvex_time2.txt", sep = ",")
+write.table(df.time3, "~/git/caisar/output/Nonconvex_time3.txt", sep = ",")
+write.table(df.time4, "~/git/caisar/output/Nonconvex_time1.txt", sep = ",")
+write.table(df.time5, "~/git/caisar/output/Nonconvex_time2.txt", sep = ",")
+write.table(df.time6, "~/git/caisar/output/Nonconvex_time3.txt", sep = ",")
+```
