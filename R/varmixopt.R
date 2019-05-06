@@ -16,6 +16,7 @@
 #' @importFrom Rcpp evalCpp
 #' 
 #' @export
+#' 
 varmixopt                   = function(X, y, Z = NULL, sa2 = NULL,
                                        K = 10, method = "caisa",
                                        max.iter = 1000, min.iter = 1,

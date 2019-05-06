@@ -21,5 +21,11 @@ Description: Fast algorithms for fitting Bayesian variable selection
 License: MIT + file LICENSE
 LazyData: true
 NeedsCompilation: yes
+Depends: R (>= 3.1.0)
+Imports:
+    Rcpp (>= 1.0.1)
+LinkingTo:
+    Rcpp,
+    RcppArmadillo
 VignetteBuilder: knitr
 RoxygenNote: 6.1.1
