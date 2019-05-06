@@ -91,7 +91,7 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
 #'
 #'
 #' ----------------------------------------------------------------------
-predict.caisa               = function(fit, X){
+predict.mr_ash               = function(fit, X){
   #scale(X, center = TRUE, scale = FALSE) %*% fit$beta + fit$data$alpha
   X %*% fit$beta + c(fit$intercept)
 }
