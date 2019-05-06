@@ -5,13 +5,16 @@ methods and algorithms.
 
 ## Quick Start
 
-To install the latest version of varbvs2 from GitHub, use
-[devtools][devtools]:
+To install the latest version of varbvs2 from GitHub, clone or
+download the git repository, then use the `install_local` function
+from [devtools][devtools]. Assuming your working directory contains
+the varbvs2 repository, run this code to install the package:
 
 ```R
 install.packages("devtools")
 library(devtools)
-install_github("stephenslab/varbvs2")
+list.files(pattern = "varbvs2") # Should output "varbvs".
+install_local("varbvs2")
 ```
 
 This command should automatically install all required packages if

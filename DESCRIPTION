@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Type: Package
 Package: varbvs2
-Version: 0.1-0
+Version: 0.1-1
 Date: 2019-05-06
 Title: Large-Scale Bayesian Variable Selection and Extensions Using
     Variational Methods
