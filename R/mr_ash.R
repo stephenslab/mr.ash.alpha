@@ -15,6 +15,25 @@
 #' @importFrom utils modifyList
 #' @importFrom Rcpp evalCpp
 #' 
+#' @examples
+#' 
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y = X %*% beta + rnorm(n)
+
+#' fit.mr_ash = mr_ash(X,y, method = "caisa_em")
+
+#' fit.mr_ash = mr_ash(X,y, method = "caisa_g")
+
+#' fit.mr_ash = mr_ash(X,y, method = "caisa_acc")
+
+#' Xnew        = matrix(rnorm(n*p),n,p)
+
+#' ynew        = predict.mr_ash(fit.mr_ash, Xnew)
+#' 
 #' @export
 #' 
 mr_ash                      = function(X, y, Z = NULL, sa2 = NULL,
