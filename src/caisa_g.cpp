@@ -10,8 +10,8 @@ using namespace Rcpp;
 
 // FUNCTION DECLARATIONS
 // ---------------------
-arma::mat outerAddition     (const arma::vec& a, const arma::vec& b);
-void updatebetaj            (const arma::vec& xj, double wj,
+arma::mat outerAddition_g     (const arma::vec& a, const arma::vec& b);
+void updatebetaj_g            (const arma::vec& xj, double wj,
                              double& betaj, arma::vec& r,
                              arma::mat& phi, arma::vec& pi,
                              double sigma2, const arma::vec& sa2,
@@ -42,7 +42,7 @@ List caisa_g          (const arma::mat& X,
   // ---------------------------------------------------------------------
   // PRECALCULATE
   // ---------------------------------------------------------------------
-  arma::mat S2inv        = 1 / outerAddition(1/sa2, w);
+  arma::mat S2inv        = 1 / outerAddition_g(1/sa2, w);
   S2inv.row(0).fill(epstol);
   
   
@@ -68,8 +68,8 @@ List caisa_g          (const arma::mat& X,
     // ---------------------------------------------------------------------
     for (j = 0; j < p; j++){
       
-      updatebetaj(X.col(j), w(j), beta(j), r, phi, pi, sigma2, sa2,
-                  S2inv.col(j), a1, a2, j, p, stepsize, epstol);
+      updatebetaj_g(X.col(j), w(j), beta(j), r, phi, pi, sigma2, sa2,
+		    S2inv.col(j), a1, a2, j, p, stepsize, epstol);
       
     }
     
@@ -122,7 +122,7 @@ List caisa_g          (const arma::mat& X,
                       Named("varobj")  = varobj.subvec(0,iter-1));
 }
 
-void updatebetaj       (const arma::vec& xj, double wj,
+void updatebetaj_g     (const arma::vec& xj, double wj,
                         double& betaj, arma::vec& r,
                         arma::mat& phi, arma::vec& pi,
                         double sigma2, const arma::vec& sa2,
@@ -171,7 +171,7 @@ void updatebetaj       (const arma::vec& xj, double wj,
   return;
 }
 
-arma::mat outerAddition    (const arma::vec& a, const arma::vec& b) {
+arma::mat outerAddition_g (const arma::vec& a, const arma::vec& b) {
   arma::mat A(a.n_elem, b.n_elem);
   A.fill(0);
   A.each_row() += b.t();

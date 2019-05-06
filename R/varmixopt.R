@@ -10,7 +10,7 @@
 #' 
 #' @return Describe return value here.
 #' 
-#' @useDynLib caisar
+#' @useDynLib varbvs2
 #' 
 #' @importFrom utils modifyList
 #' @importFrom Rcpp evalCpp
