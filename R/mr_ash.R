@@ -17,22 +17,24 @@
 #' 
 #' @examples
 #' 
+#' set.seed(1)
 #' n           = 200
 #' p           = 300
 #' X           = matrix(rnorm(n*p),n,p)
 #' beta        = double(p)
 #' beta[1:10]  = 1:10
 #' y = X %*% beta + rnorm(n)
-
-#' fit.mr_ash = mr_ash(X,y, method = "caisa_em")
-
-#' fit.mr_ash = mr_ash(X,y, method = "caisa_g")
-
-#' fit.mr_ash = mr_ash(X,y, method = "caisa_acc")
-
+#' 
+#' fit.mr_ash_em  = mr_ash(X,y, method = "caisa_em")
+#' 
+#' fit.mr_ash_g   = mr_ash(X,y, method = "caisa_g")
+#' 
+#' fit.mr_ash_acc = mr_ash(X,y, method = "caisa_acc")
+#' 
 #' Xnew        = matrix(rnorm(n*p),n,p)
-
 #' ynew        = predict.mr_ash(fit.mr_ash, Xnew)
+#' 
+#' head(data.frame("caisa_em" = ynew_em, "caisa_g" = ynew_g, "caisa_acc" = ynew_acc, "true" = ynew))
 #' 
 #' @export
 #' 
@@ -133,5 +135,6 @@ mr_ash                      = function(X, y, Z = NULL, sa2 = NULL,
     
   }
   
+  class(out)      <- c("mr_ash","list")
   return (out)
 }

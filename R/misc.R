@@ -87,13 +87,37 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   return(list(X = X, y = y, Z = Z, alpha = alpha, ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
 }
 
-#' ----------------------------------------------------------------------
-#'
-#'
-#' ----------------------------------------------------------------------
-predict.mr_ash               = function(fit, X){
-  #scale(X, center = TRUE, scale = FALSE) %*% fit$beta + fit$data$alpha
-  X %*% fit$beta + c(fit$intercept)
+#' @title extract regression coefficients from mr_ash fit
+#' @param object a mr_ash fit
+#' @return a p+1 vector, the first element being an intercept, and the remaining p elements being estimated regression coefficients
+#' @export coef.mr_ash
+#' @export
+coef.mr_ash = function(object, ...){
+  c(object$intercept, object$beta)
+}
+
+#' @title predict future observations or extract coefficients from mr_ash fit
+#' @param object a mr_ash fit
+#' @param newx a new value for X at which to do predictions
+#' @param type if this is coefficients, then calls coef.susie
+#' @importFrom stats coef
+#' @export predict.mr_ash
+#' @export
+#' @export
+predict.mr_ash               = function(object,newx = NULL,
+                                        type=c("response","coefficients"),...) {
+  
+  type <- match.arg(type)
+  if (type=="coefficients"){
+    if(!missing(newx)){
+      stop("Do not supply newx when predicting coefficients")
+    }
+    return(coef(object))
+  }
+  
+  if(missing(newx)){return(object$fitted)}
+  
+  return(drop(object$intercept + newx %*% coef(object)[-1]))
 }
 
 
