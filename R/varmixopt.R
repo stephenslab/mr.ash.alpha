@@ -1,12 +1,14 @@
 #' @title Something
-#' @description 
-#' @details 
+#' 
+#' @description
+#' 
+#' @details Add details here.
 #'
 #' @param X Describe X here. Sparse matrix? Dense?
 #' 
 #' @param y Describe y here.
 #' 
-#' @value Describe return value here.
+#' @return Describe return value here.
 #' 
 #' @useDynLib caisar
 #' 
