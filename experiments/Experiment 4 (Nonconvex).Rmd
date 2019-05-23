@@ -506,6 +506,8 @@ y                 = y.total[train.index]
 y.test            = y.total[test.index]
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 out1              = draw_operator(X, y, X.test, y.test, c = 5)
+b                 = seq(0,5,0.05)
+best1             = get_pm(ash(b,1/sqrt(499), g = normalmix(c(0.95,0.05),c(0,0),c(0,2)), fixg=TRUE))
 ```
 
 ```{r}
@@ -533,6 +535,8 @@ y                 = y.total[train.index]
 y.test            = y.total[test.index]
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 out2              = draw_operator(X, y, X.test, y.test, c = 20)
+b                 = seq(0,5,0.05) * 4
+best2             = b * (b > 0.5)
 ```
 
 ```{r}
@@ -562,6 +566,31 @@ out3              = draw_operator(X, y, X.test, y.test, c = 7)
 ```
 
 ```{r}
+b         = seq(0,20,0.1)
+n         = length(b)
+X         = matrix(0,n,n)
+X[upper.tri(X, diag = TRUE)] = 1
+X         = t(t(X) / b / 2)[,-1]
+library(MASS)
+targetfun = function(b) {exp(-0.5 * b) / 2}
+pi = c(0,ginv(X) %*% targetfun(b))
+approxfun = function(pi, b){
+  out    = rev(cumsum(0.5 * rev(pi/b)))
+  out[1] = .5
+  out
+}
+plot(b, approxfun(pi,b), t = "l");
+lines(b, targetfun(b), col = 2)
+```
+
+```{r}
+a = seq(0,5,0.05) * 1.4
+pi = pi / sum(pi) * 0.1
+pi[1] = 0.9
+best3             = get_pm(ash(a,1/sqrt(499), g = unimix(pi,-b,b), fixg=TRUE))
+```
+
+```{r}
 seed              = 2019
 set.seed(seed)
 X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
@@ -574,6 +603,8 @@ X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
 y.test           <- X.test %*% beta + rnorm(1010)
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 out4              = draw_operator(X, y, X.test, y.test, c = 0.4)
+b                 = seq(0,5,0.05) * 0.08
+best4             = get_pm(ash(b,1/sqrt(1009), g = normalmix(c(0.95,0.05),c(0,0),c(0,2)), fixg=TRUE))
 ```
 
 ```{r}
@@ -589,6 +620,8 @@ X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
 y.test           <- X.test %*% beta + rnorm(1010)
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 out5              = draw_operator(X, y, X.test, y.test, c = 0.4)
+b                 = seq(0,5,0.05) * 0.08
+best5             = b * (b > 0.5)
 ```
 
 ```{r}
@@ -604,6 +637,8 @@ X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
 y.test           <- X.test %*% beta + rnorm(1010)
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 out6              = draw_operator(X, y, X.test, y.test, c = 0.4)
+a                 = seq(0,5,0.05) * 0.08
+best6             = get_pm(ash(a,1/sqrt(1009), g = unimix(pi,-b,b), fixg=TRUE))
 ```
 
 ```{r}
@@ -649,7 +684,7 @@ write.table(df.pred6, "~/git/caisar/output/Nonconvex_pred6.txt", sep = ",")
 write.table(df.time1, "~/git/caisar/output/Nonconvex_time1.txt", sep = ",")
 write.table(df.time2, "~/git/caisar/output/Nonconvex_time2.txt", sep = ",")
 write.table(df.time3, "~/git/caisar/output/Nonconvex_time3.txt", sep = ",")
-write.table(df.time4, "~/git/caisar/output/Nonconvex_time1.txt", sep = ",")
-write.table(df.time5, "~/git/caisar/output/Nonconvex_time2.txt", sep = ",")
-write.table(df.time6, "~/git/caisar/output/Nonconvex_time3.txt", sep = ",")
+write.table(df.time4, "~/git/caisar/output/Nonconvex_time4.txt", sep = ",")
+write.table(df.time5, "~/git/caisar/output/Nonconvex_time5.txt", sep = ",")
+write.table(df.time6, "~/git/caisar/output/Nonconvex_time6.txt", sep = ",")
 ```

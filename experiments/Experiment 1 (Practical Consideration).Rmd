@@ -1,0 +1,452 @@
+---
+title: "Experiment 1 (Practical Considerations)"
+author: "Youngseok Kim"
+date: "5/4/2019"
+output: html_document
+---
+
+## Introduction
+
+This .Rmd file is to reproduce the result for Figure , Design 4.
+
+### Load libraries, packages and codes
+
+We load libraries, packages and codes for the simulation and for the plotting.
+
+```{r}
+library(Matrix); library(Rcpp); library(varbvs); library(ggplot2); library(cowplot); library(L0Learn)
+library(glmnet); library(susieR); library(BGLR)
+sourceCpp("~/git/caisar/src/caisa_caisa.cpp");
+sourceCpp("~/git/caisar/src/caisa_acceleration.cpp");
+sourceCpp("~/git/caisar/src/caisa_update_g.cpp");
+sourceCpp("~/git/caisar/src/caisa_order.cpp")
+source("~/git/caisar/R/varmixopt_order.R")
+source("~/git/caisar/R/varmixopt.R");
+source("~/git/caisar/R/misc.R");
+source("~/git/caisar/R/etc.R");
+```
+
+### Load real genotype matrices
+
+```{r}
+filepath = c("~/git/thyroid/Thyroid.ENSG00000000971.RDS", "~/git/thyroid/Thyroid.ENSG00000004468.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000004777.RDS", "~/git/thyroid/Thyroid.ENSG00000007402.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000008441.RDS", "~/git/thyroid/Thyroid.ENSG00000008869.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000009954.RDS", "~/git/thyroid/Thyroid.ENSG00000010295.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000011638.RDS", "~/git/thyroid/Thyroid.ENSG00000016864.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000018280.RDS", "~/git/thyroid/Thyroid.ENSG00000019169.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000020922.RDS", "~/git/thyroid/Thyroid.ENSG00000044574.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000026950.RDS", "~/git/thyroid/Thyroid.ENSG00000028839.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000031003.RDS", "~/git/thyroid/Thyroid.ENSG00000031823.RDS",
+             "~/git/thyroid/Thyroid.ENSG00000033030.RDS", "~/git/thyroid/Thyroid.ENSG00000036054.RDS")
+```
+
+### function for lasso order
+
+```{r}
+lasso_order = function(fit.glmnet) {
+  # perform lasso regression and reorder regressors by "importance"
+  beta_path = coef(fit.glmnet)[-1,]
+  K = dim(beta_path)[2]
+  path_order = c()
+  for (k in 1:K) {
+    crt_path = which(beta_path[,k] != 0)
+    if (length(crt_path) != 0 & length(path_order) == 0) {
+      path_order = c(path_order, crt_path)
+    } else if(length(crt_path) != 0) {
+      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
+    }
+  }
+  path_order = unname(path_order)
+  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
+  return (index_order)
+}
+```
+
+### Simulation setting
+
+## Simulation
+
+### Design 1
+
+```{r}
+pred1 = matrix(0,20,7)
+t1    = matrix(0,20,7)
+for (i in 1:20) {
+  seed              = 2010 + i
+  set.seed(seed)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           <- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  
+  standardize       = FALSE
+  
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.05,0.95)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  y.total           = data$X %*% beta + rnorm(n.total)
+  
+  y                 = y.total[train.index]
+  y.test            = y.total[test.index]
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  path.order        = lasso_order(fit.lasso$glmnet.fit)
+  univar.beta       = (t(scale(X)) %*% scale(y, scale = FALSE)) / n;
+  univar.order      = order(abs(univar.beta), decreasing = TRUE)
+  lasso.order       = order(abs(fit.lasso$beta), decreasing = TRUE)
+  
+  t.caisa1          = system.time(
+  fit.caisa1       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa2          = system.time(
+  fit.caisa2       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = fit.lasso$beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa3          = system.time(
+  fit.caisa3       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(path.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa4          = system.time(
+  fit.caisa4       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(lasso.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa5          = system.time(
+  fit.caisa5       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, pi.init = fit.caisa2$pi, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa6          = system.time(
+  fit.caisa6       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = univar.beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa7          = system.time(
+  fit.caisa7       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(univar.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  pred1[i,] =  c("caisa1"     = norm(y.test - predict.caisa(fit.caisa1, X.test), '2'),
+                 "caisa2"     = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
+                 "caisa3"     = norm(y.test - predict.caisa(fit.caisa3, X.test), '2'),
+                 "caisa4"     = norm(y.test - predict.caisa(fit.caisa4, X.test), '2'),
+                 "caisa5"     = norm(y.test - predict.caisa(fit.caisa5, X.test), '2'),
+                 "caisa6"     = norm(y.test - predict.caisa(fit.caisa6, X.test), '2'),
+                 "caisa7"     = norm(y.test - predict.caisa(fit.caisa7, X.test), '2'))
+  t1[i,] =     c("caisa1"     = t.caisa1[3],
+                 "caisa2"     = t.caisa2[3],
+                 "caisa3"     = t.caisa3[3],
+                 "caisa4"     = t.caisa4[3],
+                 "caisa5"     = t.caisa5[3],
+                 "caisa6"     = t.caisa6[3],
+                 "caisa7"     = t.caisa7[3])
+  cat(pred1[i,],"\n")
+  cat(t1[i,],"\n")
+}
+```
+
+### Design 2
+
+```{r}
+pred2 = matrix(0,20,7)
+t2    = matrix(0,20,7)
+for (i in 1:20) {
+  seed              = 2010 + i
+  set.seed(seed)
+  data              = readRDS(filepath[i]);
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2];
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  while (sort(apply(X, 2, var))[1] == 0) {
+    seed = seed + 20
+    set.seed(seed)
+    train.index     = sample(n.total, floor(n.total * 0.5))
+    test.index      = (1:n.total)[-train.index]
+    X               = data$X[train.index,]
+  }
+  X.test            = data$X[test.index,]
+  
+  standardize       = FALSE
+
+  set.seed(seed)
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.01,0.99)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  y.total           = data$X %*% beta + rnorm(n.total)
+  
+  y                 = y.total[train.index]
+  y.test            = y.total[test.index]
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  path.order        = lasso_order(fit.lasso$glmnet.fit)
+  univar.beta       = (t(scale(X)) %*% scale(y, scale = FALSE)) / n;
+  univar.order      = order(abs(univar.beta), decreasing = TRUE)
+  lasso.order       = order(abs(fit.lasso$beta), decreasing = TRUE)
+  
+  t.caisa1          = system.time(
+  fit.caisa1       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa2          = system.time(
+  fit.caisa2       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = fit.lasso$beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa3          = system.time(
+  fit.caisa3       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(path.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa4          = system.time(
+  fit.caisa4       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(lasso.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa5          = system.time(
+  fit.caisa5       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, pi.init = fit.caisa2$pi, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa6          = system.time(
+  fit.caisa6       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = univar.beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa7          = system.time(
+  fit.caisa7       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(univar.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  pred2[i,] =  c("caisa1"     = norm(y.test - predict.caisa(fit.caisa1, X.test), '2'),
+                 "caisa2"     = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
+                 "caisa3"     = norm(y.test - predict.caisa(fit.caisa3, X.test), '2'),
+                 "caisa4"     = norm(y.test - predict.caisa(fit.caisa4, X.test), '2'),
+                 "caisa5"     = norm(y.test - predict.caisa(fit.caisa5, X.test), '2'),
+                 "caisa6"     = norm(y.test - predict.caisa(fit.caisa6, X.test), '2'),
+                 "caisa7"     = norm(y.test - predict.caisa(fit.caisa7, X.test), '2'))
+  t2[i,] =     c("caisa1"     = t.caisa1[3],
+                 "caisa2"     = t.caisa2[3],
+                 "caisa3"     = t.caisa3[3],
+                 "caisa4"     = t.caisa4[3],
+                 "caisa5"     = t.caisa5[3],
+                 "caisa6"     = t.caisa6[3],
+                 "caisa7"     = t.caisa7[3])
+  cat(pred2[i,],"\n")
+  cat(t2[i,],"\n")
+}
+```
+
+### Design 3
+
+```{r}
+pred3 = matrix(0,20,7)
+t3    = matrix(0,20,7)
+for (i in 1:20) {
+  seed              = 2010 + i
+  
+  ytrue             = double(n)
+  ytrue[1:10]       = 1
+  ytrue[31:40]      = 4
+  ytrue[61:80]      = 2
+  
+  set.seed(seed)
+  y                 = ytrue + rnorm(100)
+  y.test            = ytrue
+  X.test            = X
+  
+  standardize       = FALSE
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+
+  n     = 100
+  p     = 99
+  X     = matrix(0, nrow = n, ncol = n-1)
+  for(jj in 1:(n-1)){ for(ii in (jj+1):n){ X[ii,jj] = 1 } }
+
+
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  path.order        = lasso_order(fit.lasso$glmnet.fit)
+  univar.beta       = (t(scale(X)) %*% scale(y, scale = FALSE)) / n;
+  univar.order      = order(abs(univar.beta), decreasing = TRUE)
+  lasso.order       = order(abs(fit.lasso$beta), decreasing = TRUE)
+  
+  t.caisa1          = system.time(
+  fit.caisa1       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa2          = system.time(
+  fit.caisa2       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = fit.lasso$beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa3          = system.time(
+  fit.caisa3       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(path.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa4          = system.time(
+  fit.caisa4       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(lasso.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa5          = system.time(
+  fit.caisa5       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, pi.init = fit.caisa2$pi, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa6          = system.time(
+  fit.caisa6       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = univar.beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa7          = system.time(
+  fit.caisa7       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(univar.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  pred3[i,] =  c("caisa1"     = norm(y.test - predict.caisa(fit.caisa1, X.test), '2'),
+                 "caisa2"     = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
+                 "caisa3"     = norm(y.test - predict.caisa(fit.caisa3, X.test), '2'),
+                 "caisa4"     = norm(y.test - predict.caisa(fit.caisa4, X.test), '2'),
+                 "caisa5"     = norm(y.test - predict.caisa(fit.caisa5, X.test), '2'),
+                 "caisa6"     = norm(y.test - predict.caisa(fit.caisa6, X.test), '2'),
+                 "caisa7"     = norm(y.test - predict.caisa(fit.caisa7, X.test), '2'))
+  t3[i,] =     c("caisa1"     = t.caisa1[3],
+                 "caisa2"     = t.caisa2[3],
+                 "caisa3"     = t.caisa3[3],
+                 "caisa4"     = t.caisa4[3],
+                 "caisa5"     = t.caisa5[3],
+                 "caisa6"     = t.caisa6[3],
+                 "caisa7"     = t.caisa7[3])
+  cat(pred3[i,],"\n")
+  cat(t3[i,],"\n")
+}
+```
+
+### Design 4
+
+```{r}
+pred4 = matrix(0,20,7)
+t4    = matrix(0,20,7)
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.5,0.5)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  y                <- X %*% beta + rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  y.test           <- X.test %*% beta + rnorm(1010)
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  
+  standardize       = FALSE
+  
+
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  path.order        = lasso_order(fit.lasso$glmnet.fit)
+  univar.beta       = (t(scale(X)) %*% scale(y, scale = FALSE)) / n;
+  univar.order      = order(abs(univar.beta), decreasing = TRUE)
+  lasso.order       = order(abs(fit.lasso$beta), decreasing = TRUE)
+  
+  t.caisa1          = system.time(
+  fit.caisa1       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa2          = system.time(
+  fit.caisa2       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = fit.lasso$beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa3          = system.time(
+  fit.caisa3       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(path.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa4          = system.time(
+  fit.caisa4       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(lasso.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa5          = system.time(
+  fit.caisa5       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, pi.init = fit.caisa2$pi, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa6          = system.time(
+  fit.caisa6       <- varmixopt(X = X, y = y, sa2 = sa2, method = "caisa",
+                               stepsize = 1, max.iter = 2000, beta.init = univar.beta, standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.caisa7          = system.time(
+  fit.caisa7       <- varmixopt_order(X = X, y = y, sa2 = sa2,
+                                      order.method = "given", o = rep(univar.order - 1, 2000),
+                                      stepsize = 1, max.iter = 2000, standardize = standardize,
+                                      tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  pred4[i,] =  c("caisa1"     = norm(y.test - predict.caisa(fit.caisa1, X.test), '2'),
+                 "caisa2"     = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
+                 "caisa3"     = norm(y.test - predict.caisa(fit.caisa3, X.test), '2'),
+                 "caisa4"     = norm(y.test - predict.caisa(fit.caisa4, X.test), '2'),
+                 "caisa5"     = norm(y.test - predict.caisa(fit.caisa5, X.test), '2'),
+                 "caisa6"     = norm(y.test - predict.caisa(fit.caisa6, X.test), '2'),
+                 "caisa7"     = norm(y.test - predict.caisa(fit.caisa7, X.test), '2'))
+  t4[i,] =     c("caisa1"     = t.caisa1[3],
+                 "caisa2"     = t.caisa2[3],
+                 "caisa3"     = t.caisa3[3],
+                 "caisa4"     = t.caisa4[3],
+                 "caisa5"     = t.caisa5[3],
+                 "caisa6"     = t.caisa6[3],
+                 "caisa7"     = t.caisa7[3])
+  cat(pred4[i,],"\n")
+  cat(t4[i,],"\n")
+}
+```
+
+## Save
+
+```{r}
+df1  = data.frame(fit = rep(c("default","lasso_cv_init","lasso_path_order","lasso_cv_order",
+                              "pi","univar_init","univar_order"), each = 20),
+                  pred = c(pred1))
+df2  = data.frame(fit = rep(c("default","lasso_cv_init","lasso_path_order","lasso_cv_order",
+                              "pi","univar_init","univar_order"), each = 20),
+                  pred = c(pred4))
+write.csv(df1, "~/git/caisar/output/dat20.txt",sep=",")
+write.csv(df2, "~/git/caisar/output/dat23.txt",sep=",")
+```

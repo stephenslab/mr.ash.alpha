@@ -1,0 +1,60 @@
+---
+title: "Thought Experiment 1"
+author: "Youngseok Kim"
+date: "5/7/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Target function
+
+```{r}
+b         = seq(-10,10,0.01)
+targetfun = function(b, lambda = 2){
+  out                   = double(length(b))
+  out[abs(b) < lambda]  = (b[abs(b) < lambda])^2 / 2
+  out[abs(b) >= lambda] = abs(b[abs(b) >= lambda]) * lambda - lambda^2/2
+  exp(-out)
+}
+plot(b, targetfun(b), t = "l")
+```
+
+## Uniform mixture approximation
+
+```{r}
+library(ashr)
+b         = seq(0,20,0.1)
+n         = length(b)
+X         = matrix(0,n,n)
+X[upper.tri(X, diag = TRUE)] = 1
+X         = t(t(X) / b / 2)[,-1]
+X[1:10,1:10]
+```
+
+```{r}
+library(MASS)
+pi = c(0,ginv(X) %*% targetfun(b))
+```
+
+```{r}
+approxfun = function(pi, b){
+  out    = rev(cumsum(0.5 * rev(pi/b)))
+  out[1] = 1
+  out
+}
+plot(b, approxfun(pi,b), t = "l");
+lines(b, targetfun(b), col = 2)
+```
+
+```{r}
+plot(b, pmax(abs(b) - 2, 0) * sign(b), t = "l", xlim = c(0,10), ylim = c(0,10))
+for (i in 1:5) {
+  c         = i
+  b2        = get_pm(ash(b,1/sqrt(c), g = unimix(pi,-b/c, b/c), fixg=TRUE))
+  lines(b, b2, col = i+1)
+}
+
+```

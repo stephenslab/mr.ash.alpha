@@ -18,7 +18,7 @@ This .Rmd file is to reproduce the result for Figure , Design 4.
 We load libraries, packages and codes for the simulation and for the plotting.
 
 ```{r}
-library(Matrix); library(Rcpp); library(varbvs); library(ggplot2); library(cowplot);
+library(Matrix); library(Rcpp); library(varbvs); library(ggplot2); library(cowplot); library(L0Learn)
 library(glmnet); library(susieR); library(BGLR)
 sourceCpp("~/git/caisar/src/caisa_caisa.cpp");
 sourceCpp("~/git/caisar/src/caisa_acceleration.cpp");
@@ -142,7 +142,7 @@ for (i in 1:20) {
   fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
   lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
   pred1[i,] =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
-                 "caisa2"      = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
+                 "caisa2"     = norm(y.test - predict.caisa(fit.caisa2, X.test), '2'),
                  "susie"      = norm(y.test - predict.susie(fit.susie, X.test), '2'),
                  "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
                  "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
@@ -167,7 +167,6 @@ for (i in 1:20) {
   cat(pred1[i,],"\n")
   cat(t1[i,],"\n")
 }
-```
 
 ```{r}
 pred2 = matrix(0,20,10)

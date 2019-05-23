@@ -252,10 +252,10 @@ df.pred2 = data.frame("fit" = rep(c("CAISA","CAISA2","SUSIE","VARBVS","L0Learn",
                       "pred" = c(pred2/pred2[,2]))
 df.time1 = data.frame("fit" = rep(c("CAISA","CAISA2","SUSIE","VARBVS","L0Learn","LASSO",
                                     "RIDGE","E-NET","BLASSO","BayesB","BCP","BinSeg","FLASSO"), each = 20),
-                      "time" = c(t1/t1[,2]))
+                      "time" = c(t1))
 df.time2 = data.frame("fit" = rep(c("CAISA","CAISA2","SUSIE","VARBVS","L0Learn","LASSO",
                                     "RIDGE","E-NET","BLASSO","BayesB","BCP","BinSeg","FLASSO"), each = 20),
-                      "time" = c(t2/t2[,2]))
+                      "time" = c(t2))
 write.table(df.pred1, "~/git/caisar/output/Scenario3_pred1.txt", sep = ",")
 write.table(df.pred2, "~/git/caisar/output/Scenario3_pred2.txt", sep = ",")
 write.table(df.time1, "~/git/caisar/output/Scenario3_time1.txt", sep = ",")

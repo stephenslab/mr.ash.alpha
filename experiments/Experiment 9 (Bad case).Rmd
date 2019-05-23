@@ -43,7 +43,7 @@ for (i in 1:20) {
   y.test           <- X.test %*% beta + rnorm(1010)
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
   t.caisa           = system.time(
-  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "update_g",
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "caisa",
                                 beta.init = NULL, standardize = FALSE,
                                 stepsize = 1, tol = list(epstol = 1e-12, convtol = 1e-8)))
   t.susie           = system.time(
@@ -106,15 +106,16 @@ t2    = matrix(0,20,9)
 for (i in 1:20) {
   set.seed(2010 + i)
   X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  X                 = sqrt(0.95) * rnorm(1010) + sqrt(0.05) * X
   p                 = 1000
   beta             <- double(1000)
-  beta[1:200]      <- rnorm(200) * 0.1
+  beta[seq(100,1000,by=100)] = 10
   y                <- X %*% beta + rnorm(1010)
   X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
   y.test           <- X.test %*% beta + rnorm(1010)
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
   t.caisa           = system.time(
-  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "update_g", 
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "caisa", 
                                 stepsize = 1, tol = list(epstol = 1e-12, convtol = 1e-8)))
   t.susie           = system.time(
   fit.susie        <- susie(X = X, Y = y, L = 20, standardize = FALSE))
@@ -166,6 +167,7 @@ for (i in 1:20) {
 }
 ```
 
+
 ```{r}
 pred3 = matrix(0,20,9)
 t3    = matrix(0,20,9)
@@ -173,14 +175,15 @@ for (i in 1:20) {
   set.seed(2010 + i)
   X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
   p                 = 1000
+  #beta             <- c(rep(1,50),rep(2,100),rep(4,200),rep(0,650))
   beta             <- double(1000)
-  beta[1:200]      <- rt(200) * 2
+  beta[1:500]      <- rnorm(500,5)
   y                <- X %*% beta + rnorm(1010)
   X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
   y.test           <- X.test %*% beta + rnorm(1010)
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
   t.caisa           = system.time(
-  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "update_g", 
+  fit.caisa        <- varmixopt(X = X, y = y, sa2 = sa2, max.iter = 2000, method = "caisa", 
                                 stepsize = 1, tol = list(epstol = 1e-12, convtol = 1e-8)))
   t.susie           = system.time(
   fit.susie        <- susie(X = X, Y = y, L = 20, standardize = FALSE))
@@ -206,7 +209,7 @@ for (i in 1:20) {
   t.L0Learn         = system.time(
   fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
   lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
-  pred2[i,] =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
+  pred3[i,] =  c("caisa"      = norm(y.test - predict.caisa(fit.caisa, X.test), '2'),
                  "susie"      = norm(y.test - predict.susie(fit.susie, X.test), '2'),
                  "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
                  "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
@@ -218,7 +221,7 @@ for (i in 1:20) {
                                                                  s = fit.enet$lambda.1se), '2'),
                  "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
                  "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
-  t2[i,] =     c("caisa"      = t.caisa[3],
+  t3[i,] =     c("caisa"      = t.caisa[3],
                  "susie"      = t.susie[3],
                  "varbvs"     = t.varbvs[3],
                  "L0Learn"    = t.L0Learn[3],
@@ -227,8 +230,8 @@ for (i in 1:20) {
                  "enet"       = t.enet[3],
                  "blasso"     = t.blasso[3],
                  "bayesB"     = t.bayesB[3])
-  cat(pred2[i,],"\n")
-  cat(t2[i,],"\n")
+  cat(pred3[i,],"\n")
+  cat(t3[i,],"\n")
 }
 ```
 
