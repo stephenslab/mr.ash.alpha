@@ -1,3 +1,44 @@
+#' @title Something
+#' 
+#' @description
+#' 
+#' @details Add details here.
+#'
+#' @param X Describe X here. Sparse matrix? Dense?
+#' 
+#' @param y Describe y here.
+#' 
+#' @return Describe return value here.
+#' 
+#' @useDynLib varbvs2
+#' 
+#' @importFrom utils modifyList
+#' @importFrom Rcpp evalCpp
+#' 
+#' @examples
+#' 
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y = X %*% beta + rnorm(n)
+#' 
+#' fit.mr_ash  = mr_ash_order(X,y, order.method = "random")
+#' 
+#' # DO NOT RUN
+#' 
+#' # fit.mr_ash  = mr_ash_order(X,y, order.method = "normal")
+#' 
+#' # fit.mr_ash  = mr_ash_order(X,y, order.method = "given", o = rep(0:(p-1), max.iter))
+#' 
+#' Xnew        = matrix(rnorm(n*p),n,p)
+#' ynew        = predict.mr_ash(fit.mr_ash, Xnew)
+#' 
+#' 
+#' @export
+#' 
 mr_ash_order             = function(X, y, Z = NULL, sa2 = NULL,
                                     order.method = "1:p", o = NULL, K = 10,
                                     max.iter = 1000, min.iter = 1,
@@ -88,5 +129,6 @@ mr_ash_order             = function(X, y, Z = NULL, sa2 = NULL,
   out$intercept  = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
   out$data       = data
   
+  class(out)      <- c("mr_ash","list")
   return (out)
 }

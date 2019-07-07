@@ -1,0 +1,132 @@
+---
+title: "Shrinkage operator"
+author: "Youngseok Kim"
+date: "5/19/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+scad = function(b, lambda = 1, a = 3) {
+  b1 = pmax(abs(b) - lambda, 0) * sign(b) * (abs(b) <= 2 * lambda)
+  b2 = ((a-1) * b - sign(b) * a * lambda) / (a-2) * (abs(b) <= a * lambda) * (abs(b) > 2 * lambda)
+  b3 = b * (abs(b) > a * lambda)
+  return (b1+b2+b3)
+}
+
+mcp = function(b, lambda = 1, a = 2) {
+  b1 = pmax(abs(b) - lambda, 0) * sign(b) * (b <= a * lambda) * a / (a-1)
+  b2 = b * (abs(b) > a * lambda)
+  return (b1+b2)
+}
+
+softt = function(b, lambda = 1) {
+  return (pmax(abs(b) - lambda, 0) * sign(b))
+}
+
+hardt = function(b, lambda = 1) {
+  return (b * (abs(b) >= lambda))
+}
+```
+
+
+```{r}
+R.hardt = function(b, lambda = 1) {
+  out = b^2/2
+  out[b > lambda] = lambda^2/2
+  exp(-out)
+}
+
+R.softt = function(b, lambda = 1) {
+  out = lambda^2/2 + (b - lambda) * lambda
+  out[b <= lambda] = b[b <= lambda]^2/2
+  exp(-out)
+}
+
+R.scad = function(b, lambda = 1, gamma = 3) {
+  out = lambda^2/2 + (b - lambda) * lambda
+  out[b <= lambda] = b[b <= lambda]^2/2
+  out[b > 2 * lambda] = lambda^2 * 3/2 + (gamma - 2) * lambda^2/2 * 
+    (1 - (gamma - b[b > 2 * lambda] / lambda)^2 / (gamma - 2)^2)
+  out[b > gamma * lambda] = lambda^2 * 3/2 + (gamma - 2) * lambda^2/2
+  exp(-out)
+}
+
+R.mcp = function(b, lambda = 1, gamma = 2) {
+  out = lambda^2/2 + (gamma - 1) * lambda^2 / 2 * 
+    (1 - (gamma - b / lambda)^2 / (gamma - 1)^2)
+  out[b > gamma * lambda] = lambda^2 / 2 + (gamma - 1) * lambda^2 / 2 
+  out[b <= lambda] = b[b <= lambda]^2/2
+  exp(-out)
+}
+```
+
+```{r}
+b = seq(0,5,0.001)
+plot(b, R.hardt(b), ylim = c(0,1), type = "l")
+lines(b, R.softt(b), col = 2)
+lines(b, R.scad(b), col = 3)
+lines(b, R.mcp(b), col = 4)
+lines(b, exp(-b^2/2), col = 5)
+```
+
+
+```{r}
+postmean = function(b, pi, sa2 = 0:100, sigma2 = 1){
+  phi       = outer(b^2, 1 / 2 / (1 + 1 / sa2) / sigma2);
+  phi       = exp(phi - apply(phi, 1, max))
+  
+  phi       = t(pi * t(phi) / sqrt(1 + sa2));
+  phi       = phi / rowSums(phi);
+  out       = c(colSums(t(phi) / (1 + 1 / sa2))) * b
+  return (out)
+}
+
+sa2 = 0:100; b = seq(0,10,0.001)
+
+pi = exp(-sa2)
+pi = pi / sum(pi)
+b_softt = postmean(b, pi)
+
+pi = double(101)
+pi[1] = 0.8; pi[101] = 0.2
+b_mcp = postmean(b, pi)
+
+pi = double(101)
+pi[1] = 0.6; pi[101] = 0.4
+b_hardt = postmean(b, pi, sa2 = sa2^5)
+
+pi = double(101)
+pi[1] = 0.5; pi[2:51] = 0.2/50; pi[101] = 0.3
+b_scad = postmean(b, pi, sa2 = sa2)
+plot(b, b_softt, t = "l", col = 2)
+lines(b, b_mcp, col = 3)
+lines(b, b_hardt, col = 4)
+lines(b, b_scad, col = 5)
+
+plot(b, softt(b, lambda = 1.43), t = "l", col = 2)
+lines(b, mcp(b, lambda = 2), col = 3)
+lines(b, hardt(b, lambda = 5), col = 4)
+lines(b, scad(b, lambda = 1, a = 4), col = 5)
+```
+
+```{r}
+setwd("~/git/caisar/result")
+df1 = rbind(data.frame(method = "SOFT", sb = b_softt, b = b),
+           data.frame(method = "HARD", sb = b_hardt, b = b),
+           data.frame(method = "MCP", sb = b_mcp, b = b),
+           data.frame(method = "SCAD", sb = b_scad, b = b))
+
+df2 = rbind(data.frame(method = "SOFT", sb = softt(b, lambda = 1.43), b = b),
+           data.frame(method = "HARD", sb = hardt(b, lambda = 5), b = b),
+           data.frame(method = "MCP", sb = mcp(b, lambda = 2), b = b),
+           data.frame(method = "SCAD", sb = scad(b, lambda = 1, a = 4), b = b))
+
+write.table(df1, "dat11.txt", sep = ",")
+write.table(df2, "dat12.txt", sep = ",")
+```
+
+
