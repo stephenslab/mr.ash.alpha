@@ -8,8 +8,14 @@ editor_options:
   chunk_output_type: console
 ---
 
+## Prediction Performance
+
 1. [Experiment 5](Experiment_5_IndepLowdim.html): $X \in \mathbb{R}^{n\times p}$ where $X_{ij} \sim N(0,1)$ i.i.d. with $n = 1,010$ and $p = 1,000$.
 
 2. [Experiment 6](Experiment_6_EquiCorrGauss.html): $X \in \mathbb{R}^{n\times p}$ where $X_{i*} \sim N(0,\Sigma_\rho)$ i.i.d. with $n = 500$, $p = 2,000$ and $\rho = 0.5$. Here $\Sigma_\rho$ is a equicorrelated covariance matrix having unit diagonal entries and equal off-diagonal entries $\rho$, i.e. $\Sigma_{ii} = 1$ and $\Sigma_{ij} = \rho$ if $i\neq j$.
 
-3. [Experiment 8](Experiment_8_RealGenotype2.html): $X \in \mathbb{R}^{n\times p}$ where $X_{ij} \sim N(0,1)$ i.i.d. with $n = 1,010$ and $p = 1,000$.
+3. [Experiment 8](Experiment_8_RealGenotype2.html): $X \in \mathbb{R}^{n\times p}$ where $X$ is a processed real genotype matrix, i.e. columns of $X$ are starndardized (centered and normalized using R `scale` function). $n=287$ and $p$ varies from $4,012$ to $8,760$.
+
+## How well does MR-ASH perform for different shapes of signal?
+
+4. [Experiment2](Experiment_2_Nonconvex.html)
