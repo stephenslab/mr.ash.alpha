@@ -1,0 +1,985 @@
+---
+title: "Experiments 5 IndepLowdim"
+author: "Youngseok Kim"
+date: "10/01/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to reproduce the result for a figure in the paper. Results for timings can be slightly different even in the same computing machine. Also, it can be nontrivially different if you use different computing machine. But it should not be very different. Anyway, the prediction error presented below must be the same.
+
+### Load libraries, packages and codes
+
+We load libraries, packages and codes for the simulation and for the plotting.
+
+```{r library, eval=FALSE}
+library(Matrix); library(Rcpp); library(varbvs); library(ggplot2); library(cowplot);
+library(glmnet); library(susieR); library(BGLR); library(L0Learn); library(varbvs2)
+```
+
+### Simulation setting
+
+#### Design matrix
+
+We will use is an independent low dimensional Gaussian ensemble design. For abbreviation, we will call this design matrix "IndepLowdimGauss". A matrix size $n = 1010$ and $p = 1000$ will be fixed. The design matrix will be generated as follows.
+
+```{r design}
+standardize = FALSE
+#X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+```
+
+Note that the design matrix $X$ is not centered, and not standardized. 
+
+#### Signal shapes
+
+#### Proportion of variance explained
+
+
+
+## Simulation
+
+### Signal Shape 1 : SparseNormal
+
+#### Signal = SparseNormal, PVE = 0.9
+
+```{r sparsenormal0.9, eval = FALSE}
+pred11 = matrix(0,20,9)
+t11    = matrix(0,20,9)
+null11 = double(20)
+best11 = double(20)
+sigma11 = sqrt(400 / 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.1,0.9)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  sigma             = sqrt(400/9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null11[i]         = norm(y.test, '2')
+  best11[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred11[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t11[i,] =     c("mrash"     = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred11[i,],"\n")
+  cat(t11[i,],"\n")
+}
+```
+
+#### Signal = SparseNormal, PVE = 0.5
+
+```{r sparsenormal0.5, eval = FALSE}
+pred12 = matrix(0,20,9)
+t12    = matrix(0,20,9)
+null12 = double(20)
+best12 = double(20)
+sigma12 = sqrt(400)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.1,0.9)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  sigma             = sqrt(400)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null12[i]         = norm(y.test, '2')
+  best12[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred12[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t12[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred12[i,],"\n")
+  cat(t12[i,],"\n")
+}
+```
+
+#### Signal = SparseNormal, PVE = 0.1
+
+```{r sparsenormal0.1, eval = FALSE}
+pred13 = matrix(0,20,9)
+t13    = matrix(0,20,9)
+null13 = double(20)
+best13 = double(20)
+sigma13 = sqrt(400 * 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta              = double(p)
+  nzind             = which(sample(2, p, replace = TRUE, prob = c(0.1,0.9)) == 1)
+  beta[nzind]       = rnorm(length(nzind)) * 2
+  sigma             = sqrt(400 * 9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null13[i]         = norm(y.test, '2')
+  best13[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred13[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t13[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred13[i,],"\n")
+  cat(t13[i,],"\n")
+}
+```
+
+### Signal shape 2
+
+#### Signal = SparseConstant, PVE = 0.9
+
+```{r sparseconstant0.9, eval = FALSE}
+pred21 = matrix(0,20,9)
+t21    = matrix(0,20,9)
+null21 = double(20)
+best21 = double(20)
+sigma21 = sqrt(200 / 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  beta[sample(p,50,replace = FALSE)]      <- 2
+  sigma             = sqrt(200/9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null21[i]         = norm(y.test, '2')
+  best21[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred21[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t21[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred21[i,],"\n")
+  cat(t21[i,],"\n")
+}
+```
+
+### Signal = SparseConstant, PVE = 0.5
+
+```{r sparseconstant0.5, eval = FALSE}
+pred22 = matrix(0,20,9)
+t22    = matrix(0,20,9)
+null22 = double(20)
+best22 = double(20)
+sigma22 = sqrt(200)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  beta[sample(p,50,replace = FALSE)]      <- 2
+  sigma             = sqrt(200)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null22[i]         = norm(y.test, '2')
+  best22[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred22[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t22[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred22[i,],"\n")
+  cat(t22[i,],"\n")
+}
+```
+
+#### Signal = SparseConstant, PVE = 0.1
+
+```{r sparseconstant0.1, eval = FALSE}
+pred23 = matrix(0,20,9)
+t23    = matrix(0,20,9)
+null23 = double(20)
+best23 = double(20)
+sigma23 = sqrt(200 * 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  beta[sample(p,50,replace = FALSE)]      <- 2
+  sigma             = sqrt(200 * 9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null23[i]         = norm(y.test, '2')
+  best23[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred23[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t23[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred23[i,],"\n")
+  cat(t23[i,],"\n")
+}
+```
+
+### Signal shape 3
+
+#### Signal = ThreePointMass, PVE = 0.9
+
+```{r threepointmass0.9, eval = FALSE}
+pred31 = matrix(0,20,9)
+t31    = matrix(0,20,9)
+null31 = double(20)
+best31 = double(20)
+sigma31 = sqrt(340 / 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  ind              <- sample(p,100,replace = FALSE)
+  beta[ind[1:10]]       <- 5
+  beta[ind[11:100]]     <- 1
+  sigma             = sqrt(sum(beta^2)/9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null31[i]         = norm(y.test, '2')
+  best31[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred31[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t31[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred31[i,],"\n")
+  cat(t31[i,],"\n")
+}
+```
+
+### Signal = ThreePointMass, PVE = 0.5
+
+```{r threepointmass0.5, eval = FALSE}
+pred32 = matrix(0,20,9)
+t32    = matrix(0,20,9)
+null32 = double(20)
+best32 = double(20)
+sigma32 = sqrt(340)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  ind              <- sample(p,100,replace = FALSE)
+  beta[ind[1:10]]       <- 5
+  beta[ind[11:100]]     <- 1
+  sigma             = sqrt(sum(beta^2))
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null32[i]         = norm(y.test, '2')
+  best32[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred32[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t32[i,] =     c("mrash"      = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred32[i,],"\n")
+  cat(t32[i,],"\n")
+}
+```
+
+#### Signal = ThreePointMass, PVE = 0.1
+
+```{r threepointmass0.1, eval = FALSE}
+pred33 = matrix(0,20,9)
+t33    = matrix(0,20,9)
+null33 = double(20)
+best33 = double(20)
+sigma33 = sqrt(340 * 9)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  X                <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  p                 = 1000
+  beta             <- rep(0, 1000)
+  ind              <- sample(p,100,replace = FALSE)
+  beta[ind[1:10]]       <- 5
+  beta[ind[11:100]]     <- 1
+  sigma             = sqrt(sum(beta^2)*9)
+  y                <- X %*% beta + sigma * rnorm(1010)
+  X.test           <- matrix(rnorm(1010 * 1000), 1010, 1000)
+  err.test          = sigma * rnorm(1010)
+  y.test           <- X.test %*% beta + err.test
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  null33[i]         = norm(y.test, '2')
+  best33[i]         = norm(err.test, '2')
+  
+  cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+  
+  t.susie           = system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta    = coef(fit.susie)[-1]
+  t.lasso           = system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  pred33[i,] =  c("mrash"     = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "susie"      = norm(y.test - predict(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict(fit.lasso$glmnet.fit, newx = X.test,
+                                                      s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict(fit.ridge$glmnet.fit, newx = X.test,
+                                                      s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict(fit.enet$glmnet.fit, newx = X.test,
+                                                      s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - X.test %*% fit.blasso$beta, '2'),
+                 "bayesB"     = norm(y.test - X.test %*% fit.bayesB$beta, '2'))
+  t33[i,] =     c("mrash"     = t.mrash[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3])
+  cat(pred33[i,],"\n")
+  cat(t33[i,],"\n")
+}
+```
+
+## Save results
+
+We save results as follows. One may find .txt files in the following path.
+
+```{r datasave, eval = FALSE}
+numlist = c(11,12,13,21,22,23,31,32,33)
+
+for (nums in numlist) {
+  df =   data.frame("fit" = rep(c("CAISA","SUSIE","VARBVS","L0Learn","LASSO",
+                                  "RIDGE","E-NET","BLASSO","BayesB"), each = 20),
+                    "pred" = c(get(paste("pred", nums, sep = ""))))
+  write.table(df, paste(paste("../paperresults/pred5_", nums, sep = ""), ".txt", sep = ""), sep = ",")
+  
+  df =   data.frame("fit" = rep(c("CAISA","SUSIE","VARBVS","L0Learn","LASSO",
+                                  "RIDGE","E-NET","BLASSO","BayesB"), each = 20),
+                    "time" = c(get(paste("t", nums, sep = ""))))
+  write.table(df, paste(paste("../paperresults/time5_", nums, sep = ""), ".txt", sep = ""), sep = ",")
+}
+```
+
+## Summary of the results
+
+```{r plotfunction}
+## load packages
+library(cowplot); library(ggplot2);
+
+## function for boxplot
+my.box <- function (dat, x, y,
+                    values = c(1,2,0,3,4,5)) {
+  return(ggplot(dat,aes_string(x = x, y = y, fill = "fit")) +
+           geom_jitter(aes(color = fit, shape = fit), width = .1) + theme_cowplot(font_size = 14) +
+           scale_shape_manual(values = values) +
+           geom_boxplot(alpha = 0.1, aes(color = fit), outlier.alpha = 0) +
+           scale_alpha_manual(values = 0.1) +
+           scale_fill_discrete(guide = "none") +
+           labs(x = ""))
+}
+
+# function for coloring
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+```
+
+```{r datasummary, eval = FALSE}
+numlist = c(11,12,13,21,22,23,31,32,33)
+dat = list()
+for (i in 1:length(numlist)) {
+  num = numlist[i]
+  dat[[i]] = read.table(paste(paste("../paperresults/pred5_", num, sep = ""), ".txt", sep = ""), sep = ",")
+  dat[[i]]$rmse = dat[[i]]$pred / sqrt(1010)
+  dat[[i]]$best = get(paste("best", num, sep = ""))
+  dat[[i]]$null = get(paste("null", num, sep = ""))
+  dat[[i]]$rrmse = (dat[[i]]$pred - dat[[i]]$best) / (dat[[i]]$null - dat[[i]]$best)
+  dat[[i]]$time = read.table(paste(paste("../paperresults/time5_", num, sep = ""), ".txt", sep = ""), sep = ",")$time
+  dat[[i]]$rrmse2 = pmin(pmax(dat[[i]]$rrmse, 0),1)
+  dat[[i]]$sigma = get(paste("sigma", num, sep = ""))
+  dat[[i]]$p = 1000
+}
+saveRDS(dat, "paperresults/experiment5.rds")
+```
+
+## Plot for the results
+
+```{r readresults}
+dat = readRDS("paperresults/experiment5.rds")
+for (i in 1:9) {
+  dat[[i]]$nrmse = dat[[i]]$rmse / dat[[i]]$sigma
+}
+```
+
+```{r plot1}
+p11 = my.box(dat[[1]], "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.9",
+       y     = "relative prediction error (RRMSE)") + 
+  #scale_y_continuous(limits = c(0,1)) +
+  theme(axis.line    = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p12 = my.box(dat[[2]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.5", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p13 = my.box(dat[[3]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.1", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+title = ggdraw() + draw_label("IndepLowdimGauss + SparseNormal", fontface = 'bold', size = 18)
+fig1_temp = plot_grid(p11,p12,p13, nrow = 1)
+fig1 = plot_grid(title,fig1_temp, ncol = 1, rel_heights = c(0.06,0.95))
+ggsave("paperfigures/fig51.pdf", fig1, width = 18, height = 6)
+```
+
+```{r plot2}
+p21 = my.box(dat[[4]], "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.9",
+       y     = "relative prediction error (RRMSE)") +
+  theme(axis.line    = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p22 = my.box(dat[[5]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.5", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p23 = my.box(dat[[6]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.1", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+title = ggdraw() + draw_label("IndepLowdimGauss + SingleEffect", fontface = 'bold', size = 18)
+fig2_temp = plot_grid(p21,p22,p23, nrow = 1)
+fig2 = plot_grid(title,fig2_temp, ncol = 1, rel_heights = c(0.06,0.95))
+ggsave("paperfigures/fig52.pdf", fig1, width = 18, height = 6)
+```
+
+```{r plot3}
+p31 = my.box(dat[[7]], "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.9",
+       y     = "relative prediction error (RRMSE)") +
+  theme(axis.line    = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p32 = my.box(dat[[8]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.5", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+p33 = my.box(dat[[9]],  "fit", "nrmse", c(1,2,5,4,3,6,0,8,9,10,7,12,13)) +
+  geom_abline(intercept = 0, slope = 0, color = gg_color_hue(7)[4], alpha = 0.8, linetype = 2, size = 0.2) +
+  labs(title = "PVE = 0.1", y = "") + 
+  theme(axis.line    = element_blank(),
+        #axis.ticks.y = element_blank(),
+        #axis.text.y  = element_blank(),
+        axis.text.x  = element_text(angle = 45,hjust = 1),
+        legend.position = "none")
+
+title = ggdraw() + draw_label("IndepLowdimGauss + SparseLaplace", fontface = 'bold', size = 18)
+fig3_temp = plot_grid(p31,p32,p33, nrow = 1)
+fig3 = plot_grid(title,fig3_temp, ncol = 1, rel_heights = c(0.06,0.95))
+ggsave("paperfigures/fig53.pdf", fig1, width = 18, height = 6)
+```
+
+```{r fig1display}
+fig1
+```
+
+```{r fig2display}
+fig2
+```
+
+```{r fig3display}
+fig3
+```
