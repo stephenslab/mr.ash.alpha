@@ -8,4 +8,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+1. [Experiment 5](Experiment_5_IndepLowdim.html): $X \in \mathbb{R}^{n\times p}$ where $X_{ij} \sim N(0,1)$ i.i.d. with $n = 1,010$ and $p = 1,000$.
+
+2. [Experiment 6](Experiment_6_EquiCorrGauss.html): $X \in \mathbb{R}^{n\times p}$ where $X_{i*} \sim N(0,\Sigma_\rho)$ i.i.d. with $n = 500$, $p = 2,000$ and $\rho = 0.5$. Here $\Sigma_\rho$ is a equicorrelated covariance matrix having unit diagonal entries and equal off-diagonal entries $\rho$, i.e. $\Sigma_{ii} = 1$ and $\Sigma_{ij} = \rho$ if $i\neq j$.
+
+3. [Experiment 8](Experiment_8_RealGenotype2.html): $X \in \mathbb{R}^{n\times p}$ where $X_{ij} \sim N(0,1)$ i.i.d. with $n = 1,010$ and $p = 1,000$.
