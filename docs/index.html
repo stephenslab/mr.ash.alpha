@@ -355,10 +355,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2tree6fa10c4f2f1ecc2a05494c2e32df356413991677targetblank6fa10c4a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/stephenslab/varbvs2/tree/6fa10c4f2f1ecc2a05494c2e32df356413991677" target="_blank">6fa10c4</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2treeda5018172d46852de7d043acfe493710c3d6e865targetblankda50181a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/stephenslab/varbvs2/tree/da5018172d46852de7d043acfe493710c3d6e865" target="_blank">da50181</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2tree6fa10c4f2f1ecc2a05494c2e32df356413991677targetblank6fa10c4a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2treeda5018172d46852de7d043acfe493710c3d6e865targetblankda50181a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -371,8 +371,12 @@ Untracked files:
     Untracked:  .DS_Store
     Untracked:  .Rbuildignore
     Untracked:  analysis/.DS_Store
-    Untracked:  docs/figure/
+    Untracked:  analysis/Experiment_2_Nonconvex.Rmd
+    Untracked:  docs/figure/Experiment_2_Nonconvex.Rmd/
     Untracked:  misc/
+    Untracked:  paperfigures/fig21.pdf
+    Untracked:  paperfigures/fig22.pdf
+    Untracked:  paperfigures/fig23.pdf
 
 Unstaged changes:
     Deleted:    backup/caisa_acc.cpp
@@ -407,6 +411,7 @@ Unstaged changes:
     Deleted:    outputs/time832.txt
     Deleted:    outputs/time833.txt
     Modified:   paper/.DS_Store
+    Modified:   paper/Experiment_2_Nonconvex.Rmd
     Modified:   paper/Experiment_7_RealGenotype.Rmd
     Modified:   paperfigures/fig51.pdf
     Modified:   paperfigures/fig52.pdf
@@ -417,6 +422,7 @@ Unstaged changes:
     Modified:   paperfigures/fig81.pdf
     Modified:   paperfigures/fig82.pdf
     Modified:   paperfigures/fig83.pdf
+    Modified:   paperresults/experiment2.rds
     Deleted:    results/.DS_Store
     Deleted:    results/.Rhistory
     Deleted:    results/dat101.txt
@@ -523,6 +529,40 @@ Message
 Rmd
 </td>
 <td>
+<a href="https://github.com/stephenslab/varbvs2/blob/da5018172d46852de7d043acfe493710c3d6e865/analysis/index.Rmd" target="_blank">da50181</a>
+</td>
+<td>
+Youngseok
+</td>
+<td>
+2019-09-29
+</td>
+<td>
+add main page
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/stephenslab/varbvs2/e927b5aefe1f4a9610382c0a845c409be492f31c/docs/index.html" target="_blank">e927b5a</a>
+</td>
+<td>
+Youngseok
+</td>
+<td>
+2019-09-29
+</td>
+<td>
+Build site.
+</td>
+</tr>
+<tr>
+<td>
+Rmd
+</td>
+<td>
 <a href="https://github.com/stephenslab/varbvs2/blob/8e303a7a4106fd9b60233ded45562b974fda0f18/analysis/index.Rmd" target="_blank">8e303a7</a>
 </td>
 <td>
@@ -542,7 +582,11 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Welcome to my research website.</p>
+<ol style="list-style-type: decimal">
+<li><p><a href="Experiment_5_IndepLowdim.html">Experiment 5</a>: <span class="math inline">\(X \in \mathbb{R}^{n\times p}\)</span> where <span class="math inline">\(X_{ij} \sim N(0,1)\)</span> i.i.d. with <span class="math inline">\(n = 1,010\)</span> and <span class="math inline">\(p = 1,000\)</span>.</p></li>
+<li><p><a href="Experiment_6_EquiCorrGauss.html">Experiment 6</a>: <span class="math inline">\(X \in \mathbb{R}^{n\times p}\)</span> where <span class="math inline">\(X_{i*} \sim N(0,\Sigma_\rho)\)</span> i.i.d. with <span class="math inline">\(n = 500\)</span>, <span class="math inline">\(p = 2,000\)</span> and <span class="math inline">\(\rho = 0.5\)</span>. Here <span class="math inline">\(\Sigma_\rho\)</span> is a equicorrelated covariance matrix having unit diagonal entries and equal off-diagonal entries <span class="math inline">\(\rho\)</span>, i.e. <span class="math inline">\(\Sigma_{ii} = 1\)</span> and <span class="math inline">\(\Sigma_{ij} = \rho\)</span> if <span class="math inline">\(i\neq j\)</span>.</p></li>
+<li><p><a href="Experiment_8_RealGenotype2.html">Experiment 8</a>: <span class="math inline">\(X \in \mathbb{R}^{n\times p}\)</span> where <span class="math inline">\(X_{ij} \sim N(0,1)\)</span> i.i.d. with <span class="math inline">\(n = 1,010\)</span> and <span class="math inline">\(p = 1,000\)</span>.</p></li>
+</ol>
 
 
 <!-- Adjust MathJax settings so that all math formulae are shown using
