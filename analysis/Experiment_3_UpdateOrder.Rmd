@@ -1,0 +1,408 @@
+---
+title: "Experiments 3 Update Order"
+author: "Youngseok Kim"
+date: "10/01/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to reproduce the result for a figure in the paper. Results for timings can be slightly different even in the same computing machine. Also, it can be nontrivially different if you use different computing machine. But it should not be very different. Anyway, the prediction error presented below must be the same.
+
+### Load libraries, packages and codes
+
+We load libraries, packages and codes for the simulation and for the plotting.
+
+```{r library}
+library(Matrix); library(Rcpp); library(ggplot2); library(cowplot);
+library(glmnet); library(varbvs2); library(ncvreg)
+```
+
+### Simulation setting
+
+#### Design matrix
+
+We will use is an independent low dimensional Gaussian ensemble design. For abbreviation, we will call this design matrix "IndepLowdimGauss". A matrix size $n = 500$ and $p = 2,000$ will be fixed. The design matrix will be generated as follows.
+
+```{r design}
+standardize = FALSE
+#X                <- matrix(rnorm(500*2000), 500, 2000)
+```
+
+Note that the design matrix $X$ is not centered, and not standardized. 
+
+#### Lasso order
+
+```{r lassopathorder}
+glmnet_pathorder = function(fit.glmnet) {
+  # perform lasso regression and reorder regressors by "importance"
+  beta_path = coef(fit.glmnet)[-1,]
+  K = dim(beta_path)[2]
+  path_order = c()
+  for (k in 1:K) {
+    crt_path = which(beta_path[,k] != 0)
+    if (length(crt_path) != 0 & length(path_order) == 0) {
+      path_order = c(path_order, crt_path)
+    } else if(length(crt_path) != 0) {
+      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
+    }
+  }
+  path_order = unname(path_order)
+  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
+  return (index_order)
+}
+
+glmnet_absorder = function(beta) {
+  return (order(abs(beta), decreasing = TRUE))
+}
+
+univar_absorder = function(X, y) {
+  colnorm = c(colMeans(X^2))
+  return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
+}
+```
+
+## Simulation
+
+### SparseNormal, Correlation rho = 0.00, 0.5, 0.9, 0.95, 0.99
+
+```{r sparsenormalcorr0.5, eval = FALSE}
+a      = 7
+b      = 100
+dat1   = list()
+tdat1  = list()
+pred11 = matrix(0,b,a)
+iter11 = matrix(0,b,a)
+vobj11 = matrix(0,b,a)
+t11    = matrix(0,b,a)
+null11 = double(b)
+best11 = double(b)
+sigma11 = double(b)
+rho_range = c(0,0.5,0.9,0.95,0.99)
+
+for (iter in 1:5) {
+  
+  rho = rho_range[iter]
+  for (i in 1:b) {
+    set.seed(2010 + i)
+    data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+    data$X           <- rnorm(dim(data$X)[1]) * sqrt(rho) + data$X * sqrt(1-rho)
+    n.total           = dim(data$X)[1];
+    p                 = dim(data$X)[2]
+    train.index       = sample(n.total, floor(n.total * 0.5))
+    test.index        = (1:n.total)[-train.index]
+    X                 = data$X[train.index,]
+    X.test            = data$X[test.index,]
+    beta              = double(p)
+    beta[1:20]        = 2
+    sa2               = (sqrt(1.5)^(0:19) - 1)^2
+    sigma             = sqrt(var(c(X %*% beta)) / 9)
+    y                <- X %*% beta + sigma * rnorm(500)
+    err.test          = sigma * rnorm(500)
+    y.test           <- X.test %*% beta + err.test
+    null11[i]         = norm(y.test, '2')
+    best11[i]         = norm(err.test, '2')
+    sigma11[i]        = sigma
+    
+    cat("pve =", var(X %*% beta) / (var(X %*% beta) + sigma^2),"\n")
+    
+    t.lasso           = system.time(
+    fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+    fit.lasso$beta    = coef(fit.lasso)[-1]
+    
+    t.mcp             = system.time(
+    fit.mcp          <- cv.glmnet(x = X, y = y, standardize = standardize))
+    fit.mcp$beta      = coef(fit.lasso)[-1]
+    
+    lasso.pathorder   = glmnet_pathorder(fit.lasso$glmnet.fit)
+    lasso.absorder    = glmnet_absorder(fit.lasso$beta)
+    univar.absorder   = univar_absorder(X, y)
+    mcp.pathorder     = glmnet_pathorder(fit.mcp$glmnet.fit)
+    
+    t.mrash1          = system.time(
+    fit.mrash1       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "random",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash2          = system.time(
+    fit.mrash2       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "increasing",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash3          = system.time(
+    fit.mrash3       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "decreasing",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash4          = system.time(
+    fit.mrash4       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(lasso.pathorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash5          = system.time(
+    fit.mrash5       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(mcp.pathorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash6          = system.time(
+    fit.mrash6       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(lasso.absorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash7          = system.time(
+    fit.mrash7       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(univar.absorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    for (j in 1:a) {
+      fit             = get(paste("fit.mrash",j,sep = ""))
+      pred11[i,j]     = norm(y.test - predict(fit, X.test), '2')
+      iter11[i,j]     = fit$iter
+      vobj11[i,j]     = fit$varobj[fit$iter]
+      t11[i,j]        = get(paste("t.mrash",j,sep = ""))[3]
+    }
+    
+    cat(pred11[i,],"\n")
+  }
+  
+  cat("-----------------",iter,"-th iteration done")
+  
+  num          = 11
+  dat1[[iter]] = data.frame(pred  = colMeans(get(paste("pred",num,sep =""))),
+                            vobj  = colMeans(get(paste("vobj",num,sep =""))),
+                            iter  = colMeans(get(paste("iter",num,sep =""))),
+                            time  = colMeans(get(paste("t",num,sep =""))),
+                            nrmse = colMeans(get(paste("pred",num,sep ="")) / sigma11 / sqrt(500)))
+  
+  tdat1[[iter]] = data.frame(pred  = c(pred11),
+                             vobj  = c(vobj11),
+                             iter  = c(iter11),
+                             time  = c(t11),
+                             sigma = sigma11,
+                             best  = best11,
+                             null  = null11)
+}
+```
+
+### SparseNormal, Correlation rho = 0.00, 0.5, 0.9, 0.95, 0.99
+
+```{r sparsenormalcorr0.5, eval = FALSE}
+a      = 7
+b      = 100
+dat2   = list()
+tdat2  = list()
+pred11 = matrix(0,b,a)
+iter11 = matrix(0,b,a)
+vobj11 = matrix(0,b,a)
+t11    = matrix(0,b,a)
+null11 = double(b)
+best11 = double(b)
+sigma11 = double(b)
+rho_range = c(0,0.5,0.9,0.95,0.99)
+
+for (iter in 1:5) {
+  
+  rho = rho_range[iter]
+  for (i in 1:b) {
+    set.seed(2010 + i)
+    data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+    data$X           <- rnorm(dim(data$X)[1]) * sqrt(rho) + data$X * sqrt(1-rho)
+    n.total           = dim(data$X)[1];
+    p                 = dim(data$X)[2]
+    train.index       = sample(n.total, floor(n.total * 0.5))
+    test.index        = (1:n.total)[-train.index]
+    X                 = data$X[train.index,]
+    X.test            = data$X[test.index,]
+    beta              = double(p)
+    beta[1:20]        = rnorm(20) * 2
+    sa2               = (sqrt(1.1)^(0:19) - 1)^2
+    sigma             = sqrt(var(c(X %*% beta)) / 9)
+    y                <- X %*% beta + sigma * rnorm(500)
+    err.test          = sigma * rnorm(500)
+    y.test           <- X.test %*% beta + err.test
+    null11[i]         = norm(y.test, '2')
+    best11[i]         = norm(err.test, '2')
+    sigma11[i]        = sigma
+    
+    cat("pve =", var(X %*% beta) / (var(X %*% beta) + sigma^2),"\n")
+    
+    t.lasso           = system.time(
+    fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+    fit.lasso$beta    = coef(fit.lasso)[-1]
+    
+    t.mcp             = system.time(
+    fit.mcp          <- cv.glmnet(x = X, y = y, standardize = standardize))
+    fit.mcp$beta      = coef(fit.lasso)[-1]
+    
+    lasso.pathorder   = glmnet_pathorder(fit.lasso$glmnet.fit)
+    lasso.absorder    = glmnet_absorder(fit.lasso$beta)
+    univar.absorder   = univar_absorder(X, y)
+    mcp.pathorder     = glmnet_pathorder(fit.mcp$glmnet.fit)
+    
+    t.mrash1          = system.time(
+    fit.mrash1       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "random",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash2          = system.time(
+    fit.mrash2       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "increasing",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash3          = system.time(
+    fit.mrash3       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "decreasing",
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash4          = system.time(
+    fit.mrash4       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(lasso.pathorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash5          = system.time(
+    fit.mrash5       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(mcp.pathorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash6          = system.time(
+    fit.mrash6       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(lasso.absorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    t.mrash7          = system.time(
+    fit.mrash7       <- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                     stepsize = 1, max.iter = 2000,
+                                     standardize = standardize, order = "manual",
+                                     o = rep(univar.absorder, 2000),
+                                     tol = list(epstol = 1e-12, convtol = 1e-8)))
+    
+    for (j in 1:a) {
+      fit             = get(paste("fit.mrash",j,sep = ""))
+      pred11[i,j]     = norm(y.test - predict(fit, X.test), '2')
+      iter11[i,j]     = fit$iter
+      vobj11[i,j]     = fit$varobj[fit$iter]
+      t11[i,j]        = get(paste("t.mrash",j,sep = ""))[3]
+    }
+    
+    cat(pred11[i,],"\n")
+    cat(fit.mrash2$pi, "\n")
+  }
+  
+  cat("-----------------",iter,"-th iteration done")
+  
+  num          = 11
+  dat2[[iter]] = data.frame(pred  = colMeans(get(paste("pred",num,sep =""))),
+                            vobj  = colMeans(get(paste("vobj",num,sep =""))),
+                            iter  = colMeans(get(paste("iter",num,sep =""))),
+                            time  = colMeans(get(paste("t",num,sep =""))),
+                            nrmse = colMeans(get(paste("pred",num,sep ="")) / sigma11 / sqrt(500)))
+  
+  tdat2[[iter]] = data.frame(pred  = c(pred11),
+                             vobj  = c(vobj11),
+                             iter  = c(iter11),
+                             time  = c(t11),
+                             sigma = sigma11,
+                             best  = best11,
+                             null  = null11)
+}
+```
+
+## Summary of the results
+
+```{r saveresult, eval = FALSE}
+setwd("..")
+saveRDS(dat1, "paperresults/experiment3_1.rds")
+saveRDS(tdat1, "paperresults/experiment3_2.rds")
+saveRDS(dat2, "paperresults/experiment3_3.rds")
+saveRDS(tdat2, "paperresults/experiment3_4.rds")
+```
+
+```{r loadresult}
+setwd("..")
+dat = readRDS("paperresults/experiment3_1.rds")
+```
+
+```{r plotfunction}
+## function for boxplot
+my.box <- function (dat, x, y,
+                    values = c(1,2,0,3,4,5)) {
+  return(ggplot(dat,aes_string(x = x, y = y, fill = "fit")) +
+           geom_jitter(aes(color = fit, shape = fit), width = .1) + theme_cowplot(font_size = 14) +
+           scale_shape_manual(values = values) +
+           geom_boxplot(alpha = 0.1, aes(color = fit), outlier.alpha = 0) +
+           scale_alpha_manual(values = 0.1) +
+           scale_fill_discrete(guide = "none") +
+           labs(x = ""))
+}
+
+# function for coloring
+gg_color_hue <- function(n) {
+  hues = seq(15, 375, length = n + 1)
+  hcl(h = hues, l = 65, c = 100)[1:n]
+}
+
+```
+
+```{r fig1}
+df1 = data.frame()
+for (i in 1:5) {
+  dat1[[i]]$rho  = c("0.0","0.5","0.9","0.95","0.99")[i]
+  df1            = rbind(df1, dat1[[i]])
+}
+df1$fit = c("random","increasing","decreasing","lasso.path.order","mcp.path.order","lasso.abs.order","univar.abs.order")
+ggplot(df1) + geom_bar(aes(x = rho, weight = vobj, fill = fit, color = fit), position = position_dodge()) +
+  theme_cowplot(font_size = 14)
+```
+
+```{r fig2}
+df2 = data.frame(pred = -df1$pred + rep(df1$pred[c(1,8,15,22,29)], each = 7),
+                 vobj = -df1$vobj + rep(df1$vobj[c(1,8,15,22,29)], each = 7),
+                 rho  = df1$rho)[-c(1,8,15,22,29),]
+df2$fit = c("increasing","decreasing","lasso.path.order","mcp.path.order","lasso.abs.order","univar.abs.order")
+ggplot(df2) + geom_bar(aes(x = rho, weight = vobj, fill = fit, color = fit), position = position_dodge()) +
+  theme_cowplot(font_size = 14)
+```
+
+```{r fig3}
+df3 = data.frame()
+for (i in 1:5) {
+  dat2[[i]]$rho  = c("0.0","0.5","0.9","0.95","0.99")[i]
+  df3            = rbind(df3, dat2[[i]])
+}
+df3$fit = c("random","increasing","decreasing","lasso.path.order","mcp.path.order","lasso.abs.order","univar.abs.order")
+ggplot(df3) + geom_bar(aes(x = rho, weight = vobj, fill = fit, color = fit), position = position_dodge()) +
+  theme_cowplot(font_size = 14)
+```
+
+```{r fig4}
+df4 = data.frame(pred = -df3$pred + rep(df3$pred[c(1,8,15,22,29)], each = 7),
+                 vobj = -df3$vobj + rep(df3$vobj[c(1,8,15,22,29)], each = 7),
+                 rho  = df3$rho)[-c(1,8,15,22,29),]
+df4$fit = c("increasing","decreasing","lasso.path.order","mcp.path.order","lasso.abs.order","univar.abs.order")
+ggplot(df4) + geom_bar(aes(x = rho, weight = vobj, fill = fit, color = fit), position = position_dodge()) +
+  theme_cowplot(font_size = 14)
+```

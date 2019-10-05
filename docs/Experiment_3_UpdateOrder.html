@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Youngseok Kim" />
+
+<meta name="date" content="2019-10-01" />
+
+<title>Experiments 3 Update Order</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">varbvs2</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Experiments 3 Update Order</h1>
+<h4 class="author">Youngseok Kim</h4>
+<h4 class="date">10/01/2019</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2019-09-29
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>varbvs2/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.4.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20190928code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20190928)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20190928code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20190928)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2tree24394b4244b34367df7ec9a03a71237bf8b72781targetblank24394b4a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/stephenslab/varbvs2/tree/24394b4244b34367df7ec9a03a71237bf8b72781" target="_blank">24394b4</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomstephenslabvarbvs2tree24394b4244b34367df7ec9a03a71237bf8b72781targetblank24394b4a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  .DS_Store
+    Untracked:  .Rbuildignore
+    Untracked:  analysis/.DS_Store
+    Untracked:  analysis/ETA_1_lambda.dat
+    Untracked:  analysis/ETA_1_parBayesB.dat
+    Untracked:  analysis/Experiment_3_UpdateOrder.Rmd
+    Untracked:  analysis/mu.dat
+    Untracked:  analysis/varE.dat
+    Untracked:  misc/
+    Untracked:  paperfigures/fig21.pdf
+    Untracked:  paperfigures/fig22.pdf
+    Untracked:  paperfigures/fig23.pdf
+
+Unstaged changes:
+    Modified:   R/mr_ash_order.R
+    Modified:   analysis/index.Rmd
+    Deleted:    backup/caisa_acc.cpp
+    Deleted:    backup/caisa_em.cpp
+    Deleted:    backup/caisa_order.cpp
+    Deleted:    backup/g.cpp
+    Deleted:    code/README.md
+    Deleted:    outputs/dat811.txt
+    Deleted:    outputs/dat812.txt
+    Deleted:    outputs/dat813.txt
+    Deleted:    outputs/dat821.txt
+    Deleted:    outputs/dat822.txt
+    Deleted:    outputs/dat823.txt
+    Deleted:    outputs/dat831.txt
+    Deleted:    outputs/dat832.txt
+    Deleted:    outputs/pred811.txt
+    Deleted:    outputs/pred812.txt
+    Deleted:    outputs/pred813.txt
+    Deleted:    outputs/pred821.txt
+    Deleted:    outputs/pred822.txt
+    Deleted:    outputs/pred823.txt
+    Deleted:    outputs/pred831.txt
+    Deleted:    outputs/pred832.txt
+    Deleted:    outputs/pred833.txt
+    Deleted:    outputs/time811.txt
+    Deleted:    outputs/time812.txt
+    Deleted:    outputs/time813.txt
+    Deleted:    outputs/time821.txt
+    Deleted:    outputs/time822.txt
+    Deleted:    outputs/time823.txt
+    Deleted:    outputs/time831.txt
+    Deleted:    outputs/time832.txt
+    Deleted:    outputs/time833.txt
+    Modified:   paper/.DS_Store
+    Modified:   paper/Experiment_2_Nonconvex.Rmd
+    Modified:   paper/Experiment_7_RealGenotype.Rmd
+    Modified:   paperfigures/fig51.pdf
+    Modified:   paperfigures/fig52.pdf
+    Modified:   paperfigures/fig53.pdf
+    Modified:   paperfigures/fig61.pdf
+    Modified:   paperfigures/fig62.pdf
+    Modified:   paperfigures/fig63.pdf
+    Modified:   paperfigures/fig81.pdf
+    Modified:   paperfigures/fig82.pdf
+    Modified:   paperfigures/fig83.pdf
+    Modified:   paperresults/experiment2.rds
+    Deleted:    results/.DS_Store
+    Deleted:    results/.Rhistory
+    Deleted:    results/dat101.txt
+    Deleted:    results/dat102.txt
+    Deleted:    results/dat103.txt
+    Deleted:    results/dat11.txt
+    Deleted:    results/dat111.txt
+    Deleted:    results/dat112.txt
+    Deleted:    results/dat113.txt
+    Deleted:    results/dat12.txt
+    Deleted:    results/dat121.txt
+    Deleted:    results/dat122.txt
+    Deleted:    results/dat123.txt
+    Deleted:    results/dat124.txt
+    Deleted:    results/dat13.txt
+    Deleted:    results/dat131 copy.txt
+    Deleted:    results/dat131.txt
+    Deleted:    results/dat133.txt
+    Deleted:    results/dat21.txt
+    Deleted:    results/dat22.txt
+    Deleted:    results/dat23.txt
+    Deleted:    results/dat24.txt
+    Deleted:    results/dat31.txt
+    Deleted:    results/dat32.txt
+    Deleted:    results/dat33.txt
+    Deleted:    results/dat34.txt
+    Deleted:    results/dat41.txt
+    Deleted:    results/dat42.txt
+    Deleted:    results/dat43.txt
+    Deleted:    results/dat44.txt
+    Deleted:    results/dat45.txt
+    Deleted:    results/dat46.txt
+    Deleted:    results/dat51.txt
+    Deleted:    results/dat52.txt
+    Deleted:    results/dat53.txt
+    Deleted:    results/dat54.txt
+    Deleted:    results/dat55.txt
+    Deleted:    results/dat56.txt
+    Deleted:    results/dat71.txt
+    Deleted:    results/dat72.txt
+    Deleted:    results/dat73.txt
+    Deleted:    results/dat81.txt
+    Deleted:    results/dat82.txt
+    Deleted:    results/dat83.txt
+    Deleted:    results/dat91.txt
+    Deleted:    results/dat92.txt
+    Deleted:    results/fig1.pdf
+    Deleted:    results/fig10.pdf
+    Deleted:    results/fig11.pdf
+    Deleted:    results/fig12.pdf
+    Deleted:    results/fig121.pdf
+    Deleted:    results/fig122.pdf
+    Deleted:    results/fig13.pdf
+    Deleted:    results/fig2.pdf
+    Deleted:    results/fig3.pdf
+    Deleted:    results/fig31.pdf
+    Deleted:    results/fig4.pdf
+    Deleted:    results/fig41.pdf
+    Deleted:    results/fig42.pdf
+    Deleted:    results/fig7.pdf
+    Deleted:    results/fig8.pdf
+    Deleted:    results/fig9.pdf
+    Deleted:    results/plots_for_paper.R
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This .Rmd file is to reproduce the result for a figure in the paper. Results for timings can be slightly different even in the same computing machine. Also, it can be nontrivially different if you use different computing machine. But it should not be very different. Anyway, the prediction error presented below must be the same.</p>
+<div id="load-libraries-packages-and-codes" class="section level3">
+<h3>Load libraries, packages and codes</h3>
+<p>We load libraries, packages and codes for the simulation and for the plotting.</p>
+<pre class="r"><code>library(Matrix); library(Rcpp); library(varbvs); library(ggplot2); library(cowplot);</code></pre>
+<pre><code>
+********************************************************</code></pre>
+<pre><code>Note: As of version 1.0.0, cowplot does not change the</code></pre>
+<pre><code>  default ggplot2 theme anymore. To recover the previous</code></pre>
+<pre><code>  behavior, execute:
+  theme_set(theme_cowplot())</code></pre>
+<pre><code>********************************************************</code></pre>
+<pre class="r"><code>library(glmnet); library(susieR); library(BGLR); library(L0Learn); library(varbvs2)</code></pre>
+<pre><code>Loading required package: foreach</code></pre>
+<pre><code>Loaded glmnet 2.0-18</code></pre>
+</div>
+<div id="simulation-setting" class="section level3">
+<h3>Simulation setting</h3>
+<div id="design-matrix" class="section level4">
+<h4>Design matrix</h4>
+<p>We will use is an independent low dimensional Gaussian ensemble design. For abbreviation, we will call this design matrix “IndepLowdimGauss”. A matrix size <span class="math inline">\(n = 500\)</span> and <span class="math inline">\(p = 2,000\)</span> will be fixed. The design matrix will be generated as follows.</p>
+<pre class="r"><code>standardize = FALSE
+#X                &lt;- matrix(rnorm(500*2000), 500, 2000)</code></pre>
+<p>Note that the design matrix <span class="math inline">\(X\)</span> is not centered, and not standardized.</p>
+</div>
+<div id="lasso-order" class="section level4">
+<h4>Lasso order</h4>
+<pre class="r"><code>lasso_pathorder = function(fit.glmnet) {
+  # perform lasso regression and reorder regressors by &quot;importance&quot;
+  beta_path = coef(fit.glmnet)[-1,]
+  K = dim(beta_path)[2]
+  path_order = c()
+  for (k in 1:K) {
+    crt_path = which(beta_path[,k] != 0)
+    if (length(crt_path) != 0 &amp; length(path_order) == 0) {
+      path_order = c(path_order, crt_path)
+    } else if(length(crt_path) != 0) {
+      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
+    }
+  }
+  path_order = unname(path_order)
+  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
+  return (index_order)
+}
+
+lasso_absorder = function(beta) {
+  return (order(abs(beta), decreasing = TRUE))
+}
+
+univar_absorder = function(X, y) {
+  colnorm = c(colMeans(X^2))
+  return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
+}</code></pre>
+</div>
+</div>
+</div>
+<div id="simulation" class="section level2">
+<h2>Simulation</h2>
+<div id="sparsenormal" class="section level3">
+<h3>SparseNormal</h3>
+<div id="correlation-rho-0.5" class="section level4">
+<h4>Correlation rho = 0.5</h4>
+<pre class="r"><code>a      = 6
+pred11 = matrix(0,20,a)
+iter11 = matrix(0,20,a)
+vobj11 = matrix(0,20,a)
+t11    = matrix(0,20,a)
+null11 = double(20)
+best11 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = rnorm(20) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null11[i]         = norm(y.test, &#39;2&#39;)
+  best11[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred11[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter11[i,j] = fit$iter
+    vobj11[i,j] = fit$varobj[fit$iter]
+    t11[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred11[i,],&quot;\n&quot;)
+  cat(iter11[i,],&quot;\n&quot;)
+  cat(vobj11[i,],&quot;\n&quot;)
+  cat(t11[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.8926087 
+66.58655 66.5865 66.58658 66.5865 66.58652 66.58647 
+111 124 123 111 110 145 
+1357.937 1357.937 1357.937 1357.937 1357.937 1357.937 
+18.796 0.65 0.65 0.571 0.574 0.759 
+pve = 0.8357655 
+54.95932 56.06887 56.06888 54.95933 54.95933 54.95933 
+229 200 198 215 215 215 
+1252.189 1251.147 1251.147 1252.189 1252.189 1252.189 
+17.216 0.975 0.978 1.035 1.027 1.062 
+pve = 0.972253 
+60.13216 57.10515 57.10515 59.13133 59.91833 61.20101 
+114 371 380 150 252 264 
+1290.684 1291.576 1291.576 1290.187 1288.912 1290.12 
+16.216 1.77 1.836 0.73 1.206 1.287 
+pve = 0.8493589 
+79.32788 79.25041 79.25187 78.07092 79.25193 76.20087 
+137 72 106 128 110 183 
+1402.959 1401.912 1401.911 1403.001 1401.911 1403.866 
+16.37 0.381 0.545 0.629 0.539 0.906 
+pve = 0.926899 
+70.03266 69.2475 69.2475 69.24749 69.2475 69.2475 
+298 221 224 199 203 229 
+1370.546 1369.312 1369.312 1369.312 1369.312 1369.312 
+17.196 1.073 1.102 0.959 0.971 1.124 
+pve = 0.8480665 
+62.43078 61.90818 61.90818 61.90818 61.90818 61.90818 
+246 430 435 438 435 447 
+1328.038 1326.865 1326.865 1326.865 1326.865 1326.865 
+16.898 2.051 2.094 2.076 2.057 2.157 
+pve = 0.7792131 
+54.43063 54.43063 54.43063 54.43063 55.68216 54.43063 
+231 235 234 231 227 244 
+1248.66 1248.66 1248.66 1248.66 1250.91 1248.66 
+16.789 1.148 1.149 1.112 1.086 1.201 
+pve = 0.8325796 
+75.08166 74.2754 75.08166 76.47305 74.2754 74.2754 
+399 292 387 356 280 299 
+1421.242 1420.506 1421.242 1421.895 1420.506 1420.506 
+17.669 1.405 1.896 1.707 1.333 1.458 
+pve = 0.807079 
+77.35778 76.18928 75.56214 76.18928 77.35778 77.35779 
+582 203 189 194 588 602 
+1455.025 1455.388 1457.016 1455.388 1455.025 1455.025 
+18.454 0.99 0.936 0.944 2.772 2.912 
+pve = 0.8704272 
+72.25304 72.25304 72.25305 72.25304 72.25304 72.25304 
+199 188 205 195 201 211 
+1377.914 1377.914 1377.914 1377.914 1377.914 1377.914 
+16.771 0.92 1.01 0.945 0.965 1.039 
+pve = 0.9405992 
+64.94383 64.94369 64.94379 64.9435 64.9436 64.94364 
+77 100 110 86 74 111 
+1329.885 1329.885 1329.885 1329.885 1329.885 1329.885 
+15.927 0.51 0.565 0.432 0.375 0.564 
+pve = 0.9327646 
+66.43107 68.9046 68.9046 68.9046 66.75833 62.93509 
+139 141 131 128 822 286 
+1370.547 1369.308 1369.308 1369.308 1369.36 1366.202 
+16.302 0.705 0.661 0.628 3.858 1.391 
+pve = 0.9078058 
+70.5221 70.5221 69.03843 69.67996 69.03843 70.5221 
+150 157 137 101 125 164 
+1357.455 1357.455 1356.807 1358.514 1356.807 1357.455 
+16.527 0.774 0.69 0.502 0.611 0.808 
+pve = 0.9157647 
+76.22794 75.35074 73.57416 74.68996 76.22794 73.57416 
+156 447 231 456 156 223 
+1420.613 1421.044 1421.114 1421.541 1420.613 1421.114 
+16.383 2.116 1.135 2.152 0.754 1.088 
+pve = 0.8189215 
+63.88263 64.92447 63.22122 63.52176 63.52176 63.52176 
+313 251 159 223 240 253 
+1325.874 1326.308 1325.687 1325.273 1325.273 1325.273 
+16.985 1.204 0.793 1.067 1.141 1.237 
+pve = 0.8030146 
+56.87913 56.87913 56.87913 56.87913 56.87913 56.87913 
+326 327 327 329 332 330 
+1265.548 1265.548 1265.548 1265.548 1265.548 1265.548 
+17.182 1.558 1.581 1.565 1.574 1.606 
+pve = 0.9618414 
+48.84827 48.84827 48.84828 48.84828 48.84828 48.84827 
+168 189 203 167 162 182 
+1213.296 1213.296 1213.296 1213.296 1213.296 1213.296 
+16.464 0.921 1.002 0.805 0.785 0.908 
+pve = 0.8323532 
+58.78146 58.78146 58.78146 57.81561 58.78146 57.81561 
+292 298 297 167 294 197 
+1282.759 1282.759 1282.759 1283.532 1282.759 1283.532 
+17.116 1.428 1.442 0.808 1.395 0.985 
+pve = 0.9096174 
+66.85691 66.85687 66.85689 66.85672 66.85683 66.85697 
+97 109 119 104 96 129 
+1369.644 1369.644 1369.644 1369.644 1369.644 1369.644 
+17.509 0.563 0.631 0.548 0.508 0.669 
+pve = 0.951114 
+70.82347 70.84149 70.84149 70.84149 70.84149 70.84149 
+181 192 199 176 170 194 
+1427.049 1425.162 1425.162 1425.162 1425.162 1425.162 
+17.084 0.942 0.991 0.852 0.827 1.012 </code></pre>
+</div>
+<div id="correlation-rho-0.95" class="section level4">
+<h4>Correlation rho = 0.95</h4>
+<pre class="r"><code>pred12 = matrix(0,20,a)
+iter12 = matrix(0,20,a)
+vobj12 = matrix(0,20,a)
+t12    = matrix(0,20,a)
+null12 = double(20)
+best12 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.95) + data$X * sqrt(0.05)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = rnorm(20) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null12[i]         = norm(y.test, &#39;2&#39;)
+  best12[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred12[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter12[i,j] = fit$iter
+    vobj12[i,j] = fit$varobj[fit$iter]
+    t12[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred12[i,],&quot;\n&quot;)
+  cat(iter12[i,],&quot;\n&quot;)
+  cat(vobj12[i,],&quot;\n&quot;)
+  cat(t12[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.7793053 
+79.39753 76.53189 80.05718 72.69192 72.69192 72.65237 
+97 54 55 135 135 68 
+1313.576 1311.946 1320.98 1282.273 1282.273 1288.381 
+16.248 0.3 0.315 0.655 0.65 0.354 
+pve = 0.32123 
+62.49562 62.49562 62.49562 62.49562 62.49562 62.49562 
+11 11 11 11 11 11 
+1201.487 1201.487 1201.487 1201.487 1201.487 1201.487 
+15.467 0.096 0.097 0.096 0.081 0.087 
+pve = 0.9574518 
+70.0313 68.25284 68.85889 68.90427 68.83228 72.92168 
+161 83 92 102 357 112 
+1301.995 1282.164 1279.12 1259.195 1225.437 1268.846 
+16.065 0.428 0.471 0.498 1.666 0.556 
+pve = 0.5502161 
+86.688 84.52501 85.81163 83.94632 83.68507 83.68507 
+124 74 24 52 47 46 
+1368.637 1359.283 1369.746 1348.309 1347.426 1347.426 
+16.024 0.384 0.159 0.272 0.246 0.248 
+pve = 0.9296651 
+79.67897 83.81268 88.22541 75.69702 76.69362 82.3934 
+246 434 86 360 248 80 
+1340.166 1343.599 1382.908 1306.522 1304.96 1320.64 
+16.562 2.032 0.447 1.677 1.163 0.405 
+pve = 0.4967974 
+73.9266 71.77737 73.8438 71.77737 71.77737 72.81881 
+29 29 65 29 29 29 
+1298.245 1285.936 1301.731 1285.936 1285.936 1287.574 
+15.557 0.181 0.35 0.167 0.166 0.17 
+pve = 0.3859804 
+63.65341 62.38476 62.64444 61.01404 61.01404 61.01404 
+77 25 42 31 31 32 
+1238.255 1226.236 1235.573 1219.849 1219.849 1219.849 
+15.749 0.161 0.245 0.174 0.176 0.181 
+pve = 0.4289966 
+81.09071 79.20838 80.22461 77.27472 77.27472 81.09082 
+28 149 194 136 136 44 
+1358.64 1351.153 1351.817 1325.276 1325.276 1358.639 
+15.46 0.737 0.947 0.659 0.654 0.239 
+pve = 0.6982575 
+95.8999 92.69004 96.17363 89.56971 89.56971 89.11813 
+174 132 98 52 52 124 
+1450.919 1435.723 1446.511 1419.256 1419.256 1426.463 
+16.261 0.652 0.502 0.27 0.269 0.612 
+pve = 0.8489311 
+74.26373 71.78561 84.37887 74.26533 74.26533 73.10852 
+94 123 221 198 198 76 
+1321.791 1338.529 1367.082 1321.765 1321.765 1321.253 
+15.815 0.61 1.071 0.937 0.939 0.388 
+pve = 0.9601595 
+91.24265 82.31109 70.40253 81.11857 77.86864 87.45742 
+153 240 185 90 95 211 
+1424.28 1394.822 1322.941 1370.65 1356.886 1415.585 
+16.055 1.148 0.905 0.445 0.467 1.026 
+pve = 0.9252938 
+69.75192 81.27328 82.02995 84.00898 65.99137 69.87918 
+157 104 73 88 94 140 
+1303.664 1342.823 1364.237 1346.319 1279.332 1297.135 
+16.063 0.521 0.384 0.437 0.462 0.69 
+pve = 0.9099725 
+78.03228 76.88707 85.86185 83.79681 75.17946 75.17946 
+78 79 302 71 104 104 
+1343.729 1328.057 1391.134 1360.233 1317.577 1317.577 
+15.724 0.41 1.449 0.358 0.51 0.522 
+pve = 0.9135275 
+87.13723 85.50581 95.37405 80.67154 81.40772 86.22977 
+90 146 145 147 109 124 
+1402.732 1407.447 1459.966 1363.952 1356.375 1405.983 
+15.888 0.716 0.72 0.702 0.53 0.614 
+pve = 0.5151002 
+73.36668 74.55598 73.60289 71.59631 71.59631 74.02096 
+171 18 355 69 75 55 
+1296.744 1298.917 1298.308 1285.905 1285.905 1286.131 
+16.137 0.138 1.687 0.349 0.378 0.289 
+pve = 0.3044317 
+60.65666 59.41293 60.65666 55.99941 59.41062 60.65668 
+13 39 13 102 37 21 
+1242.72 1234.752 1242.72 1213.191 1234.753 1242.72 
+15.393 0.232 0.108 0.503 0.204 0.132 
+pve = 0.9669139 
+53.85322 58.91038 68.9234 68.72201 54.92854 63.00969 
+90 333 180 193 124 164 
+1180.507 1240.85 1274.47 1279.188 1188.475 1285.801 
+15.861 1.569 0.881 0.916 0.603 0.808 
+pve = 0.4216611 
+69.03016 69.48281 69.36832 68.5437 68.5437 68.54371 
+28 26 33 29 29 29 
+1254.356 1253.234 1255.424 1242.176 1242.176 1242.176 
+15.517 0.167 0.201 0.165 0.166 0.168 
+pve = 0.9103109 
+86.86572 78.96592 81.62778 83.70011 77.13873 82.59997 
+146 89 67 69 166 76 
+1405.894 1361.478 1393.745 1386.255 1329.826 1386.755 
+16.24 0.455 0.361 0.349 0.788 0.386 
+pve = 0.9630808 
+81.38133 85.60521 90.5993 96.66793 84.17793 95.0681 
+95 622 125 733 110 130 
+1380.026 1420.016 1477.166 1472.096 1385.466 1467.662 
+15.741 2.891 0.629 3.383 0.536 0.639 </code></pre>
+</div>
+<div id="correlation-rho-0.99" class="section level4">
+<h4>Correlation rho = 0.99</h4>
+<pre class="r"><code>pred13 = matrix(0,20,a)
+iter13 = matrix(0,20,a)
+vobj13 = matrix(0,20,a)
+t13    = matrix(0,20,a)
+null13 = double(20)
+best13 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.99) + data$X * sqrt(0.01)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = rnorm(20) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null13[i]         = norm(y.test, &#39;2&#39;)
+  best13[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred13[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter13[i,j] = fit$iter
+    vobj13[i,j] = fit$varobj[fit$iter]
+    t13[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred13[i,],&quot;\n&quot;)
+  cat(iter13[i,],&quot;\n&quot;)
+  cat(vobj13[i,],&quot;\n&quot;)
+  cat(t13[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.7565335 
+65.69781 65.78324 66.19995 65.62184 66.32397 65.0878 
+64 67 67 66 66 66 
+1236.071 1245.822 1240.152 1236.818 1230.428 1236.305 
+15.743 0.355 0.361 0.332 0.332 0.341 
+pve = 0.08762679 
+54.78571 54.78571 54.78571 54.78571 54.78571 54.78571 
+12 12 12 12 12 12 
+1132.67 1132.67 1132.67 1132.67 1132.67 1132.67 
+15.543 0.11 0.103 0.087 0.086 0.088 
+pve = 0.9524294 
+58.42646 60.81291 58.22234 59.90336 60.58726 59.71303 
+85 89 85 86 101 86 
+1174.658 1186.298 1180.106 1175.954 1156.145 1177.073 
+15.89 0.454 0.442 0.425 0.492 0.434 
+pve = 0.4490638 
+74.36596 73.66246 74.02731 73.67198 73.40055 74.1705 
+39 39 39 39 40 41 
+1288.214 1284.699 1289.322 1282.099 1281.244 1282.515 
+15.547 0.226 0.228 0.21 0.215 0.223 
+pve = 0.9290979 
+72.4503 74.42902 73.96745 69.70117 69.70117 72.72088 
+86 91 91 98 98 116 
+1284.515 1290.842 1269.393 1258.82 1258.82 1259.859 
+15.895 0.462 0.466 0.483 0.481 0.574 
+pve = 0.3598596 
+63.25841 62.72735 63.25357 63.15384 63.05541 63.05541 
+32 34 28 34 37 38 
+1217.249 1214.905 1219.308 1214.455 1213.323 1213.323 
+15.595 0.204 0.181 0.19 0.202 0.211 
+pve = 0.258258 
+54.74517 54.30348 54.33544 54.00686 54.00686 54.69589 
+28 26 29 34 34 34 
+1162.122 1163.514 1161.077 1156.497 1156.497 1158.091 
+15.671 0.167 0.182 0.187 0.188 0.192 
+pve = 0.2777259 
+73.42591 73.38244 73.1369 73.00084 73.00084 73.00084 
+30 30 27 35 35 35 
+1306.306 1305.661 1308.056 1301.106 1301.106 1301.106 
+15.473 0.184 0.171 0.192 0.192 0.196 
+pve = 0.6900449 
+79.07553 77.80133 78.99281 76.99834 76.99834 79.31949 
+106 99 144 221 221 208 
+1356.149 1358.267 1352.325 1343.682 1343.682 1351.802 
+15.921 0.5 0.711 1.041 1.041 1.005 
+pve = 0.847108 
+71.30134 69.49328 71.82058 70.59512 71.41001 69.88948 
+90 81 80 79 77 78 
+1295.328 1288.554 1287.981 1282.11 1271.898 1276.986 
+15.984 0.425 0.42 0.391 0.385 0.396 
+pve = 0.9615543 
+75.36128 71.24918 74.41593 74.64803 71.24918 76.75239 
+100 175 107 101 175 143 
+1317.115 1281.486 1325.264 1305.135 1281.486 1298.289 
+15.897 0.849 0.541 0.493 0.833 0.702 
+pve = 0.9224831 
+68.21668 67.25392 68.27777 68.16828 67.89438 69.39589 
+92 86 94 91 97 85 
+1279.098 1270.827 1277.543 1271.053 1249.064 1270.429 
+15.791 0.439 0.48 0.448 0.476 0.43 
+pve = 0.9111544 
+72.71936 69.77341 71.82367 70.07106 70.95567 70.51155 
+41 223 232 41 157 226 
+1286.309 1266.567 1288.881 1276.024 1259.037 1273.56 
+15.654 1.065 1.118 0.218 0.752 1.086 
+pve = 0.9127048 
+78.40329 79.13056 78.47313 78.25239 76.36641 80.07615 
+554 329 808 311 112 834 
+1348.799 1353.053 1352.907 1335.307 1315.618 1358.164 
+17.976 1.551 3.788 1.457 0.543 3.931 
+pve = 0.427785 
+63.61627 64.06802 63.7203 63.72626 63.71733 63.71733 
+39 39 39 39 41 41 
+1226.804 1227.032 1227.272 1222.35 1220.303 1220.303 
+15.487 0.225 0.228 0.21 0.219 0.223 
+pve = 0.08322831 
+52.62028 52.62028 52.62028 52.62028 52.62028 52.62026 
+20 20 20 20 20 20 
+1168.946 1168.946 1168.946 1168.946 1168.946 1168.946 
+15.506 0.139 0.141 0.126 0.124 0.126 
+pve = 0.9662459 
+53.92481 55.99852 56.5657 55.51294 56.71745 55.52376 
+242 295 51 276 184 53 
+1148.065 1168.171 1161.975 1163.81 1135.385 1167.879 
+16.638 1.399 0.286 1.295 0.877 0.284 
+pve = 0.2687451 
+60.00647 60.17285 60.12485 59.94334 59.94334 60.27077 
+31 31 29 34 34 36 
+1181.128 1180.878 1182.691 1177.587 1177.587 1177.865 
+15.59 0.189 0.181 0.187 0.186 0.199 
+pve = 0.9099652 
+71.04105 67.56139 68.22081 70.45236 69.20707 69.36478 
+106 120 114 101 85 92 
+1291.694 1290.367 1292.356 1280.192 1269.059 1284.9 
+15.825 0.594 0.574 0.494 0.42 0.462 
+pve = 0.9632885 
+78.45628 75.6435 76.72607 81.5044 77.2456 78.18493 
+51 398 314 207 199 388 
+1364.347 1363.302 1366.494 1367.642 1339.798 1370.106 
+15.645 1.863 1.503 0.976 0.943 1.847 </code></pre>
+</div>
+</div>
+<div id="sparseconstant" class="section level3">
+<h3>SparseConstant</h3>
+<div id="correlation-rho-0.5-1" class="section level4">
+<h4>Correlation rho = 0.5</h4>
+<pre class="r"><code>pred21 = matrix(0,20,a)
+iter21 = matrix(0,20,a)
+vobj21 = matrix(0,20,a)
+t21    = matrix(0,20,a)
+null21 = double(20)
+best21 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.5) + data$X * sqrt(0.5)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = sign(rnorm(20)) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null21[i]         = norm(y.test, &#39;2&#39;)
+  best21[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+    path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred21[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter21[i,j] = fit$iter
+    vobj21[i,j] = fit$varobj[fit$iter]
+    t21[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred21[i,],&quot;\n&quot;)
+  cat(iter21[i,],&quot;\n&quot;)
+  cat(vobj21[i,],&quot;\n&quot;)
+  cat(t21[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.869783 
+68.50672 68.50672 68.50671 68.50668 68.50672 68.50662 
+167 195 178 174 197 158 
+1411.36 1411.36 1411.36 1411.36 1411.36 1411.36 
+16.278 0.942 0.87 0.832 0.937 0.778 
+pve = 0.8850508 
+69.6115 69.6115 69.6115 69.61151 70.85041 69.62803 
+647 570 954 975 1121 122 
+1417.908 1417.908 1417.908 1417.908 1418.761 1418.223 
+18.368 2.656 4.654 4.502 5.155 0.602 
+pve = 0.9779745 
+68.05432 68.05433 68.05432 68.05433 68.05432 68.05431 
+416 479 627 568 527 694 
+1388.74 1388.74 1388.74 1388.74 1388.74 1388.74 
+17.283 2.239 2.951 2.636 2.44 3.282 
+pve = 0.9068759 
+70.58254 71.34108 72.42776 71.34108 72.42776 71.59143 
+332 538 596 581 475 661 
+1404.577 1404.939 1404.192 1404.939 1404.192 1404.613 
+17.001 2.536 2.936 2.763 2.258 3.204 
+pve = 0.9116899 
+70.07774 70.08439 70.12045 70.01481 70.07774 70.03067 
+807 103 56 93 1468 103 
+1413.435 1413.438 1413.982 1413.468 1413.435 1413.457 
+19.7 0.529 0.314 0.47 6.896 0.527 
+pve = 0.8204581 
+67.87917 67.87926 67.87917 67.87918 67.87915 67.87916 
+154 152 170 219 171 261 
+1398.868 1398.868 1398.868 1398.868 1398.868 1398.868 
+16.519 0.76 0.855 1.065 0.833 1.289 
+pve = 0.8537134 
+70.36581 70.36581 70.96429 70.36581 70.36581 70.28974 
+328 331 287 212 368 87 
+1419.914 1419.914 1421.047 1419.914 1419.914 1419.933 
+17.35 1.597 1.429 1.034 1.751 0.45 
+pve = 0.8945302 
+68.37248 68.37544 68.36768 68.37247 68.37544 68.37164 
+1582 1174 91 588 1217 123 
+1410.702 1410.547 1410.706 1410.702 1410.547 1410.703 
+23.299 5.551 0.483 2.782 5.725 0.621 
+pve = 0.8157604 
+67.56092 67.5609 67.56091 67.56093 67.56095 67.56091 
+175 199 214 197 180 286 
+1404.138 1404.138 1404.138 1404.138 1404.138 1404.138 
+16.618 0.978 1.066 0.956 0.875 1.409 
+pve = 0.909772 
+71.17713 71.17712 71.17712 71.17712 71.17712 71.17712 
+425 551 601 485 406 757 
+1421.239 1421.239 1421.239 1421.239 1421.239 1421.239 
+17.686 2.622 2.905 2.313 1.933 3.681 
+pve = 0.9190289 
+71.83046 71.83046 71.83046 71.83046 71.83046 71.83046 
+356 432 589 473 445 569 
+1419.956 1419.956 1419.956 1419.956 1419.956 1419.956 
+17.387 2.073 2.846 2.257 2.115 2.761 
+pve = 0.9134942 
+68.07582 68.07565 68.07537 68.03893 68.07541 67.988 
+127 144 117 97 134 98 
+1429.514 1429.514 1429.514 1429.517 1429.514 1429.541 
+16.354 0.721 0.605 0.486 0.657 0.504 
+pve = 0.8923854 
+70.30773 70.30773 70.30773 71.12943 70.30773 70.31584 
+555 443 316 125 503 84 
+1418.823 1418.823 1418.823 1419.241 1418.823 1418.94 
+18.409 2.128 1.549 0.621 2.38 0.438 
+pve = 0.8488146 
+66.25749 66.25749 66.25749 66.25749 66.25749 66.25749 
+311 368 402 532 391 639 
+1403.294 1403.294 1403.294 1403.294 1403.294 1403.294 
+17.32 1.763 1.97 2.535 1.861 3.095 
+pve = 0.9337449 
+70.13938 70.7232 70.1115 70.13916 70.13933 70.14125 
+199 98 78 164 181 103 
+1417.575 1418.06 1418.055 1417.575 1417.575 1417.6 
+16.53 0.5 0.408 0.783 0.86 0.512 
+pve = 0.8367557 
+67.09887 67.09887 67.09887 67.09887 67.09887 67.09887 
+218 237 249 240 214 304 
+1404.912 1404.912 1404.912 1404.912 1404.912 1404.912 
+16.469 1.131 1.194 1.129 1.004 1.452 
+pve = 0.9219523 
+66.97661 66.9795 66.97882 66.97715 66.97661 66.98174 
+230 112 116 147 276 109 
+1412.137 1412.138 1412.139 1412.137 1412.137 1412.143 
+16.571 0.565 0.58 0.702 1.289 0.539 
+pve = 0.8350137 
+70.9991 70.99868 70.9991 69.86851 70.9991 71.21603 
+997 2000 969 75 952 84 
+1418.615 1418.615 1418.615 1419.961 1418.615 1418.835 
+20.15 9.169 4.506 0.378 4.366 0.425 
+pve = 0.8483324 
+67.27166 67.27166 67.27166 67.27167 67.27166 67.27166 
+361 336 373 562 376 637 
+1409.598 1409.598 1409.598 1409.598 1409.598 1409.598 
+17.24 1.579 1.771 2.598 1.743 2.995 
+pve = 0.9109162 
+68.61037 68.61385 68.61163 68.62142 68.60984 68.56692 
+108 95 81 97 131 97 
+1446.449 1446.452 1446.451 1446.451 1446.449 1446.487 
+15.818 0.481 0.419 0.473 0.628 0.483 </code></pre>
+</div>
+<div id="correlation-rho-0.95-1" class="section level4">
+<h4>Correlation rho = 0.95</h4>
+<pre class="r"><code>pred22 = matrix(0,20,a)
+iter22 = matrix(0,20,a)
+vobj22 = matrix(0,20,a)
+t22    = matrix(0,20,a)
+null22 = double(20)
+best22 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.95) + data$X * sqrt(0.05)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = sign(rnorm(20)) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null22[i]         = norm(y.test, &#39;2&#39;)
+  best22[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred22[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter22[i,j] = fit$iter
+    vobj22[i,j] = fit$varobj[fit$iter]
+    t22[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred22[i,],&quot;\n&quot;)
+  cat(iter22[i,],&quot;\n&quot;)
+  cat(vobj22[i,],&quot;\n&quot;)
+  cat(t22[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.3271859 
+82.04623 82.04623 82.04623 82.04623 82.04623 82.04622 
+11 11 11 11 11 12 
+1320.571 1320.571 1320.571 1320.571 1320.571 1320.571 
+15.409 0.097 0.098 0.082 0.081 0.087 
+pve = 0.8713782 
+87.8497 85.45461 88.53408 90.42878 80.89389 86.33506 
+86 175 302 108 65 73 
+1397.853 1388.665 1392.642 1373.078 1360.174 1380.308 
+15.862 0.842 1.447 0.526 0.328 0.371 
+pve = 0.9755077 
+81.0348 87.18171 89.73401 87.19286 80.14688 91.03832 
+150 224 395 85 97 104 
+1349.358 1397.812 1402.113 1358.517 1332.1 1389.232 
+16.126 1.067 1.86 0.417 0.474 0.518 
+pve = 0.8857504 
+86.32729 86.79025 88.89291 83.73644 85.5157 86.21592 
+125 225 263 61 64 144 
+1412.811 1393.946 1394.98 1362.324 1348.461 1389.97 
+15.907 1.077 1.265 0.309 0.323 0.704 
+pve = 0.8942869 
+88.14736 89.72591 92.22705 81.47425 89.47734 85.20339 
+236 234 114 69 269 63 
+1406.34 1392.39 1395.173 1350.82 1361.028 1355.498 
+16.588 1.12 0.577 0.345 1.256 0.325 
+pve = 0.6505463 
+83.70234 79.27883 82.91113 84.00313 80.94277 83.30252 
+97 114 196 80 87 83 
+1377.2 1350.86 1365.325 1349.08 1348.222 1357.334 
+15.932 0.57 0.952 0.396 0.43 0.421 
+pve = 0.6929034 
+80.19429 81.24497 84.51527 84.83743 82.89263 82.89263 
+200 40 58 258 78 77 
+1356.889 1351.751 1370.624 1353.657 1346.556 1346.556 
+16.449 0.231 0.313 1.207 0.389 0.39 
+pve = 0.8877392 
+85.4794 82.12721 83.29136 84.92775 80.94138 84.78284 
+100 186 66 81 64 65 
+1393.257 1375.903 1360.462 1352.346 1339.312 1356.601 
+15.836 0.894 0.35 0.399 0.325 0.336 
+pve = 0.6614829 
+82.28977 78.61299 82.50988 77.7991 77.7991 79.00077 
+69 247 107 262 338 214 
+1388.365 1371.227 1384.571 1367.858 1367.858 1373.725 
+15.747 1.178 0.538 1.228 1.569 1.029 
+pve = 0.9273612 
+94.87781 83.11577 93.83325 90.58752 87.89722 88.06212 
+104 238 218 180 89 184 
+1439.082 1398.343 1420.33 1418.618 1377.116 1407.113 
+15.983 1.134 1.053 0.851 0.436 0.891 
+pve = 0.9449422 
+101.9192 90.06089 93.86453 95.06481 88.14067 96.79131 
+146 224 195 117 261 251 
+1456.59 1414.081 1476.105 1461.203 1408.829 1448.01 
+16.114 1.066 0.95 0.566 1.22 1.203 
+pve = 0.88334 
+85.35224 82.01317 84.86838 85.79327 85.79327 87.31775 
+135 87 197 265 265 680 
+1420.825 1364.394 1397.396 1360.686 1360.686 1401.18 
+15.984 0.443 0.95 1.239 1.24 3.209 
+pve = 0.8849613 
+87.44676 82.37767 89.34211 87.04683 80.91733 83.7581 
+133 112 94 244 73 69 
+1423.304 1362.093 1406.842 1380.44 1355.407 1362.137 
+16.049 0.556 0.481 1.145 0.363 0.356 
+pve = 0.6662293 
+79.1155 77.46919 79.38046 77.33358 77.33358 77.55083 
+276 100 129 70 70 55 
+1359.396 1340.017 1341.971 1337.791 1337.791 1336.977 
+16.663 0.503 0.643 0.352 0.352 0.29 
+pve = 0.9376216 
+90.01289 93.24932 90.88461 90.46765 85.17513 95.42364 
+177 367 264 454 79 116 
+1424.834 1440.513 1409.54 1396.827 1362.082 1396.624 
+16.132 1.72 1.268 2.1 0.391 0.572 
+pve = 0.6926258 
+77.03177 75.29639 77.47396 74.21039 74.21039 75.00046 
+112 49 83 79 79 77 
+1375.123 1365.633 1376.707 1349.819 1349.819 1351.241 
+15.948 0.27 0.428 0.391 0.394 0.391 
+pve = 0.8906883 
+85.10294 83.77472 85.48367 83.7631 81.59312 81.71043 
+74 133 139 66 64 73 
+1379.996 1369.659 1371.261 1349.204 1339.187 1336.441 
+15.806 0.655 0.685 0.335 0.325 0.373 
+pve = 0.6822019 
+86.01866 85.23281 86.71461 84.97885 84.97885 87.9986 
+251 71 347 63 63 62 
+1373.804 1358.016 1375.236 1350.009 1350.009 1355.914 
+16.663 0.37 1.64 0.317 0.318 0.324 
+pve = 0.6870274 
+83.4117 78.91125 81.06284 80.80765 80.80765 80.89307 
+368 765 90 97 97 84 
+1367.537 1363.254 1370.385 1347.238 1347.238 1351.094 
+17.069 3.529 0.459 0.471 0.472 0.422 
+pve = 0.9299063 
+87.70153 85.7024 87.23975 93.12301 82.23496 93.6043 
+159 471 117 110 135 1415 
+1464.201 1419.403 1442.231 1436.033 1394.711 1421.585 
+16.196 2.198 0.587 0.531 0.647 6.625 </code></pre>
+</div>
+<div id="correlation-rho-0.99-1" class="section level4">
+<h4>Correlation rho = 0.99</h4>
+<pre class="r"><code>pred23 = matrix(0,20,a)
+iter23 = matrix(0,20,a)
+vobj23 = matrix(0,20,a)
+t23    = matrix(0,20,a)
+null23 = double(20)
+best23 = double(20)
+
+for (i in 1:20) {
+  set.seed(2010 + i)
+  data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+  data$X           &lt;- rnorm(dim(data$X)[1]) * sqrt(0.99) + data$X * sqrt(0.01)
+  n.total           = dim(data$X)[1];
+  p                 = dim(data$X)[2]
+  train.index       = sample(n.total, floor(n.total * 0.5))
+  test.index        = (1:n.total)[-train.index]
+  X                 = data$X[train.index,]
+  X.test            = data$X[test.index,]
+  beta              = double(p)
+  beta[1:20]        = sign(rnorm(20)) * 2
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  sigma             = sqrt(sum(beta^2) / 9)
+  y                &lt;- X %*% beta + sigma * rnorm(500)
+  err.test          = sigma * rnorm(500)
+  y.test           &lt;- X.test %*% beta + err.test
+  null23[i]         = norm(y.test, &#39;2&#39;)
+  best23[i]         = norm(err.test, &#39;2&#39;)
+  
+  cat(&quot;pve =&quot;, mean((X %*% beta)^2) / mean(y^2),&quot;\n&quot;)
+  
+  t.lasso           = system.time(
+  fit.lasso        &lt;- cv.glmnet(x = X, y = y, standardize = standardize))
+  fit.lasso$beta    = coef(fit.lasso)[-1]
+  
+  path.order        = lasso_pathorder(fit.lasso$glmnet.fit)
+  
+  abs.order         = lasso_absorder(fit.lasso$beta)
+  
+  univar.order      = univar_absorder(X, y)
+  
+  t.mrash1          = system.time(
+  fit.mrash1       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;random&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash2          = system.time(
+  fit.mrash2       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;increasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash3          = system.time(
+  fit.mrash3       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;decreasing&quot;,
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash4          = system.time(
+  fit.mrash4       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(path.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash5          = system.time(
+  fit.mrash5       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(abs.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.mrash6          = system.time(
+  fit.mrash6       &lt;- mr_ash_order(X = X, y = y, sa2 = sa2,
+                                   stepsize = 1, max.iter = 2000,
+                                   standardize = standardize, order = &quot;manual&quot;,
+                                   o = rep(univar.order, 2000),
+                                   tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  for (j in 1:a) {
+    fit = get(paste(&quot;fit.mrash&quot;,j,sep = &quot;&quot;))
+    pred23[i,j] = norm(y.test - predict(fit, X.test), &#39;2&#39;)
+    iter23[i,j] = fit$iter
+    vobj23[i,j] = fit$varobj[fit$iter]
+    t23[i,j]    = get(paste(&quot;t.mrash&quot;,j,sep = &quot;&quot;))[3]
+  }
+  
+  cat(pred23[i,],&quot;\n&quot;)
+  cat(iter23[i,],&quot;\n&quot;)
+  cat(vobj23[i,],&quot;\n&quot;)
+  cat(t23[i,],&quot;\n&quot;)
+}</code></pre>
+<pre><code>pve = 0.08335634 
+70.24062 70.24062 70.24062 70.24062 70.24062 70.24062 
+11 11 11 11 11 11 
+1260.071 1260.071 1260.071 1260.071 1260.071 1260.071 
+15.513 0.098 0.098 0.084 0.083 0.084 
+pve = 0.8694027 
+73.23804 75.51168 73.41359 76.33842 75.16264 73.44551 
+119 99 90 110 129 145 
+1293.756 1303.041 1304.697 1291.693 1286.72 1292.21 
+15.928 0.498 0.461 0.532 0.617 0.708 
+pve = 0.9732342 
+72.05618 76.46089 71.56264 74.05209 74.99562 73.5248 
+107 177 125 126 93 104 
+1275.414 1295.815 1283.535 1277.361 1255.918 1279.625 
+15.888 0.854 0.622 0.605 0.457 0.516 
+pve = 0.8826996 
+73.40757 75.62003 74.64568 74.18187 74.47402 72.90864 
+96 88 103 101 189 122 
+1294.756 1301.847 1292.059 1288.145 1273.084 1291.786 
+15.907 0.446 0.519 0.49 0.894 0.6 
+pve = 0.8912925 
+74.13213 76.23622 75.60751 76.18094 75.49484 74.19717 
+93 83 129 86 173 207 
+1296.545 1303.571 1283.244 1295.626 1274.987 1275.57 
+15.828 0.426 0.641 0.426 0.819 0.998 
+pve = 0.6211798 
+70.6131 71.42301 70.34637 70.74822 70.74822 70.25303 
+78 71 85 102 102 114 
+1281.277 1281.108 1275.209 1266.252 1266.252 1269.652 
+15.724 0.372 0.438 0.495 0.496 0.567 
+pve = 0.6573637 
+70.64164 72.62493 72.18405 72.18956 72.18956 71.90324 
+54 53 52 55 55 59 
+1288.113 1290.563 1292.527 1283.504 1283.504 1283.399 
+15.668 0.289 0.286 0.281 0.282 0.309 
+pve = 0.887078 
+71.86435 72.93335 73.5557 71.87009 71.61059 71.54717 
+102 79 104 122 158 139 
+1293.716 1306.719 1289.859 1277.219 1273.203 1281.441 
+15.908 0.407 0.53 0.589 0.751 0.69 
+pve = 0.6403247 
+68.84008 68.19944 68.77598 67.32731 68.43965 68.9455 
+52 53 55 57 63 58 
+1293.172 1298.869 1289.81 1284.18 1280.936 1289.873 
+15.711 0.293 0.299 0.291 0.321 0.303 
+pve = 0.9290756 
+77.51327 73.2383 77.84255 75.95876 77.13037 74.19523 
+183 82 366 386 166 197 
+1339.398 1322.048 1327.856 1322.281 1300.975 1311.061 
+16.173 0.42 1.729 1.786 0.787 0.951 
+pve = 0.9474539 
+81.05077 77.75329 80.33144 80.90284 77.75329 82.01191 
+231 235 180 326 235 273 
+1353.716 1326.008 1360.641 1343.645 1326.008 1338.342 
+16.449 1.122 0.874 1.524 1.098 1.303 
+pve = 0.8776283 
+72.63988 71.19812 72.49958 72.5463 71.47028 73.20785 
+77 87 77 77 105 90 
+1315.833 1305.366 1313.888 1309.919 1291.784 1308.997 
+15.847 0.448 0.401 0.381 0.508 0.451 
+pve = 0.8864541 
+76.3069 73.93186 75.55206 73.61314 74.66036 73.93379 
+79 88 76 78 114 95 
+1308.335 1294.838 1309.767 1297.94 1282.005 1296.486 
+15.744 0.448 0.395 0.387 0.548 0.477 
+pve = 0.6288228 
+68.08691 68.67198 68.06378 67.92859 67.66792 68.39239 
+87 71 85 99 128 124 
+1270.725 1276.201 1272.534 1262.473 1259.499 1264.495 
+15.766 0.372 0.438 0.482 0.614 0.611 
+pve = 0.9363581 
+76.40667 79.68136 76.17218 74.85109 75.02209 76.72042 
+224 765 274 348 108 163 
+1307.662 1321.91 1310.771 1307.505 1283.523 1307.338 
+16.551 3.526 1.304 1.616 0.523 0.793 
+pve = 0.6604717 
+65.80064 66.29183 65.8322 65.13806 64.88204 65.74094 
+53 52 52 56 58 57 
+1290.847 1293.35 1292.539 1283.222 1281.899 1287.362 
+15.645 0.284 0.291 0.288 0.297 0.297 
+pve = 0.8839891 
+69.48681 71.20184 71.70554 70.54296 70.17997 70.74489 
+164 102 119 163 184 122 
+1277.739 1290.937 1286.605 1271.953 1270.362 1290.992 
+16.101 0.514 0.596 0.773 0.872 0.599 
+pve = 0.6528634 
+73.66389 73.66429 73.99742 74.8983 74.8983 74.61892 
+68 77 64 80 80 79 
+1287.324 1282.975 1290.851 1278.817 1278.817 1285.188 
+15.759 0.397 0.341 0.397 0.396 0.398 
+pve = 0.6556682 
+69.55226 68.07931 68.39835 69.05971 69.05971 70.16087 
+59 55 58 65 65 69 
+1286.288 1286.449 1286.089 1276.44 1276.44 1277.36 
+15.719 0.301 0.315 0.328 0.331 0.354 
+pve = 0.9316428 
+74.73161 73.02715 73.25836 77.09987 74.45665 74.30868 
+191 146 147 130 45 181 
+1343.769 1347.258 1346.854 1345.32 1323.351 1347.883 
+16.36 0.709 0.728 0.623 0.237 0.876 </code></pre>
+</div>
+</div>
+</div>
+<div id="summary-of-the-results" class="section level2">
+<h2>Summary of the results</h2>
+<pre class="r"><code>dat = list()
+numlist = c(11,12,13,21,22,23)
+for (i in 1:length(numlist)) {
+  num      = numlist[i]
+  dat[[i]] = data.frame(pred = colMeans(get(paste(&quot;pred&quot;,num,sep =&quot;&quot;))),
+                        vobj = colMeans(get(paste(&quot;vobj&quot;,num,sep =&quot;&quot;))),
+                        iter = colMeans(get(paste(&quot;iter&quot;,num,sep =&quot;&quot;))),
+                        time = colMeans(get(paste(&quot;t&quot;,num,sep =&quot;&quot;))))
+  saveRDS(dat, &quot;paperresults/experiment3.rds&quot;)
+}</code></pre>
+<pre class="r"><code>colMeans(pred11)</code></pre>
+<pre><code>[1] 65.83946 65.70839 65.46925 65.61154 65.70687 65.25792</code></pre>
+<pre class="r"><code>colMeans(vobj11)</code></pre>
+<pre><code>[1] 1343.393 1343.081 1343.139 1343.253 1342.991 1342.975</code></pre>
+<pre class="r"><code>colMeans(iter11)</code></pre>
+<pre><code>[1] 222.25 227.35 219.70 207.70 254.60 245.40</code></pre>
+<pre class="r"><code>colMeans(t11)</code></pre>
+<pre><code>[1] 16.99270  1.10420  1.08435  1.00335  1.21790  1.20865</code></pre>
+<pre class="r"><code>colMeans(pred12)</code></pre>
+<pre><code>[1] 75.92218 75.31873 78.05804 75.62308 72.72714 75.69717</code></pre>
+<pre class="r"><code>colMeans(vobj12)</code></pre>
+<pre><code>[1] 1321.418 1320.923 1336.853 1314.492 1295.522 1319.404</code></pre>
+<pre class="r"><code>colMeans(iter12)</code></pre>
+<pre><code>[1] 103.10 140.50 118.30 134.85 109.35  83.80</code></pre>
+<pre class="r"><code>colMeans(t12)</code></pre>
+<pre><code>[1] 15.89135  0.69140  0.59645  0.65060  0.53270  0.42570</code></pre>
+<pre class="r"><code>colMeans(pred13)</code></pre>
+<pre><code>[1] 67.09492 66.53264 66.98553 66.81692 66.45934 67.14284</code></pre>
+<pre class="r"><code>colMeans(vobj13)</code></pre>
+<pre><code>[1] 1253.279 1252.093 1254.236 1247.613 1238.105 1249.009</code></pre>
+<pre class="r"><code>colMeans(iter13)</code></pre>
+<pre><code>[1]  92.40 114.20 120.50  96.25  91.25 131.60</code></pre>
+<pre class="r"><code>colMeans(t13)</code></pre>
+<pre><code>[1] 15.86355  0.57000  0.60525  0.47210  0.44935  0.64750</code></pre>
+<pre class="r"><code>colMeans(pred21)</code></pre>
+<pre><code>[1] 68.98779 69.05568 69.11063 69.00585 69.14210 69.03789</code></pre>
+<pre class="r"><code>colMeans(vobj21)</code></pre>
+<pre><code>[1] 1413.588 1413.623 1413.677 1413.696 1413.603 1413.629</code></pre>
+<pre class="r"><code>colMeans(iter21)</code></pre>
+<pre><code>[1] 424.75 427.85 353.20 330.20 486.65 298.80</code></pre>
+<pre class="r"><code>colMeans(t21)</code></pre>
+<pre><code>[1] 17.61750  2.02600  1.71555  1.56575  2.28530  1.45235</code></pre>
+<pre class="r"><code>colMeans(pred22)</code></pre>
+<pre><code>[1] 85.75311 83.48331 86.24051 84.98113 82.48691 85.44642</code></pre>
+<pre class="r"><code>colMeans(vobj22)</code></pre>
+<pre><code>[1] 1394.367 1376.927 1388.723 1368.806 1355.358 1371.906</code></pre>
+<pre class="r"><code>colMeans(iter22)</code></pre>
+<pre><code>[1] 150.45 203.65 169.25 138.00 117.40 195.05</code></pre>
+<pre class="r"><code>colMeans(t22)</code></pre>
+<pre><code>[1] 16.12315  0.97600  0.82720  0.66035  0.56665  0.94185</code></pre>
+<pre class="r"><code>colMeans(pred23)</code></pre>
+<pre><code>[1] 72.51367 72.79947 72.69928 72.78344 72.52684 72.55008</code></pre>
+<pre class="r"><code>colMeans(vobj23)</code></pre>
+<pre><code>[1] 1297.923 1299.447 1298.470 1291.178 1281.467 1291.957</code></pre>
+<pre class="r"><code>colMeans(iter23)</code></pre>
+<pre><code>[1] 106.40 123.70 112.60 128.90 113.05 120.45</code></pre>
+<pre class="r"><code>colMeans(t23)</code></pre>
+<pre><code>[1] 15.90945  0.61120  0.56530  0.61890  0.54655  0.59425</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.5.3 (2019-03-11)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS Mojave 10.14
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.5/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] varbvs2_0.1-1 L0Learn_1.2.0 BGLR_1.0.8    susieR_0.8.0  glmnet_2.0-18
+ [6] foreach_1.4.4 cowplot_1.0.0 ggplot2_3.2.1 varbvs_2.5-16 Rcpp_1.0.2   
+[11] Matrix_1.2-17
+
+loaded via a namespace (and not attached):
+ [1] plyr_1.8.4          compiler_3.5.3      pillar_1.3.1       
+ [4] RColorBrewer_1.1-2  git2r_0.26.1        workflowr_1.4.0    
+ [7] iterators_1.0.10    tools_3.5.3         digest_0.6.18      
+[10] evaluate_0.14       tibble_2.1.1        gtable_0.3.0       
+[13] lattice_0.20-38     pkgconfig_2.0.2     rlang_0.3.4        
+[16] yaml_2.2.0          xfun_0.9            withr_2.1.2        
+[19] stringr_1.4.0       dplyr_0.8.1         knitr_1.24         
+[22] fs_1.3.1            tidyselect_0.2.5    rprojroot_1.3-2    
+[25] grid_3.5.3          glue_1.3.1          R6_2.4.0           
+[28] rmarkdown_1.15      latticeExtra_0.6-28 reshape2_1.4.3     
+[31] purrr_0.3.2         magrittr_1.5        codetools_0.2-16   
+[34] backports_1.1.4     scales_1.0.0        htmltools_0.3.6    
+[37] assertthat_0.2.1    colorspace_1.4-1    nor1mix_1.3-0      
+[40] stringi_1.4.3       lazyeval_0.2.2      munsell_0.5.0      
+[43] truncnorm_1.0-8     crayon_1.3.4       </code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
