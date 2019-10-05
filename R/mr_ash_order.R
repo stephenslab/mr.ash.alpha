@@ -40,7 +40,7 @@
 #' @export
 #' 
 mr_ash_order             = function(X, y, Z = NULL, sa2 = NULL,
-                                    order.method = "1:p", o = NULL, K = 10,
+                                    order.method = "increasing", o = NULL, K = 10,
                                     max.iter = 1000, min.iter = 1,
                                     stepsize = 1, 
                                     tol = list(), outputlevel = 1,
@@ -109,25 +109,29 @@ mr_ash_order             = function(X, y, Z = NULL, sa2 = NULL,
     pi           = colMeans(Phi);
   }
   
-  if (order.method == "normal") {
-    o = rep(0:(p-1), max.iter)
+  if (order.method == "increasing") {
+    o = rep(1:p, max.iter)
+  } else if (order.method == "decreasing") {
+    o = rep(p:1, max.iter)
   } else if (order.method == "random") {
-    o = sample(0:(p-1), p)
+    o = sample(1:p, p)
     for (i in 2:max.iter) {
-      o = c(o, sample(0:(p-1), p))
+      o = c(o, sample(1:p, p))
     }
   } else if (order.method == "alternating") {
-    o = rep(c(0:(p-1),(p-1):0),(max.iter+1)/2)
-  } else if (order.method == "given") {
+    o = rep(c(1:p,p:1),(max.iter+1)/2)
+  } else if (order.method == "manual") {
   }
+  update.order = o - 1;
 
   # run algorithm
-  out            = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, o,
+  out            = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
                                max.iter, min.iter, tol$convtol, tol$epstol,
                                stepsize, update.sigma, verbose)
   
   out$intercept  = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
   out$data       = data
+  out$order      = update.order
   
   class(out)      <- c("mr_ash","list")
   return (out)

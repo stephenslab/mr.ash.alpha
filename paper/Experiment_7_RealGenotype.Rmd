@@ -1127,14 +1127,14 @@ fig3 = plot_grid(title,fig3_temp, ncol = 1, rel_heights = c(0.06,0.95))
 ggsave("../paperfigures/fig73.pdf", fig1, width = 18, height = 6)
 ```
 
-```{r}
+```{r fig1display}
 fig1
 ```
 
-```{r}
+```{r fig2display}
 fig2
 ```
 
-```{r}
+```{r fig3display}
 fig3
 ```

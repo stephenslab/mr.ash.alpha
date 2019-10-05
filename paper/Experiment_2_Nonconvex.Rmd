@@ -585,7 +585,7 @@ for (i in 1:20) {
 
 #### Signal Shape = Bimodal
 
-```{r threepointmass5, eval = FALSE}
+```{r bimodal5, eval = FALSE}
 pred31 = matrix(0,20,5)
 t31    = matrix(0,20,5)
 null31 = double(20)
@@ -602,7 +602,7 @@ for (i in 1:20) {
   X                 = data$X[train.index,]
   X.test            = data$X[test.index,]
   beta              = double(p)
-  beta[1:5]         = rnorm(5,1,1)
+  beta[sample(p,5)] = rnorm(5,1,1)
   sigma             = sqrt(sum(beta^2) / 99)
   y                <- X %*% beta + sigma * rnorm(500)
   err.test          = sigma * rnorm(500)
@@ -658,12 +658,12 @@ for (i in 1:20) {
 }
 ```
 
-```{r threepointmass10, eval = FALSE}
-pred22 = matrix(0,20,5)
-t22    = matrix(0,20,5)
-null22 = double(20)
-best22 = double(20)
-sigma22 = double(20)
+```{r bimodal10, eval = FALSE}
+pred32 = matrix(0,20,5)
+t32    = matrix(0,20,5)
+null32 = double(20)
+best32 = double(20)
+sigma32 = double(20)
 
 for (i in 1:20) {
   set.seed(2010 + i)
@@ -675,17 +675,15 @@ for (i in 1:20) {
   X                 = data$X[train.index,]
   X.test            = data$X[test.index,]
   beta              = double(p)
-  ind               = sample(p,10)
-  beta[ind[1:8]]   = 1
-  beta[ind[9:10]]  = 10
+  beta[sample(p,10)] = rnorm(10,1,1)
   sigma             = sqrt(sum(beta^2) / 99)
   y                <- X %*% beta + sigma * rnorm(500)
   err.test          = sigma * rnorm(500)
   y.test           <- X.test %*% beta + err.test
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
-  null22[i]         = norm(y.test, '2')
-  best22[i]         = norm(err.test, '2')
-  sigma22[i]        = sigma
+  null32[i]         = norm(y.test, '2')
+  best32[i]         = norm(err.test, '2')
+  sigma32[i]        = sigma
   
   cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
   
@@ -708,28 +706,28 @@ for (i in 1:20) {
                              standardize = standardize,
                              tol = list(epstol = 1e-12, convtol = 1e-8)))
   
-  pred22[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+  pred32[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
                   "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
                   "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
                   "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
                   "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
-  t22[i,] =     c("mrash"      = t.mrash[3],
+  t32[i,] =     c("mrash"      = t.mrash[3],
                   "scad"       = t.scad[3],
                   "mcp"        = t.mcp[3],
                   "lasso"      = t.lasso[3],
                   "t.L0Learn"  = t.L0Learn[3])
   
-  cat(pred22[i,],"\n")
-  cat(t22[i,],"\n")
+  cat(pred32[i,],"\n")
+  cat(t32[i,],"\n")
 }
 ```
 
-```{r threepointmass20, eval = FALSE}
-pred23 = matrix(0,20,5)
-t23    = matrix(0,20,5)
-null23 = double(20)
-best23 = double(20)
-sigma23 = double(20)
+```{r bimodal20, eval = FALSE}
+pred33 = matrix(0,20,5)
+t33    = matrix(0,20,5)
+null33 = double(20)
+best33 = double(20)
+sigma33 = double(20)
 
 for (i in 1:20) {
   set.seed(2010 + i)
@@ -741,17 +739,15 @@ for (i in 1:20) {
   X                 = data$X[train.index,]
   X.test            = data$X[test.index,]
   beta              = double(p)
-  ind               = sample(p,20)
-  beta[ind[1:16]]   = 1
-  beta[ind[17:20]]  = 10
+  beta[sample(p,20)] = rnorm(20,1,1)
   sigma             = sqrt(sum(beta^2) / 99)
   y                <- X %*% beta + sigma * rnorm(500)
   err.test          = sigma * rnorm(500)
   y.test           <- X.test %*% beta + err.test
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
-  null23[i]         = norm(y.test, '2')
-  best23[i]         = norm(err.test, '2')
-  sigma23[i]        = sigma
+  null33[i]         = norm(y.test, '2')
+  best33[i]         = norm(err.test, '2')
+  sigma33[i]        = sigma
   
   cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
   
@@ -774,28 +770,28 @@ for (i in 1:20) {
                              standardize = standardize,
                              tol = list(epstol = 1e-12, convtol = 1e-8)))
   
-  pred23[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+  pred33[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
                   "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
                   "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
                   "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
                   "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
-  t23[i,] =     c("mrash"      = t.mrash[3],
+  t33[i,] =     c("mrash"      = t.mrash[3],
                   "scad"       = t.scad[3],
                   "mcp"        = t.mcp[3],
                   "lasso"      = t.lasso[3],
                   "t.L0Learn"  = t.L0Learn[3])
   
-  cat(pred23[i,],"\n")
-  cat(t23[i,],"\n")
+  cat(pred33[i,],"\n")
+  cat(t33[i,],"\n")
 }
 ```
 
-```{r threepointmass40, eval = FALSE}
-pred24 = matrix(0,20,5)
-t24    = matrix(0,20,5)
-null24 = double(20)
-best24 = double(20)
-sigma24 = double(20)
+```{r bimodal40, eval = FALSE}
+pred34 = matrix(0,20,5)
+t34    = matrix(0,20,5)
+null34 = double(20)
+best34 = double(20)
+sigma34 = double(20)
 
 for (i in 1:20) {
   set.seed(2010 + i)
@@ -807,17 +803,15 @@ for (i in 1:20) {
   X                 = data$X[train.index,]
   X.test            = data$X[test.index,]
   beta              = double(p)
-  ind               = sample(p,40)
-  beta[ind[1:32]]   = 1
-  beta[ind[33:40]]  = 10
+  beta[sample(p,40)] = rnorm(40,1,1)
   sigma             = sqrt(sum(beta^2) / 99)
   y                <- X %*% beta + sigma * rnorm(500)
   err.test          = sigma * rnorm(500)
   y.test           <- X.test %*% beta + err.test
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
-  null24[i]         = norm(y.test, '2')
-  best24[i]         = norm(err.test, '2')
-  sigma24[i]        = sigma
+  null34[i]         = norm(y.test, '2')
+  best34[i]         = norm(err.test, '2')
+  sigma34[i]        = sigma
   
   cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
   
@@ -840,24 +834,24 @@ for (i in 1:20) {
                              standardize = standardize,
                              tol = list(epstol = 1e-12, convtol = 1e-8)))
   
-  pred24[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+  pred34[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
                   "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
                   "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
                   "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
                   "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
-  t24[i,] =     c("mrash"      = t.mrash[3],
+  t34[i,] =     c("mrash"      = t.mrash[3],
                   "scad"       = t.scad[3],
                   "mcp"        = t.mcp[3],
                   "lasso"      = t.lasso[3],
                   "t.L0Learn"  = t.L0Learn[3])
   
-  cat(pred24[i,],"\n")
-  cat(t24[i,],"\n")
+  cat(pred34[i,],"\n")
+  cat(t34[i,],"\n")
 }
 ```
 
 ```{r datasummary, eval = FALSE}
-numlist = c(11,12,13,14,21,22,23,24)
+numlist = c(11,12,13,14,21,22,23,24,31,32,33,34)
 dat = list()
 for (i in 1:length(numlist)) {
   num = numlist[i]
@@ -877,12 +871,12 @@ saveRDS(dat, "../paperresults/experiment2.rds")
 
 ```{r readresults, message = FALSE}
 dat = readRDS("../paperresults/experiment2.rds")
-for (i in 1:8) {
+for (i in 1:12) {
   dat[[i]]$nrmse = dat[[i]]$rmse / dat[[i]]$sigma
 }
 ```
 
-```{r}
+```{r fig1}
 sdat = list()
 for (i in 1:4) {
   sdat[[i]] = data.frame(mean = colMeans(matrix(dat[[i]]$nrmse, nrow = 20)),
@@ -903,7 +897,7 @@ ggplot(df) + geom_line(aes(x = nz, y = mean, color = fit)) + theme_cowplot(font_
        title = "SparseNormal")
 ```
 
-```{r}
+```{r fig2}
 sdat = list()
 for (i in 1:4) {
   sdat[[i]] = data.frame(mean = colMeans(matrix(dat[[i+4]]$nrmse, nrow = 20)),
@@ -922,4 +916,25 @@ ggplot(df) + geom_line(aes(x = nz, y = mean, color = fit)) + theme_cowplot(font_
   labs(x = "number of nonzero coefficients (s)",
        y = "prediction error (rmse/sigma)",
        title = "ThreePointMass")
+```
+
+```{r fig3}
+sdat = list()
+for (i in 1:4) {
+  sdat[[i]] = data.frame(mean = colMeans(matrix(dat[[i+8]]$nrmse, nrow = 20)),
+                         fit = c("MR.ASH","SCAD","MCP","L0Learn","LASSO"),
+                         nz = 5 * 2^(i-1),
+                         ymin = apply(matrix(dat[[i+8]]$nrmse, nrow = 20), 2, function(x) quantile(x, probs = 0.25)),
+                         ymax = apply(matrix(dat[[i+8]]$nrmse, nrow = 20), 2, function(x) quantile(x, probs = 0.75)))
+}
+
+df = rbind(sdat[[1]], sdat[[2]], sdat[[3]], sdat[[4]])
+ggplot(df) + geom_line(aes(x = nz, y = mean, color = fit)) + theme_cowplot(font_size = 14) +
+  #geom_errorbar(aes(x = nz, ymin = ymin, ymax = ymax, color = fit), width = .02, position=position_dodge(.05)) + 
+  scale_x_continuous(trans = "log10", breaks = c(5,10,20,40)) +
+  theme(axis.line = element_blank(),
+        plot.title = element_text(hjust = 0.5)) +
+  labs(x = "number of nonzero coefficients (s)",
+       y = "prediction error (rmse/sigma)",
+       title = "Bimodal")
 ```
