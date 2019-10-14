@@ -52,7 +52,7 @@ y.test            = y.total[test.index]
 sa2               = (sqrt(1.5)^(0:19) - 1)^2
 
 t.scad            = system.time(
-fit.scad         <- cv.ncvreg(X, y, penalty = "SCAD", nfolds = 5))
+)
 
 t.mcp             = system.time(
 fit.mcp          <- cv.ncvreg(X, y, penalty = "MCP", nfolds = 5))

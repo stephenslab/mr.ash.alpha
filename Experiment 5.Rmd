@@ -1,0 +1,284 @@
+---
+title: "Experiment_2_Nonconvex"
+author: "Youngseok Kim"
+date: "10/1/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This .Rmd file is to reproduce the result for a figure in the paper. Results for timings can be slightly different even in the same computing machine. Also, it can be nontrivially different if you use different computing machine. But it should not be very different. Anyway, the prediction error presented below must be the same.
+
+### Load libraries, packages and codes
+
+We load libraries, packages and codes for the simulation and for the plotting.
+
+```{r library}
+library(Matrix); library(Rcpp); library(ggplot2); library(cowplot); library(glmnet); library(varbvs2); library(ncvreg);
+library(L0Learn)
+```
+
+### Empirical Bayes Ridge Regression
+
+```{r temp}
+standardize = FALSE
+```
+
+## Simulation
+
+### Signal Shape 1 : SparseNormal
+
+#### Signal = SparseNormal
+
+```{r sparsenormal, eval = FALSE}
+pred   = matrix(0,20,5)
+t      = matrix(0,20,5)
+sig    = double(20)
+tdat1  = list()
+
+s_range = c(1,5,20,100,500,2000)
+
+for (iter in 1:6){
+ 
+  s                   = s_range[iter]
+  for (i in 1:20) {
+    set.seed(2010 + i)
+    data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+    n.total           = dim(data$X)[1];
+    p                 = dim(data$X)[2]
+    n                 = 500
+    train.index       = sample(n.total, floor(n.total * 0.5))
+    test.index        = (1:n.total)[-train.index]
+    X                 = data$X[train.index,]
+    X.test            = data$X[test.index,]
+    beta              = double(p)
+    beta[sample(p,s)] = rnorm(s) * 2
+    sigma             = sqrt(var(c(X %*% beta)) / 99)
+    y                <- X %*% beta + sigma * rnorm(n)
+    err.test          = sigma * rnorm(500)
+    y.test           <- X.test %*% beta + err.test
+    sa2               = (2^((0:39) / 10 / sqrt(s)) - 1)^2
+    sig[i]            = sigma
+   
+    cat(max(sa2), max((beta / sigma)^2), "\n")
+    cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+   
+    gamma            = seq(2.1, 5.3, length.out = 11)
+    for (j in 1:11) {
+      t.scad2          = system.time(
+      fit.scad2       <- cv.ncvreg(X, y, penalty = "SCAD", gamma = gamma[j], nfolds = 5))
+      if (j == 1) {
+        t.scad        <- t.scad2
+        fit.scad      <- fit.scad2
+      } else {
+        t.scad        <- t.scad + t.scad2
+        if (min(fit.scad$cve) > min(fit.scad2$cve)) {
+          fit.scad      <- fit.scad2
+        }
+      }
+    }
+     
+    gamma            = seq(1.1, 4.9, length.out = 11)
+    for (j in 1:11) {
+      t.mcp2           = system.time(
+      fit.mcp2        <- cv.ncvreg(X, y, penalty = "MCP", gamma = gamma[j], nfolds = 5))
+      if (j == 1) {
+        t.mcp         <- t.scad2
+        fit.mcp       <- fit.scad2
+      } else {
+        t.mcp         <- t.mcp + t.mcp2
+        if (min(fit.mcp$cve) > min(fit.mcp2$cve)) {
+          fit.mcp       <- fit.mcp2
+        }
+      }
+    }
+     
+    t.lasso           = system.time(
+    fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = standardize))
+     
+    t.L0Learn         = system.time(
+    fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds = 10))
+    lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+   
+    t.mrash           = system.time(
+    fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                               stepsize = 1, max.iter = 2000,
+                               standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+   
+    pred[i,]  =   c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                    "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                    "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                    "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                    "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+    t[i,]     =   c("mrash"      = t.mrash[3],
+                    "scad"       = t.scad[3],
+                    "mcp"        = t.mcp[3],
+                    "lasso"      = t.lasso[3],
+                    "t.L0Learn"  = t.L0Learn[3])
+   
+    cat(pred[i,] / sqrt(n) / sigma,"\n")
+    cat(fit.mrash$pi,"\n")
+    cat(iter,"--------------------------------\n")
+  }
+ 
+  tdat1[[iter]] = data.frame(pred = c(pred), nrmse = c(pred / sqrt(n) / sig),
+                             s = s, sigma = sig, t = c(t), fit = c("mrash","scad","mcp","lasso","L0Learn"))
+}
+```
+
+```{r}
+sdat1 = data.frame()
+
+for (i in 1:6) {
+  sdat1 = rbind(sdat1, data.frame(pred = colMeans(matrix(tdat1[[i]]$nrmse,20,5)),
+                                  time = colMeans(matrix(tdat1[[i]]$t,20,5)),
+                                  s = s_range[i],
+                                  fit = c("mrash","scad","mcp","lasso","L0Learn")))
+}
+
+ggplot(sdat1) + geom_bar(aes(x = factor(s), weight = pred, fill = fit),
+                        position = "dodge2") +
+  theme_cowplot(font_size = 14) +
+  theme(axis.line    = element_blank()) +
+  labs(title = "Signal: Sparse", y = "predictior error (rmse / sigma)", x = "number of coefficients (p)")
+```
+
+```{r}
+ggplot(sdat1) + geom_line(aes(x = s, y = pred, color = fit, linetype = fit)) +
+  geom_point(aes(x = s, y = pred, color = fit, shape = fit), size = 2.5) +
+  theme_cowplot(font_size = 14) +
+  scale_x_continuous(trans = "log10", breaks = s_range) +
+  scale_y_continuous(trans = "log10") +
+  labs(title = "Signal: Sparse", y = "predictior error (rmse / sigma)", x = "number of coefficients (p)") +
+  theme(axis.line    = element_blank())
+```
+
+```{r sparsenormal, eval = FALSE}
+pred   = matrix(0,20,5)
+t      = matrix(0,20,5)
+sig    = double(20)
+tdat2  = list()
+
+s_range = c(1,5,20,100,500,2000)
+
+for (iter in 1:6){
+ 
+  s                   = s_range[iter]
+  for (i in 1:20) {
+    set.seed(2010 + i)
+    data              = list(X = matrix(rnorm(1000*2000), 1000, 2000))
+    n.total           = dim(data$X)[1];
+    p                 = dim(data$X)[2]
+    n                 = 500
+    train.index       = sample(n.total, floor(n.total * 0.5))
+    test.index        = (1:n.total)[-train.index]
+    X                 = data$X[train.index,]
+    X.test            = data$X[test.index,]
+    beta              = double(p)
+    beta[sample(p,s)] = runif(s)
+    #beta[sample(p,s)] = rexp(s) * sign(rnorm(s))
+    sigma             = sqrt(var(c(X %*% beta)) / 99)
+    y                <- X %*% beta + sigma * rnorm(n)
+    err.test          = sigma * rnorm(500)
+    y.test           <- X.test %*% beta + err.test
+    sa2               = c(0,10^(seq(-16,2)/2))
+    sig[i]            = sigma
+   
+    cat(max(sa2), max((beta / sigma)^2), "\n")
+    cat("pve =", mean((X %*% beta)^2) / mean(y^2),"\n")
+   
+    gamma            = seq(2.1, 5.3, length.out = 11)
+    for (j in 1:11) {
+      t.scad2          = system.time(
+      fit.scad2       <- cv.ncvreg(X, y, penalty = "SCAD", gamma = gamma[j], nfolds = 5))
+      if (j == 1) {
+        t.scad        <- t.scad2
+        fit.scad      <- fit.scad2
+      } else {
+        t.scad        <- t.scad + t.scad2
+        if (min(fit.scad$cve) > min(fit.scad2$cve)) {
+          fit.scad      <- fit.scad2
+        }
+      }
+    }
+     
+    gamma            = seq(1.1, 4.9, length.out = 11)
+    for (j in 1:11) {
+      t.mcp2           = system.time(
+      fit.mcp2        <- cv.ncvreg(X, y, penalty = "MCP", gamma = gamma[j], nfolds = 5))
+      if (j == 1) {
+        t.mcp         <- t.scad2
+        fit.mcp       <- fit.scad2
+      } else {
+        t.mcp         <- t.mcp + t.mcp2
+        if (min(fit.mcp$cve) > min(fit.mcp2$cve)) {
+          fit.mcp       <- fit.mcp2
+        }
+      }
+    }
+     
+    t.lasso           = system.time(
+    fit.lasso        <- cv.glmnet(x = X, y = y, alpha = 1, standardize = standardize))
+     
+    t.L0Learn         = system.time(
+    fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds = 10))
+    lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+   
+    t.mrash           = system.time(
+    fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                               stepsize = 1, max.iter = 2000,
+                               standardize = standardize,
+                               tol = list(epstol = 1e-12, convtol = 1e-8)))
+   
+    pred[i,]  =   c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                    "scad"       = norm(y.test - predict(fit.scad, X.test), '2'),
+                    "mcp"        = norm(y.test - predict(fit.mcp, X.test), '2'),
+                    "lasso"      = norm(y.test - predict(fit.lasso, X.test), '2'),
+                    "L0Learn"    = norm(y.test - predict(fit.L0Learn, X.test, lambda = lambda.min)@x, '2'))
+    t[i,]     =   c("mrash"      = t.mrash[3],
+                    "scad"       = t.scad[3],
+                    "mcp"        = t.mcp[3],
+                    "lasso"      = t.lasso[3],
+                    "t.L0Learn"  = t.L0Learn[3])
+   
+    cat(pred[i,] / sqrt(n) / sigma,"\n")
+    cat(fit.mrash$pi,"\n")
+    cat(iter,"--------------------------------\n")
+  }
+ 
+  tdat2[[iter]] = data.frame(pred = c(pred), nrmse = c(pred / sqrt(n) / sig),
+                             s = s, sigma = sig, t = c(t), fit = c("mrash","scad","mcp","lasso","L0Learn"))
+}
+```
+
+```{r}
+sdat2 = data.frame()
+
+for (i in 1:6) {
+  sdat2 = rbind(sdat2, data.frame(pred = colMeans(matrix(tdat2[[i]]$nrmse,20,5)),
+                                  time = colMeans(matrix(tdat2[[i]]$t,20,5)),
+                                  s = s_range[i],
+                                  fit = c("mrash","scad","mcp","lasso","L0Learn")))
+}
+
+ggplot(sdat2) + geom_bar(aes(x = factor(s), weight = pred, fill = fit),
+                        position = "dodge2") +
+  theme_cowplot(font_size = 14) +
+  theme(axis.line    = element_blank()) +
+  labs(title = "Signal: Sparse", y = "predictior error (rmse / sigma)", x = "number of coefficients (p)")
+```
+
+```{r}
+ggplot(sdat2) + geom_line(aes(x = s, y = pred, color = fit, linetype = fit)) +
+  geom_point(aes(x = s, y = pred, color = fit, shape = fit), size = 2.5) +
+  theme_cowplot(font_size = 14) +
+  scale_x_continuous(trans = "log10", breaks = s_range) +
+  scale_y_continuous(trans = "log10") +
+  labs(title = "Signal: Sparse", y = "predictior error (rmse / sigma)", x = "number of coefficients (p)") +
+  theme(axis.line    = element_blank())
+```

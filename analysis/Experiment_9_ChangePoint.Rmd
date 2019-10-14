@@ -48,9 +48,9 @@ Note that the design matrix $X$ is not centered, and not standardized.
 
 #### Proportion of variance explained
 
-```{r}
-pred1 = matrix(0,20,14)
-t1    = matrix(0,20,14)
+```{r shape1sigma0.5, warning = FALSE}
+pred1 = matrix(0,20,13)
+t1    = matrix(0,20,13)
 for (i in 1:20) {
   seed              = 2010 + i
   
@@ -61,27 +61,29 @@ for (i in 1:20) {
   beta              = ytrue[2:100] - ytrue[1:99]
   
   set.seed(seed)
-  sigma             = 1
+  sigma             = 0.5
   y                 = ytrue + sigma * rnorm(100)
   y.test            = ytrue
   X.test            = X
   sa2               = (sqrt(1.5)^(0:19) - 1)^2
   
-  cat("pve =", var(ytrue) / sigma^2, "\n")
+  cat("pve =", var(ytrue) / (var(ytrue) + sigma^2), "\n")
 
   capture.output(
   t.binseg         <- system.time(
-  fit.binseg       <- segment_cp(y))
+  fit.binseg       <- segment_cp(y)))
   t.bcp            <- system.time(
   fit.bcp          <- bcp_cp(y))
+  capture.output(
   t.trendfilter    <- system.time(
-  fit.trendfilter  <- tf_cp(y))
+  fit.trendfilter  <- tf_cp(y)))
   t.susie          <- system.time(
   fit.susie        <- susie(X = X, Y = y, standardize = standardize))
   fit.susie$beta   <- coef(fit.susie)[-1]
   t.lasso          <- system.time(
   fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
-  fit.lasso$beta   <- coef(fit.lasso)[-1])
+  
+  fit.lasso$beta   <- coef(fit.lasso)[-1]
   
   t.mrash           = system.time(
   fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
@@ -91,7 +93,7 @@ for (i in 1:20) {
   
   beta.init         = fit.trendfilter$yhat[-1] - fit.trendfilter$yhat[-n]
   
-  t.mrash           = system.time(
+  t.mrash2          = system.time(
   fit.mrash2       <- mr_ash(X = X, y = y, sa2 = sa2,
                              stepsize = 1, max.iter = 2000,
                              standardize = standardize, beta.init = beta.init,
@@ -120,7 +122,6 @@ for (i in 1:20) {
                  "mrash2"     = norm(y.test - predict(fit.mrash2, X.test), '2'),
                  "susie"      = norm(y.test - predict.susie(fit.susie, X.test), '2'),
                  "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
-                 "trendfilter" = norm(y.test - fit.trendfilter$yhat, '2'),
                  "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
                  "lasso"      = norm(y.test - predict.glmnet(fit.lasso$glmnet.fit, newx = X.test,
                                                                  s = fit.lasso$lambda.1se), '2'),
@@ -137,7 +138,6 @@ for (i in 1:20) {
                  "mrash2"     = t.mrash2[3],
                  "susie"      = t.susie[3],
                  "varbvs"     = t.varbvs[3],
-                 "trendfilter" = t.trendfilter[3],
                  "L0Learn"    = t.L0Learn[3],
                  "lasso"      = t.lasso[3],
                  "ridge"      = t.ridge[3],
@@ -149,5 +149,109 @@ for (i in 1:20) {
                  "flasso"     = t.trendfilter[3])
   cat(pred1[i,],"\n")
   cat(t1[i,],"\n")
+}
+```
+
+```{r shape1sigma1, warning = FALSE}
+pred2 = matrix(0,20,13)
+t2    = matrix(0,20,13)
+for (i in 1:20) {
+  seed              = 2010 + i
+  
+  ytrue             = double(n)
+  ytrue[1:10]       = 1
+  ytrue[31:40]      = 4
+  ytrue[61:80]      = 2
+  beta              = ytrue[2:100] - ytrue[1:99]
+  
+  set.seed(seed)
+  sigma             = 1
+  y                 = ytrue + sigma * rnorm(100)
+  y.test            = ytrue
+  X.test            = X
+  sa2               = (sqrt(1.5)^(0:19) - 1)^2
+  
+  cat("pve =", var(ytrue) / (var(ytrue) + sigma^2), "\n")
+
+  capture.output(
+  t.binseg         <- system.time(
+  fit.binseg       <- segment_cp(y)))
+  t.bcp            <- system.time(
+  fit.bcp          <- bcp_cp(y))
+  capture.output(
+  t.trendfilter    <- system.time(
+  fit.trendfilter  <- tf_cp(y)))
+  t.susie          <- system.time(
+  fit.susie        <- susie(X = X, Y = y, standardize = standardize))
+  fit.susie$beta   <- coef(fit.susie)[-1]
+  t.lasso          <- system.time(
+  fit.lasso        <- cv.glmnet(x = X, y = y, standardize = standardize))
+  
+  fit.lasso$beta   <- coef(fit.lasso)[-1]
+  
+  t.mrash           = system.time(
+  fit.mrash        <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  beta.init         = fit.trendfilter$yhat[-1] - fit.trendfilter$yhat[-n]
+  
+  t.mrash2          = system.time(
+  fit.mrash2       <- mr_ash(X = X, y = y, sa2 = sa2,
+                             stepsize = 1, max.iter = 2000,
+                             standardize = standardize, beta.init = beta.init,
+                             tol = list(epstol = 1e-12, convtol = 1e-8)))
+  
+  t.ridge           = system.time(
+  fit.ridge        <- cv.glmnet(x = X, y = y, alpha = 0, standardize = standardize))
+  fit.ridge$beta    = coef(fit.ridge)[-1]
+  t.enet = system.time(
+  fit.enet         <- cv.glmnet(x = X, y = y, alpha = 0.9, standardize = standardize))
+  fit.enet$beta     = coef(fit.enet)[-1]
+  t.blasso          = system.time(
+  fit.blasso       <- BGLR(y, ETA = list(list(X = X, model="BL", standardize = standardize)), verbose = FALSE))
+  fit.blasso$beta   = fit.blasso$ETA[[1]]$b
+  t.bayesB          = system.time(
+  fit.bayesB       <- BGLR(y, ETA = list(list(X = X, model="BayesB", standardize = standardize)), verbose = FALSE))
+  fit.bayesB$beta   = fit.blasso$ETA[[1]]$b * fit.bayesB$ETA[[1]]$d
+  t.varbvs          = system.time(
+  fit.varbvs       <- varbvs(X, Z = NULL, y, verbose = FALSE));
+  fit.varbvs$beta   = rowSums(fit.varbvs$alpha * fit.varbvs$mu)
+  t.L0Learn         = system.time(
+  fit.L0Learn      <- L0Learn.cvfit(X, y, nFolds=10))
+  lambda.min        = fit.L0Learn$fit$lambda[[1]][which.min(fit.L0Learn$cvMeans[[1]])]
+  
+  pred2[i,] =  c("mrash"      = norm(y.test - predict(fit.mrash, X.test), '2'),
+                 "mrash2"     = norm(y.test - predict(fit.mrash2, X.test), '2'),
+                 "susie"      = norm(y.test - predict.susie(fit.susie, X.test), '2'),
+                 "varbvs"     = norm(y.test - predict(fit.varbvs, X.test), '2'),
+                 "L0Learn"    = norm(y.test - predict(fit.L0Learn, newx = X.test, lambda = lambda.min)@x, '2'),
+                 "lasso"      = norm(y.test - predict.glmnet(fit.lasso$glmnet.fit, newx = X.test,
+                                                                 s = fit.lasso$lambda.1se), '2'),
+                 "ridge"      = norm(y.test - predict.glmnet(fit.ridge$glmnet.fit, newx = X.test,
+                                                                 s = fit.ridge$lambda.1se), '2'),
+                 "enet"       = norm(y.test - predict.glmnet(fit.enet$glmnet.fit, newx = X.test,
+                                                                 s = fit.enet$lambda.1se), '2'),
+                 "blasso"     = norm(y.test - fit.blasso$yHat, '2'),
+                 "bayesB"     = norm(y.test - fit.bayesB$yHat, '2'),
+                 "bcp"        = norm(y.test - fit.bcp$yhat, '2'),
+                 "binseg"     = norm(y.test - fit.binseg$yhat, '2'),
+                 "flasso"     = norm(y.test - fit.trendfilter$yhat, '2'))
+  t2[i,] =     c("mrash"      = t.mrash[3],
+                 "mrash2"     = t.mrash2[3],
+                 "susie"      = t.susie[3],
+                 "varbvs"     = t.varbvs[3],
+                 "L0Learn"    = t.L0Learn[3],
+                 "lasso"      = t.lasso[3],
+                 "ridge"      = t.ridge[3],
+                 "enet"       = t.enet[3],
+                 "blasso"     = t.blasso[3],
+                 "bayesB"     = t.bayesB[3],
+                 "bcp"        = t.bcp[3],
+                 "binseg"     = t.binseg[3],
+                 "flasso"     = t.trendfilter[3])
+  cat(pred2[i,],"\n")
+  cat(t2[i,],"\n")
 }
 ```

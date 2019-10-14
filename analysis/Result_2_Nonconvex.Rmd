@@ -231,3 +231,10 @@ t3 = ggplot(sdat) + geom_line(aes(x = s, y = time, color = fit, linetype = fit))
   scale_color_manual(values = gg_color_hue(5)[1:5])
 t3
 ```
+
+
+## Conclusion
+
+```{r}
+sessionInfo()
+```

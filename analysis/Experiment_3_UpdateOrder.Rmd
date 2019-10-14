@@ -99,7 +99,7 @@ for (iter in 1:5) {
     X.test            = data$X[test.index,]
     beta              = double(p)
     beta[1:20]        = 2
-    sa2               = (sqrt(1.5)^(0:19) - 1)^2
+    sa2               = (sqrt(1.1)^(0:19) - 1)^2
     sigma             = sqrt(var(c(X %*% beta)) / 9)
     y                <- X %*% beta + sigma * rnorm(500)
     err.test          = sigma * rnorm(500)
@@ -177,7 +177,7 @@ for (iter in 1:5) {
       t11[i,j]        = get(paste("t.mrash",j,sep = ""))[3]
     }
     
-    cat(pred11[i,],"\n")
+    cat(vobj11[i,],"\n")
   }
   
   cat("-----------------",iter,"-th iteration done")
@@ -203,7 +203,7 @@ for (iter in 1:5) {
 
 ```{r sparsenormalcorr0.5, eval = FALSE}
 a      = 7
-b      = 100
+b      = 10
 dat2   = list()
 tdat2  = list()
 pred11 = matrix(0,b,a)
@@ -229,7 +229,7 @@ for (iter in 1:5) {
     X                 = data$X[train.index,]
     X.test            = data$X[test.index,]
     beta              = double(p)
-    beta[1:20]        = rnorm(20) * 2
+    beta[1:5]         = rnorm(5) * 2
     sa2               = (sqrt(1.1)^(0:19) - 1)^2
     sigma             = sqrt(var(c(X %*% beta)) / 9)
     y                <- X %*% beta + sigma * rnorm(500)
@@ -309,7 +309,7 @@ for (iter in 1:5) {
     }
     
     cat(pred11[i,],"\n")
-    cat(fit.mrash2$pi, "\n")
+    
   }
   
   cat("-----------------",iter,"-th iteration done")

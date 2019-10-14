@@ -941,6 +941,6 @@ p3 = ggplot(df) + geom_line(aes(x = nz, y = mean, color = fit)) + theme_cowplot(
   labs(x = "number of nonzero coefficients (s)",
        y = "prediction error (rmse/sigma)",
        title = "Bimodal")
-ggsave("paperfigures/fig23.pdf", p3, width = 18, height = 6)
+#ggsave("paperfigures/fig23.pdf", p3, width = 18, height = 6)
 p3
 ```

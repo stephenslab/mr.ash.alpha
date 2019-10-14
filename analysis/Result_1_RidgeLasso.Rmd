@@ -179,3 +179,9 @@ t2 = ggplot(sdat) + geom_line(aes(x = p, y = time, color = fit, linetype = fit))
   scale_color_manual(values = gg_color_hue(6)[1:4])
 t2
 ```
+
+## Conclusion
+
+```{r}
+sessionInfo()
+```
