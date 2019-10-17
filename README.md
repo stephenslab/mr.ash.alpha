@@ -1,7 +1,6 @@
-# varbvs2
+# mr.ash
 
-The varbvs2 R package implements extensions to the [varbvs][varbvs]
-methods and algorithms.
+The mr.ash R package implements mr.ash
 
 ## Quick Start
 
@@ -13,8 +12,8 @@ the varbvs2 repository, run this code to install the package:
 ```R
 install.packages("devtools")
 library(devtools)
-list.files(pattern = "varbvs2") # Should output "varbvs".
-install_local("varbvs2")
+list.files(pattern = "mr.ash") # Should output "varbvs".
+install_local("mr.ash")
 ```
 
 This command should automatically install all required packages if
@@ -32,11 +31,10 @@ file [LICENSE](LICENSE) for the full text of the license.
 
 ## Credits
 
-The varbvs2 R package was developed by [Youngseok Kim][youngseok] and
+The mr.ash R package was developed by [Youngseok Kim][youngseok] and
 [Peter Carbonetto][peter] at the [University of Chicago][uchicago],
 with help from [Matthew Stephens][matthew].
 
-[varbvs]: https://github.com/pcarbo/varbvs
 [mit-license]: https://opensource.org/licenses/mit-license.html
 [devtools]: https://github.com/r-lib/devtools
 [uchicago]: https://www.uchicago.edu

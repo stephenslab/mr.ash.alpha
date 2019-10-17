@@ -1,8 +1,8 @@
 Encoding: UTF-8
 Type: Package
-Package: varbvs2
+Package: mrash
 Version: 0.1-1
-Date: 2019-05-06
+Date: 2019-10-06
 Title: Large-Scale Bayesian Variable Selection and Extensions Using
     Variational Methods
 Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
@@ -10,18 +10,13 @@ Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
              person("Peter","Carbonetto",role="aut",
                     email="peter.carbonetto@gmail.com"),
              person("Matthew","Stephens",role="aut"))
-URL: https://github.com/stephenslab/varbvs2
-BugReports: https://github.com/stephenslab/varbvs2/issues
-Description: Fast algorithms for fitting Bayesian variable selection
-    regression models, and extensions to these models. The algorithms
-    are based on the variational approximations described in "Scalable
-    variational inference for Bayesian variable selection in
-    regression, and its accuracy in genetic association studies"
-    (P. Carbonetto & M. Stephens, 2012, <DOI:10.1214/12-BA703>).
+URL: https://github.com/stephenslab/mr.ash
+BugReports: https://github.com/stephenslab/mr.ash/issues
+Description: Variational Empirical Bayesian Approach to Linear Regression
 License: MIT + file LICENSE
 LazyData: true
 NeedsCompilation: yes
-Depends: R (>= 3.1.0)
+Depends: R (>= 3.1.0), Matrix
 Imports:
     Rcpp (>= 1.0.1)
 LinkingTo:

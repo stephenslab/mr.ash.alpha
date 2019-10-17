@@ -18,7 +18,7 @@ void updatebetaj_acc            (const arma::vec& xj, double wj,
                              const arma::vec& s2inv,
                              arma::vec& a1, arma::vec& a2,
                              int j, int p,
-                             double stepsize, double epstol);
+                             double epstol);
 double mixobjective         (const arma::mat& L, const arma::vec& w,
                              const arma::vec& x, const arma::vec& e, 
                              arma::vec& u);
@@ -53,7 +53,7 @@ List caisa_acc        (const arma::mat& X,
                        arma::vec& r, double sigma2,
                        int maxiter, int miniter,
                        double convtol, double epstol,
-                       double stepsize, bool updatesigma,
+                       bool updatesigma,
                        bool verbose) {
   
   // ---------------------------------------------------------------------
@@ -95,7 +95,7 @@ List caisa_acc        (const arma::mat& X,
     for (j = 0; j < p; j++){
       
       updatebetaj_acc(X.col(j), w(j), beta(j), r, L, pi, piold, sigma2, sa2,
-		      S2inv.col(j), a1, a2, j, p, stepsize, epstol);
+		      S2inv.col(j), a1, a2, j, p, epstol);
       
     }
 
@@ -156,7 +156,7 @@ void updatebetaj_acc   (const arma::vec& xj, double wj,
                         const arma::vec& s2inv,
                         arma::vec& a1, arma::vec& a2,
                         int j, int p,
-                        double stepsize, double epstol) {
+                        double epstol) {
   
   // calculate b
   double bjwj           = dot(r, xj) + betaj * wj;

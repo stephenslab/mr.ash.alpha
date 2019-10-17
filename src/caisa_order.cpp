@@ -18,7 +18,7 @@ void updatebetaj_order        (const arma::vec& xj, double wj,
                              const arma::vec& s2inv,
                              arma::vec& a1, arma::vec& a2,
                              int j, int p,
-                             double stepsize, double epstol);
+                             double epstol);
 
 // FUNCTION DEFINITIONS
 // --------------------
@@ -30,7 +30,7 @@ List caisa_order      (const arma::mat& X,
                        const arma::uvec& o,
                        int maxiter, int miniter,
                        double convtol, double epstol,
-                       double stepsize, bool updatesigma,
+                       bool updatesigma,
                        bool verbose) {
   
   // ---------------------------------------------------------------------
@@ -73,7 +73,7 @@ List caisa_order      (const arma::mat& X,
       
       updatebetaj_order(X.col(o(i)), w(o(i)), beta(o(i)), r, piold, pi,
 			sigma2, sa2, S2inv.col(o(i)), a1, a2, o(i), p,
-			stepsize, epstol);
+			epstol);
       i++;
     }
     
@@ -127,7 +127,7 @@ void updatebetaj_order (const arma::vec& xj, double wj,
                         const arma::vec& s2inv,
                         arma::vec& a1, arma::vec& a2,
                         int j, int p,
-                        double stepsize, double epstol) {
+                        double epstol) {
   
   // calculate b
   double bjwj           = dot(r, xj) + betaj * wj;

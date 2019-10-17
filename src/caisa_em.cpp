@@ -18,7 +18,7 @@ void updatebetaj            (const arma::vec& xj, double wj,
                              const arma::vec& s2inv,
                              arma::vec& a1, arma::vec& a2,
                              int j, int p,
-                             double stepsize, double epstol);
+                             double epstol);
 
 // FUNCTION DEFINITIONS
 // --------------------
@@ -29,7 +29,7 @@ List caisa_em         (const arma::mat& X,
                        arma::vec& r, double sigma2,
                        int maxiter, int miniter,
                        double convtol, double epstol,
-                       double stepsize, bool updatesigma,
+                       bool updatesigma,
                        bool verbose) {
   
   // ---------------------------------------------------------------------
@@ -70,7 +70,7 @@ List caisa_em         (const arma::mat& X,
     for (j = 0; j < p; j++){
       
       updatebetaj(X.col(j), w(j), beta(j), r, piold, pi, sigma2, sa2,
-                  S2inv.col(j), a1, a2, j, p, stepsize, epstol);
+                  S2inv.col(j), a1, a2, j, p, epstol);
       
     }
     
@@ -124,7 +124,7 @@ void updatebetaj       (const arma::vec& xj, double wj,
                         const arma::vec& s2inv,
                         arma::vec& a1, arma::vec& a2,
                         int j, int p,
-                        double stepsize, double epstol) {
+                        double epstol) {
   
   // calculate b
   double bjwj           = dot(r, xj) + betaj * wj;
@@ -150,7 +150,7 @@ void updatebetaj       (const arma::vec& xj, double wj,
   r                    += -xj * betaj;
   
   // precalculate for M-step
-  a1(j)                 = dot(phij % square(muj), 1 / s2inv);
+  a1(j)                 = bjwj * betaj;
   a2(j)                 = dot(phij, log(phij + epstol));
   phij(0)               = 0;
   a2(j)                += -dot(phij, log(s2inv)) / 2;

@@ -1,7 +1,7 @@
-name: "varbvs2"
+name: "mr.ash"
 output_dir: ../docs
 navbar:
-  title: "varbvs2"
+  title: "mr.ash"
   left:
   - text: Home
     href: index.html
