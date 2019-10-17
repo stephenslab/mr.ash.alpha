@@ -38,6 +38,6 @@ y = X \%*\% beta + rnorm(n)
 fit.mr.ash_em  = mr.ash(X,y, method = "caisa")
 
 Xnew        = matrix(rnorm(n*p),n,p)
-ynew        = predict(fit.mr.ash, Xnew)
+ynew        = predict(fit.mr.ash_em, Xnew)
 
 }

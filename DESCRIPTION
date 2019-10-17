@@ -1,8 +1,8 @@
 Encoding: UTF-8
 Type: Package
 Package: mr.ash
-Version: 0.1-1
-Date: 2019-10-06
+Version: 0.1-2
+Date: 2019-10-17
 Title: Large-Scale Bayesian Variable Selection and Extensions Using
     Variational Methods
 Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
@@ -12,7 +12,8 @@ Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
              person("Matthew","Stephens",role="aut"))
 URL: https://github.com/stephenslab/mr.ash
 BugReports: https://github.com/stephenslab/mr.ash/issues
-Description: Variational Empirical Bayesian Approach to Linear Regression
+Description: This is a package implementing a variational empirical
+    Bayesian method for linear regression.
 License: MIT + file LICENSE
 LazyData: true
 NeedsCompilation: yes

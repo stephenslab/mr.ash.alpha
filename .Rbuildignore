@@ -1,4 +1,5 @@
 ^mr\.ash\.Rproj$
+^_workflowr\.yml$
 ^analysis$
 ^docs$
 
