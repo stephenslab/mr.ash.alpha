@@ -2,11 +2,7 @@
 % Please edit documentation in R/misc.R
 \name{computelfsrmix}
 \alias{computelfsrmix}
-\title{----------------------------------------------------------------------
-Compute the local false sign rate (LFSR) for each variable. This
-assumes that the first mixture component is a "spike" (that is, a
-normal density with a variance approaching zero).
-----------------------------------------------------------------------}
+\title{compute local false discovery rate}
 \usage{
 computelfsrmix(alpha, mu, s)
 }

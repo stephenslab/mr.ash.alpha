@@ -14,6 +14,7 @@
 #' 
 #' @importFrom utils modifyList
 #' @importFrom Rcpp evalCpp
+#' @importFrom stats var
 #' 
 #' @examples
 #' 
@@ -23,12 +24,16 @@
 #' X           = matrix(rnorm(n*p),n,p)
 #' beta        = double(p)
 #' beta[1:10]  = 1:10
-#' y = X %*% beta + rnorm(n)
+#' y           = X %*% beta + rnorm(n)
 #' 
-#' fit.mr.ash_em  = mr.ash(X,y, method = "caisa")
+#' fit.mr.ash  = mr.ash(X,y, method = "caisa")
 #' 
 #' Xnew        = matrix(rnorm(n*p),n,p)
-#' ynew        = predict(fit.mr.ash_em, Xnew)
+#' ynew        = Xnew %*% beta + rnorm(n)
+#' ypred       = predict(fit.mr.ash, Xnew)
+
+#' rmse        = norm(ynew - ypred, '2') / sqrt(n)
+#' betahat     = fit.mr.ash$beta
 #' 
 #' @export
 #' 
@@ -126,6 +131,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                  max.iter, min.iter, tol$convtol, tol$epstol,
                                  update.sigma, verbose)
     } else if (method == "update_g") {
+      stepsize      = 1
       out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
                                 max.iter, min.iter, tol$convtol, tol$epstol,
                                 stepsize, update.sigma, verbose)
@@ -148,6 +154,6 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
     
   }
   
-  class(out)      <- c("mr_ash","list")
+  class(out)      <- c("mr.ash","list")
   return (out)
 }

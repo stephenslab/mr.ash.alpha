@@ -17,9 +17,11 @@ Description: This is a package implementing a variational empirical
 License: MIT + file LICENSE
 LazyData: true
 NeedsCompilation: yes
-Depends: R (>= 3.1.0), Matrix
+Depends: R (>= 3.1.0)
 Imports:
-    Rcpp (>= 1.0.1)
+    Rcpp (>= 1.0.1),
+    Matrix,
+    stats
 LinkingTo:
     Rcpp,
     RcppArmadillo
