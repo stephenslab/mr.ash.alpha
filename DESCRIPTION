@@ -22,5 +22,4 @@ Imports:
 LinkingTo:
     Rcpp,
     RcppArmadillo
-VignetteBuilder: knitr
 RoxygenNote: 6.1.1
