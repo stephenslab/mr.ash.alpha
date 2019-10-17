@@ -2,18 +2,22 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 caisa_acc <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
-    .Call('_mrash_caisa_acc', PACKAGE = 'mrash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
+    .Call('_mr_ash_caisa_acc', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }
 
 caisa_em <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
-    .Call('_mrash_caisa_em', PACKAGE = 'mrash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
+    .Call('_mr_ash_caisa_em', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
+}
+
+caisa_fix_pi <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
+    .Call('_mr_ash_caisa_fix_pi', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }
 
 caisa_g <- function(X, w, sa2, phi, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, stepsize, updatesigma, verbose) {
-    .Call('_mrash_caisa_g', PACKAGE = 'mrash', X, w, sa2, phi, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, stepsize, updatesigma, verbose)
+    .Call('_mr_ash_caisa_g', PACKAGE = 'mr.ash', X, w, sa2, phi, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, stepsize, updatesigma, verbose)
 }
 
 caisa_order <- function(X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
-    .Call('_mrash_caisa_order', PACKAGE = 'mrash', X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose)
+    .Call('_mr_ash_caisa_order', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }
 

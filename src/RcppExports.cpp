@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // caisa_acc
 List caisa_acc(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, int maxiter, int miniter, double convtol, double epstol, bool updatesigma, bool verbose);
-RcppExport SEXP _mrash_caisa_acc(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _mr_ash_caisa_acc(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -31,7 +31,7 @@ END_RCPP
 }
 // caisa_em
 List caisa_em(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, int maxiter, int miniter, double convtol, double epstol, bool updatesigma, bool verbose);
-RcppExport SEXP _mrash_caisa_em(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _mr_ash_caisa_em(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -52,9 +52,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// caisa_fix_pi
+List caisa_fix_pi(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, int maxiter, int miniter, double convtol, double epstol, bool updatesigma, bool verbose);
+RcppExport SEXP _mr_ash_caisa_fix_pi(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sa2(sa2SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type pi(piSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< int >::type miniter(miniterSEXP);
+    Rcpp::traits::input_parameter< double >::type convtol(convtolSEXP);
+    Rcpp::traits::input_parameter< double >::type epstol(epstolSEXP);
+    Rcpp::traits::input_parameter< bool >::type updatesigma(updatesigmaSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(caisa_fix_pi(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // caisa_g
 List caisa_g(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::mat& phi, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, int maxiter, int miniter, double convtol, double epstol, double stepsize, bool updatesigma, bool verbose);
-RcppExport SEXP _mrash_caisa_g(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP phiSEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP stepsizeSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _mr_ash_caisa_g(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP phiSEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP stepsizeSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -79,7 +102,7 @@ END_RCPP
 }
 // caisa_order
 List caisa_order(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, const arma::uvec& o, int maxiter, int miniter, double convtol, double epstol, bool updatesigma, bool verbose);
-RcppExport SEXP _mrash_caisa_order(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP oSEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
+RcppExport SEXP _mr_ash_caisa_order(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP oSEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -103,14 +126,15 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_mrash_caisa_acc", (DL_FUNC) &_mrash_caisa_acc, 13},
-    {"_mrash_caisa_em", (DL_FUNC) &_mrash_caisa_em, 13},
-    {"_mrash_caisa_g", (DL_FUNC) &_mrash_caisa_g, 15},
-    {"_mrash_caisa_order", (DL_FUNC) &_mrash_caisa_order, 14},
+    {"_mr_ash_caisa_acc", (DL_FUNC) &_mr_ash_caisa_acc, 13},
+    {"_mr_ash_caisa_em", (DL_FUNC) &_mr_ash_caisa_em, 13},
+    {"_mr_ash_caisa_fix_pi", (DL_FUNC) &_mr_ash_caisa_fix_pi, 13},
+    {"_mr_ash_caisa_g", (DL_FUNC) &_mr_ash_caisa_g, 15},
+    {"_mr_ash_caisa_order", (DL_FUNC) &_mr_ash_caisa_order, 14},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_mrash(DllInfo *dll) {
+RcppExport void R_init_mr_ash(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

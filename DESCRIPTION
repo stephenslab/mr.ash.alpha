@@ -1,6 +1,6 @@
 Encoding: UTF-8
 Type: Package
-Package: mrash
+Package: mr.ash
 Version: 0.1-1
 Date: 2019-10-06
 Title: Large-Scale Bayesian Variable Selection and Extensions Using
