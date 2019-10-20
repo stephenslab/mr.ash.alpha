@@ -43,7 +43,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                        beta.init = NULL,
                                        update.pi = TRUE, pi = NULL,
                                        update.sigma = TRUE, sigma2 = NULL,
-                                       update.order = "increasing", manual.order = NULL,
+                                       update.order = NULL,
                                        standardize = FALSE, intercept = TRUE,
                                        tol = list(),
                                        verbose = TRUE){
@@ -113,9 +113,9 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   
   # run algorithm
   
-  if (update.order == "increasing") {
+  if ( is.null(update.order) ) {
     
-    manual.order   = 1:p
+    update.order   = 1:p
     if (method == "caisa") {
       if (update.pi) {
         out          = caisa_em   (data$X, w, sa2, pi, data$beta, r, sigma2,
@@ -137,16 +137,16 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                 stepsize, update.sigma, verbose)
     }
   } else {
-    o               = rep(manual.order - 1, max.iter)
+    o               = rep(update.order - 1, max.iter)
     out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, o,
                                   max.iter, min.iter, tol$convtol, tol$epstol,
                                   update.sigma, verbose)
   }
   
   # return intercept, processed data and the update order
-  out$intercept  = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  out$data       = data
-  out$order      = manual.order
+  out$intercept    = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
+  out$data         = data
+  out$update.order = update.order
   
   # if standardize, then rescale beta
   if (standardize) {

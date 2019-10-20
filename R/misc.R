@@ -4,7 +4,6 @@
 #' https://github.com/pcarbo/varbvs
 #' ----------------------------------------------------------------------
 
-
 #' ----------------------------------------------------------------------
 #' y = Z * alpha + X * beta + epsilon
 #' remove Z and project X and y onto space orthogonal to Z
@@ -55,6 +54,34 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   }
   
   return(list(X = X, y = y, Z = Z, alpha = alpha, ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
+}
+
+# define order function
+path.order = function(fit.glmnet) {
+  # perform lasso regression and reorder regressors by "importance"
+  beta_path = coef(fit.glmnet)[-1,]
+  K = dim(beta_path)[2]
+  path_order = c()
+  for (k in 1:K) {
+    crt_path = which(beta_path[,k] != 0)
+    if (length(crt_path) != 0 & length(path_order) == 0) {
+      path_order = c(path_order, crt_path)
+    } else if(length(crt_path) != 0) {
+      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
+    }
+  }
+  path_order = unname(path_order)
+  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
+  return (index_order)
+}
+
+abs.order = function(beta) {
+  return (order(abs(beta), decreasing = TRUE))
+}
+
+univar.order = function(X, y) {
+  colnorm = c(colMeans(X^2))
+  return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
 }
 
 #' @title extract regression coefficients from mr_ash fit

@@ -7,9 +7,8 @@
 mr.ash(X, y, Z = NULL, sa2 = NULL, K = 10, method = "caisa",
   max.iter = 1000, min.iter = 1, beta.init = NULL,
   update.pi = TRUE, pi = NULL, update.sigma = TRUE, sigma2 = NULL,
-  update.order = "increasing", manual.order = NULL,
-  standardize = FALSE, intercept = TRUE, tol = list(),
-  verbose = TRUE)
+  update.order = NULL, standardize = FALSE, intercept = TRUE,
+  tol = list(), verbose = TRUE)
 }
 \arguments{
 \item{X}{Describe X here. Sparse matrix? Dense?}
@@ -33,11 +32,14 @@ p           = 300
 X           = matrix(rnorm(n*p),n,p)
 beta        = double(p)
 beta[1:10]  = 1:10
-y = X \%*\% beta + rnorm(n)
+y           = X \%*\% beta + rnorm(n)
 
-fit.mr.ash_em  = mr.ash(X,y, method = "caisa")
+fit.mr.ash  = mr.ash(X,y, method = "caisa")
 
 Xnew        = matrix(rnorm(n*p),n,p)
-ynew        = predict(fit.mr.ash_em, Xnew)
+ynew        = Xnew \%*\% beta + rnorm(n)
+ypred       = predict(fit.mr.ash, Xnew)
+rmse        = norm(ynew - ypred, '2') / sqrt(n)
+betahat     = fit.mr.ash$beta
 
 }
