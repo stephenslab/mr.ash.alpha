@@ -56,6 +56,7 @@ List caisa_g          (const arma::mat& X,
   arma::vec a2(p);
   arma::vec piold;
   
+  
   // ---------------------------------------------------------------------
   // START LOOP : CYCLE THROUGH COORDINATE ASCENT UPDATES
   // ---------------------------------------------------------------------
@@ -153,6 +154,21 @@ void updatebetaj_g     (const arma::vec& xj, double wj,
   phij                  = phij / sum(phij);
   phi.row(j)            = trans(phij);
   
+  // Newton-Rhapson root finding
+  // double c = 0;
+  // double f;
+  // double g;
+  // for (int i = 0; i < 20; i++) {
+  //   f = arma::sum(pi / (1 - c * Lj)) - 1;
+  //   g = arma::sum((pi % Lj) / arma::square(1 - c * Lj));
+  //   c = c - f/g;
+  // }
+  
+  // update phi
+  // arma::vec phij        = pi % Lj / (1 - c * Lj);
+  // phij                  = phij / arma::sum(phij);
+  // phi.row(j)            = trans(phij);
+  
   // update pi second step
   pi                   += phij / p;
   
@@ -163,7 +179,7 @@ void updatebetaj_g     (const arma::vec& xj, double wj,
   r                    += -xj * betaj;
   
   // precalculate for M-step
-  a1(j)                 = dot(phij % square(muj), 1 / s2inv);
+  a1(j)                 = bjwj * betaj;
   a2(j)                 = dot(phij, log(phij + epstol));
   phij(0)               = 0;
   a2(j)                += -dot(phij, log(s2inv)) / 2;

@@ -108,10 +108,10 @@ List caisa_acc        (const arma::mat& X,
       sigma2              = 2 * varobj(iter) / n;
     
     varobj(iter)          = varobj(iter) / sigma2 + log(2*PI*sigma2)/2 * n -
-                            dot(pi, log(pi + epstol)) * p + sum(a2);
+                            dot(piold, log(piold + epstol)) * p + sum(a2);
     
     for (j = 1; j < K; j++){
-      varobj(iter)       +=  pi(j) * log(sa2(j)) * p / 2;
+      varobj(iter)       +=  piold(j) * log(sa2(j)) * p / 2;
     }
     
     // ---------------------------------------------------------------------
@@ -166,6 +166,7 @@ void updatebetaj_acc   (const arma::vec& xj, double wj,
   
   // calculate muj
   arma::vec muj         = bjwj * s2inv;
+  muj(0)                = 0;
   
   // calculate Lj
   arma::vec Lj          = -log(1 + sa2 * wj)/2 + muj * (bjwj / 2 / sigma2);
