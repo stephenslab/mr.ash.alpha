@@ -9,6 +9,10 @@ caisa_em <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, 
     .Call('_mr_ash_caisa_em', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }
 
+caisa_em2 <- function(y, X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
+    .Call('_mr_ash_caisa_em2', PACKAGE = 'mr.ash', y, X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
+}
+
 caisa_fix_pi <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
     .Call('_mr_ash_caisa_fix_pi', PACKAGE = 'mr.ash', X, w, sa2, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }

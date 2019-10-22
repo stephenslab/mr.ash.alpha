@@ -16,7 +16,7 @@ void updatebetaj            (const arma::vec& xj, double wj,
                              arma::vec& piold, arma::vec& pi,
                              double sigma2, const arma::vec& sa2,
                              const arma::vec& s2inv,
-                             arma::vec& a1, arma::vec& a2,
+                             double& a1, double& a2,
                              int j, int p,
                              double epstol);
 
@@ -52,8 +52,8 @@ List caisa_em         (const arma::mat& X,
   int iter               = 0;
   int j;
   arma::vec varobj(maxiter);
-  arma::vec a1(p);
-  arma::vec a2(p);
+  double a1;
+  double a2;
   arma::vec piold;
   
   // ---------------------------------------------------------------------
@@ -61,6 +61,9 @@ List caisa_em         (const arma::mat& X,
   // ---------------------------------------------------------------------
   for (iter = 0; iter < maxiter; iter++) {
     
+    // reset parameters
+    a1                   = 0;
+    a2                   = 0;
     piold                = pi;
     pi.fill(0);
     
@@ -77,13 +80,13 @@ List caisa_em         (const arma::mat& X,
     // ---------------------------------------------------------------------
     // CALCULATE VARIATIONAL OBJECTIVE
     // ---------------------------------------------------------------------
-    varobj(iter)          = dot(r,r)/2 - dot(square(beta), w)/2 + sum(a1)/2;
+    varobj(iter)          = dot(r,r)/2 - dot(square(beta), w)/2 + a1/2;
     
     if (updatesigma)
       sigma2              = 2 * varobj(iter) / n;
     
     varobj(iter)          = varobj(iter) / sigma2 + log(2*PI*sigma2)/2 * n -
-                            dot(pi, log(pi + epstol)) * p + sum(a2);
+                            dot(pi, log(pi + epstol)) * p + a2;
     
     for (j = 1; j < K; j++){
       varobj(iter)       +=  pi(j) * log(sa2(j)) * p / 2;
@@ -122,7 +125,7 @@ void updatebetaj       (const arma::vec& xj, double wj,
                         arma::vec& piold, arma::vec& pi,
                         double sigma2, const arma::vec& sa2,
                         const arma::vec& s2inv,
-                        arma::vec& a1, arma::vec& a2,
+                        double& a1, double& a2,
                         int j, int p,
                         double epstol) {
   
@@ -134,6 +137,7 @@ void updatebetaj       (const arma::vec& xj, double wj,
   
   // calculate muj
   arma::vec muj         = bjwj * s2inv;
+  muj(0)                = 0;
   
   // calculate phij
   arma::vec phij        = log(piold + epstol) - log(1 + sa2 * wj)/2 + muj * (bjwj / 2 / sigma2);
@@ -150,10 +154,10 @@ void updatebetaj       (const arma::vec& xj, double wj,
   r                    += -xj * betaj;
   
   // precalculate for M-step
-  a1(j)                 = bjwj * betaj;
-  a2(j)                 = dot(phij, log(phij + epstol));
+  a1                   += bjwj * betaj;
+  a2                   += dot(phij, log(phij + epstol));
   phij(0)               = 0;
-  a2(j)                += -dot(phij, log(s2inv)) / 2;
+  a2                   += -dot(phij, log(s2inv)) / 2;
   
   return;
 }

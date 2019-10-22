@@ -137,6 +137,10 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
       out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
                                 max.iter, min.iter, tol$convtol, tol$epstol,
                                 stepsize, update.sigma, verbose)
+    } else if (method == "em2") {
+      out          = caisa_em2  (data$y, data$X, w, sa2, pi, data$beta, r, sigma2,
+                                 max.iter, min.iter, tol$convtol, tol$epstol,
+                                 update.sigma, verbose)
     }
   } else {
     o               = rep(update.order - 1, max.iter)

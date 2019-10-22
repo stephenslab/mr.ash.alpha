@@ -35,6 +35,8 @@ beta[1:10]  = 1:10
 y           = X \%*\% beta + rnorm(n)
 
 fit.mr.ash  = mr.ash(X,y, method = "caisa")
+# fit.mr.ash  = mr.ash(X,y, method = "update_g")
+# fit.mr.ash  = mr.ash(X,y, method = "accelerate")
 
 Xnew        = matrix(rnorm(n*p),n,p)
 ynew        = Xnew \%*\% beta + rnorm(n)
