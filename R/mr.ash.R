@@ -10,7 +10,7 @@
 #' 
 #' @return Describe return value here.
 #' 
-#' @useDynLib mr.ash
+#' @useDynLib mr.ash.alpha
 #' 
 #' @importFrom utils modifyList
 #' @importFrom Rcpp evalCpp
