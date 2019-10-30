@@ -1,24 +1,19 @@
-# mr.ash
+# mr.ash.alpha
 
-The mr.ash R package implements mr.ash
+R package implementing extensions to the "varbvs" methods and
+algorithms.
 
 ## Quick Start
 
-To install the latest version of varbvs2 from GitHub, clone or
-download the git repository, then use the `install_local` function
-from [devtools][devtools]. Assuming your working directory contains
-the varbvs2 repository, run this code to install the package:
+To install the latest version of the R package from GitHub, simply run
+this in R:
 
 ```R
-install.packages("devtools")
-library(devtools)
-list.files(pattern = "mr.ash") # Should output "varbvs".
-install_local("mr.ash")
+devtools::install_github("mr.ash.alpha")
 ```
 
-This command should automatically install all required packages if
+This command should automatically install all package dependencies if
 they are not installed already.
-
 
 ## License
 
