@@ -5,14 +5,16 @@ algorithms.
 
 ## Quick Start
 
-To install the latest version of the R package from GitHub, simply run
-this in R:
+To install the latest version of the R package from GitHub, clone or
+download the git repository, then use the `install_local` function from
+`devtools`:
 
-```R
-devtools::install_github("mr.ash.alpha")
+```r
+list.files(pattern = "mr.ash.alpha") # Should output "mr.ash.alpha".
+devtools::install_local("mr.ash.alpha")
 ```
 
-This command should automatically install all package dependencies if
+This command should automatically install all required packages if
 they are not installed already.
 
 ## License
