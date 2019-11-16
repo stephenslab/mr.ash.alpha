@@ -39,20 +39,24 @@
 #' 
 #' @export
 #' 
-mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
-                                       K = 10, method = "caisa",
+mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 1)^2, NULL),
+                                       K = 20, method = c("caisa","accelerate","block","sigma_scaled","sigma_indep"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
                                        update.pi = TRUE, pi = NULL,
                                        update.sigma = TRUE, sigma2 = NULL,
                                        update.order = NULL,
                                        standardize = FALSE, intercept = TRUE,
-                                       tol = list(),
+                                       mixsqpiter = 5, mode = FALSE,
+                                       tol = set_default_tolerance(),
                                        verbose = TRUE){
   
   # get sizes
   n            = dim(X)[1];
   p            = dim(X)[2];
+  
+  # match method
+  method      <- match.arg(method)
   
   # set default tolerances unless specified
   tol0         = set_default_tolerance()
@@ -130,21 +134,37 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
       }
     } else if (method == "accelerate") {
       out           = caisa_acc (data$X, w, sa2, pi, data$beta, r, sigma2,
-                                 max.iter, min.iter, tol$convtol, tol$epstol,
+                                 max.iter, min.iter, mixsqpiter, tol$convtol, tol$epstol,
                                  update.sigma, verbose)
-    } else if (method == "update_g") {
+    } else if (method == "block") {
       stepsize      = 1
       out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
                                 max.iter, min.iter, tol$convtol, tol$epstol,
-                                stepsize, update.sigma, verbose)
-    } else if (method == "em2") {
+                                stepsize, update.sigma, mode, verbose)
+    } else if (method == "sigma_scaled") {
       out          = caisa_em2  (data$y, data$X, w, sa2, pi, data$beta, r, sigma2,
                                  max.iter, min.iter, tol$convtol, tol$epstol,
                                  update.sigma, verbose)
+      out$beta     = out$beta * sqrt(out$sigma2)
+    } else if (method == "sigma_indep") {
+      out          = caisa_em3  (data$X, w, sa2, pi, data$beta, r, sigma2,
+                                 max.iter, min.iter, tol$convtol, tol$epstol,
+                                 update.sigma, verbose)
     }
-  } else {
-    o               = rep(update.order - 1, max.iter)
-    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, o,
+  } else if (update.order == "random") { # order for random permutation
+    update.order    = sample(0:(p-1))
+    for (i in 2:max.iter) {
+      update.order  = c(update.order, sample(0:(p-1)))
+    }
+    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
+                                  max.iter, min.iter, tol$convtol, tol$epstol,
+                                  update.sigma, verbose)
+  } else if (update.order == "random") { # order for random permutation
+    update.order= sample(0:(p-1))
+    for (i in 2:max.iter) {
+      update.order  = c(update.order, sample(0:(p-1)))
+    }
+    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
                                   max.iter, min.iter, tol$convtol, tol$epstol,
                                   update.sigma, verbose)
   }
@@ -159,6 +179,8 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
     out$beta       = out$beta / attr(data$X,"scaled:scale")
     
   }
+  out$pi           = drop(out$pi)
+  out$beta         = drop(out$beta)
   
   class(out)      <- c("mr.ash","list")
   return (out)
