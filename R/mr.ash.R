@@ -75,20 +75,18 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
   
   # initialize beta
   if ( is.null(beta.init) ){
-    data$beta    = as.vector(double(p));
-    # initialize r
-    r            = data$y
+    data$beta  = as.vector(double(p));
   } else {
-    # scale if needed
     if (standardize) {
       data$beta  = as.vector(beta.init) * attr(data$X,"scaled:scale");
     } else {
       data$beta  = as.vector(beta.init);
     }
-    # initialize r
-    r            = data$y - data$X %*% data$beta;
   }
   data$beta[1] = data$beta[1] + 0;      # to make sure beta.init is not modified
+  
+  # initialize r
+  r            = data$y - data$X %*% data$beta;
   
   # sigma2
   if ( is.null(sigma2) ) {
@@ -153,29 +151,18 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
                                  max.iter, min.iter, tol$convtol, tol$epstol,
                                  update.sigma, verbose)
     }
-<<<<<<< HEAD
   } else if (update.order == "random") { # order for random permutation
     update.order    = sample(0:(p-1))
     for (i in 2:max.iter) {
       update.order  = c(update.order, sample(0:(p-1)))
     }
-=======
-  } else if (is.numeric(update.order)) {
-    update.order    = rep(update.order - 1, max.iter)
->>>>>>> 8776f73558cd8fc94653965259fdef2398a579a9
     out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
                                   max.iter, min.iter, tol$convtol, tol$epstol,
                                   update.sigma, verbose)
   } else if (update.order == "random") { # order for random permutation
-<<<<<<< HEAD
     update.order= sample(0:(p-1))
     for (i in 2:max.iter) {
       update.order  = c(update.order, sample(0:(p-1)))
-=======
-    update.order    = sample(0:(p-1))
-    for (i in 2:max.iter) {
-      update.order = c(update.order, sample(0:(p-1)))
->>>>>>> 8776f73558cd8fc94653965259fdef2398a579a9
     }
     out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
                                   max.iter, min.iter, tol$convtol, tol$epstol,
