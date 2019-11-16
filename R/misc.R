@@ -186,6 +186,22 @@ computelfsrmix <- function (alpha, mu, s) {
   return(lfsr)
 }
 
+get_phi <- function(fit) {
+  # compute residual
+  r            = fit$data$y - fit$data$X %*% fit$beta
+  
+  # compute bw and S2inv
+  bw           = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
+  S2inv        = 1 / outer(fit$data$w, 1/fit$data$sa2, '+');
+  
+  # compute mu, phi
+  mu           = bw * S2inv;
+  phi          = -log(1 + outer(fit$data$w, fit$data$sa2))/2 + mu * (bw / 2 / fit$sigma2);
+  phi          = c(fit$pi) * t(exp(phi - apply(phi,1,max)));
+  phi          = t(phi) / colSums(phi);
+  return (list(phi = phi, mu = mu, r = r))
+}
+
 #' @title compute posterior quantile
 #' @importFrom stats pnorm uniroot
 #' @export

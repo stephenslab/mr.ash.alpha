@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Type: Package
 Package: mr.ash.alpha
-Version: 0.1-3
+Version: 0.1-4
 Date: 2019-11-10
 Title: Large-Scale Bayesian Linear Regression Variable Selection Using Variational Empirical Bayes Approach
 Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
