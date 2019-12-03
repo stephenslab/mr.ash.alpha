@@ -12,13 +12,22 @@ using namespace Rcpp;
 // ---------------------
 arma::mat outerAddition_order (const arma::vec& a, const arma::vec& b);
 void updatebetaj_order        (const arma::vec& xj, double wj,
-                             double& betaj, arma::vec& r,
-                             arma::vec& piold, arma::vec& pi,
-                             double sigma2, const arma::vec& sa2,
-                             const arma::vec& s2inv,
-                             arma::vec& a1, arma::vec& a2,
-                             int j, int p,
-                             double epstol);
+                               double& betaj, arma::vec& r,
+                               arma::vec& piold, arma::vec& pi,
+                               double sigma2, const arma::vec& sa2,
+                               const arma::vec& s2inv,
+                               arma::vec& a1, arma::vec& a2,
+                               int j, int p,
+                               double epstol);
+
+// [[Rcpp::export]]
+arma::uvec random_order (int p, int numiter) {
+  arma::uvec o(p * numiter);
+  for (int i = 0 ; i < numiter; i++) {
+    o.subvec(i * p, (i+1) * p - 1) = arma::randperm(p);
+  }
+  return o;
+}
 
 // FUNCTION DEFINITIONS
 // --------------------

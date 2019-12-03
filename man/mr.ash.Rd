@@ -4,13 +4,12 @@
 \alias{mr.ash}
 \title{Mr.ASH (Multiple Regression with Adaptive Shrikage)}
 \usage{
-mr.ash(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 1)^2, NULL), K = 20,
-  method = c("caisa", "accelerate", "block", "sigma_scaled",
-  "sigma_indep"), max.iter = 1000, min.iter = 1, beta.init = NULL,
-  update.pi = TRUE, pi = NULL, update.sigma = TRUE, sigma2 = NULL,
-  update.order = NULL, standardize = FALSE, intercept = TRUE,
-  mixsqpiter = 5, mode = FALSE, tol = set_default_tolerance(),
-  verbose = TRUE)
+mr.ash(X, y, Z = NULL, sa2 = NULL, K = 20, method = c("caisa",
+  "accelerate", "block", "sigma_scaled", "sigma_indep"), max.iter = 1000,
+  min.iter = 1, beta.init = NULL, update.pi = TRUE, pi = NULL,
+  update.sigma = TRUE, sigma2 = NULL, update.order = NULL,
+  standardize = FALSE, intercept = TRUE, mixsqpiter = 5,
+  mode = FALSE, tol = set_default_tolerance(), verbose = TRUE)
 }
 \arguments{
 \item{X}{Describe X here. Sparse matrix? Dense?}

@@ -39,7 +39,7 @@
 #' 
 #' @export
 #' 
-mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 1)^2, NULL),
+mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                        K = 20, method = c("caisa","accelerate","block","sigma_scaled","sigma_indep"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
@@ -62,16 +62,8 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
   tol0         = set_default_tolerance()
   tol          = modifyList(tol0,tol,keep.null = TRUE)
   
-  # calculate sa2 if missing
-  if ( is.null(sa2) ) {
-    betahat    = (t(X) %*% y) / n
-    sa2        = logspace( b = 2 * ceiling(max(betahat^2)), length = K)
-  }
-  K            = length(sa2);
-  
   # remove covariates
   data         = remove_covariate(X, y, Z, standardize, intercept);
-  data$sa2     = sa2
   
   # initialize beta
   if ( is.null(beta.init) ){
@@ -92,6 +84,21 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
   if ( is.null(sigma2) ) {
     sigma2 = c(var(r));
   }
+  
+  # set sa2 if missing
+  if ( is.null(sa2) ) {
+    if ( is.null(beta.init) ) {
+      sa2      = (2^((0:19) / 20) - 1)^2
+      #betahat    = (t(X) %*% y) / n
+      #sa2        = logspace( b = 2 * ceiling(max(betahat^2)), length = K)
+    } else {
+      sa2      = (2^((0:19) / 5) - 1)^2
+      #sa2.max  = 100 * max(data$beta^2) / sigma2
+      #sa2      = c(0, sa2.max * 2^(0:18) / 2^18)
+    }
+  }
+  K            = length(sa2);
+  data$sa2     = sa2
   
   # precalculate
   w            = colSums(data$X^2);
@@ -120,7 +127,6 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
   # run algorithm
   
   if ( is.null(update.order) ) {
-    
     update.order   = 1:p
     if (method == "caisa") {
       if (update.pi) {
@@ -151,37 +157,23 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = c((2^((0:19)/20) - 
                                  max.iter, min.iter, tol$convtol, tol$epstol,
                                  update.sigma, verbose)
     }
-  } else if (update.order == "random") { # order for random permutation
-    update.order    = sample(0:(p-1))
-    for (i in 2:max.iter) {
-      update.order  = c(update.order, sample(0:(p-1)))
-    }
-    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
-                                  max.iter, min.iter, tol$convtol, tol$epstol,
-                                  update.sigma, verbose)
-  } else if (update.order == "random") { # order for random permutation
-    update.order= sample(0:(p-1))
-    for (i in 2:max.iter) {
-      update.order  = c(update.order, sample(0:(p-1)))
-    }
-    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, update.order,
-                                  max.iter, min.iter, tol$convtol, tol$epstol,
-                                  update.sigma, verbose)
+  } else if (is.numeric(update.order)) {
+    o   = rep(update.order - 1, max.iter)
+    out = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, 
+                      o, max.iter, min.iter, tol$convtol, tol$epstol, 
+                      update.sigma, verbose)
+  } else if (update.order == "random") {
+    update.order = random_order(p, max.iter)
+    out = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, 
+                      update.order, max.iter, min.iter, tol$convtol, tol$epstol, 
+                      update.sigma, verbose)
   }
-  
-  # return intercept, processed data and the update order
-  out$intercept    = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  out$data         = data
+  out$intercept = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
+  out$data = data
   out$update.order = update.order
-  
-  # if standardize, then rescale beta
   if (standardize) {
-    out$beta       = out$beta / attr(data$X,"scaled:scale")
-    
+    out$beta = out$beta/attr(data$X, "scaled:scale")
   }
-  out$pi           = drop(out$pi)
-  out$beta         = drop(out$beta)
-  
-  class(out)      <- c("mr.ash","list")
-  return (out)
+  class(out) <- c("mr.ash", "list")
+  return(out)
 }

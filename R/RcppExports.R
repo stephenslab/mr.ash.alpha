@@ -25,6 +25,10 @@ caisa_g <- function(X, w, sa2, phi, pi, beta, r, sigma2, maxiter, miniter, convt
     .Call('_mr_ash_alpha_caisa_g', PACKAGE = 'mr.ash.alpha', X, w, sa2, phi, pi, beta, r, sigma2, maxiter, miniter, convtol, epstol, stepsize, updatesigma, mode, verbose)
 }
 
+random_order <- function(p, numiter) {
+    .Call('_mr_ash_alpha_random_order', PACKAGE = 'mr.ash.alpha', p, numiter)
+}
+
 caisa_order <- function(X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose) {
     .Call('_mr_ash_alpha_caisa_order', PACKAGE = 'mr.ash.alpha', X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }

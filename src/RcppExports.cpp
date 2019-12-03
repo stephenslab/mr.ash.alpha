@@ -149,6 +149,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// random_order
+arma::uvec random_order(int p, int numiter);
+RcppExport SEXP _mr_ash_alpha_random_order(SEXP pSEXP, SEXP numiterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< int >::type numiter(numiterSEXP);
+    rcpp_result_gen = Rcpp::wrap(random_order(p, numiter));
+    return rcpp_result_gen;
+END_RCPP
+}
 // caisa_order
 List caisa_order(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, const arma::uvec& o, int maxiter, int miniter, double convtol, double epstol, bool updatesigma, bool verbose);
 RcppExport SEXP _mr_ash_alpha_caisa_order(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP oSEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
@@ -181,6 +193,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mr_ash_alpha_caisa_em3", (DL_FUNC) &_mr_ash_alpha_caisa_em3, 13},
     {"_mr_ash_alpha_caisa_fix_pi", (DL_FUNC) &_mr_ash_alpha_caisa_fix_pi, 13},
     {"_mr_ash_alpha_caisa_g", (DL_FUNC) &_mr_ash_alpha_caisa_g, 16},
+    {"_mr_ash_alpha_random_order", (DL_FUNC) &_mr_ash_alpha_random_order, 2},
     {"_mr_ash_alpha_caisa_order", (DL_FUNC) &_mr_ash_alpha_caisa_order, 14},
     {NULL, NULL, 0}
 };
