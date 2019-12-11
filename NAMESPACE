@@ -3,6 +3,7 @@
 S3method(coef,mr.ash)
 S3method(predict,mr.ash)
 export(coef.mr.ash)
+export(gibbs.sampling)
 export(mr.ash)
 export(posterior_quantile)
 export(predict.mr.ash)

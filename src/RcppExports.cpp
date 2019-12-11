@@ -185,6 +185,26 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// gibbs_sampling
+List gibbs_sampling(const arma::mat& X, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, int maxiter, int burnin, bool verbose);
+RcppExport SEXP _mr_ash_alpha_gibbs_sampling(SEXP XSEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP maxiterSEXP, SEXP burninSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sa2(sa2SEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type pi(piSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< arma::vec& >::type r(rSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma2(sigma2SEXP);
+    Rcpp::traits::input_parameter< int >::type maxiter(maxiterSEXP);
+    Rcpp::traits::input_parameter< int >::type burnin(burninSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(gibbs_sampling(X, w, sa2, pi, beta, r, sigma2, maxiter, burnin, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_mr_ash_alpha_caisa_acc", (DL_FUNC) &_mr_ash_alpha_caisa_acc, 14},
@@ -195,6 +215,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_mr_ash_alpha_caisa_g", (DL_FUNC) &_mr_ash_alpha_caisa_g, 16},
     {"_mr_ash_alpha_random_order", (DL_FUNC) &_mr_ash_alpha_random_order, 2},
     {"_mr_ash_alpha_caisa_order", (DL_FUNC) &_mr_ash_alpha_caisa_order, 14},
+    {"_mr_ash_alpha_gibbs_sampling", (DL_FUNC) &_mr_ash_alpha_gibbs_sampling, 10},
     {NULL, NULL, 0}
 };
 

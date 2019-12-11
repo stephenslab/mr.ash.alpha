@@ -255,3 +255,44 @@ posterior_quantile  <- function(fit, thresh = NULL) {
   
   return (postquant)
 }
+
+#' @title gibbs sampling
+#' @export
+#' 
+gibbs.sampling              = function(X, y, pi, sa2 = (2^((0:19) / 20) - 1)^2,
+                                       max.iter = 1500, burn.in = 500,
+                                       standardize = FALSE, intercept = TRUE,
+                                       sigma2 = NULL, beta.init = NULL,
+                                       verbose = TRUE){
+  
+  # get sizes
+  n            = dim(X)[1];
+  p            = dim(X)[2];
+  
+  # remove covariates
+  data         = remove_covariate(X, y, NULL, standardize, intercept);
+  if ( is.null(beta.init) ) {
+    data$beta  = as.vector(double(p));
+  } else {
+    data$beta  = as.vector(beta.init);
+  }
+  
+  # initialize r
+  r            = data$y - data$X %*% data$beta;
+  
+  # sigma2
+  if ( is.null(sigma2) ) {
+    sigma2 = c(var(r));
+  }
+  
+  # precalculate
+  w            = colSums(data$X^2);
+  data$w       = w;
+  
+  # gibbs sampling
+  out           = gibbs_sampling(data$X, w, sa2, pi, data$beta, r, sigma2, max.iter, burn.in, verbose)
+  out$data      = data
+  out$mu        = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
+  
+  return (out)
+}

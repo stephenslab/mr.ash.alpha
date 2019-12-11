@@ -33,3 +33,7 @@ caisa_order <- function(X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, con
     .Call('_mr_ash_alpha_caisa_order', PACKAGE = 'mr.ash.alpha', X, w, sa2, pi, beta, r, sigma2, o, maxiter, miniter, convtol, epstol, updatesigma, verbose)
 }
 
+gibbs_sampling <- function(X, w, sa2, pi, beta, r, sigma2, maxiter, burnin, verbose) {
+    .Call('_mr_ash_alpha_gibbs_sampling', PACKAGE = 'mr.ash.alpha', X, w, sa2, pi, beta, r, sigma2, maxiter, burnin, verbose)
+}
+
