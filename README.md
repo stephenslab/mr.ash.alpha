@@ -19,7 +19,7 @@ they are not installed already.
 
 ## License
 
-Copyright (c) 2018-2019, Youngseok Kim, Peter Carbonetto and Matthew
+Copyright (c) 2018-2020, Youngseok Kim, Peter Carbonetto and Matthew
 Stephens.
 
 All source code and software in this repository are made available
