@@ -52,11 +52,11 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                        verbose = TRUE){
   
   # get sizes
-  n            = dim(X)[1];
-  p            = dim(X)[2];
+  n            = rnow(X)
+  p            = ncol(X)
   
   # match method
-  method      <- match.arg(method)
+  method       = match.arg(method)
   
   # set default tolerances unless specified
   tol0         = set_default_tolerance()
@@ -87,15 +87,10 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   
   # set sa2 if missing
   if ( is.null(sa2) ) {
-    if ( is.null(beta.init) ) {
+    if ( is.null(beta.init) 
       sa2      = (2^((0:19) / 20) - 1)^2
-      #betahat    = (t(X) %*% y) / n
-      #sa2        = logspace( b = 2 * ceiling(max(betahat^2)), length = K)
-    } else {
+    else
       sa2      = (2^((0:19) / 5) - 1)^2
-      #sa2.max  = 100 * max(data$beta^2) / sigma2
-      #sa2      = c(0, sa2.max * 2^(0:18) / 2^18)
-    }
   }
   K            = length(sa2);
   data$sa2     = sa2
@@ -171,9 +166,8 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   out$intercept = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
   out$data = data
   out$update.order = update.order
-  if (standardize) {
+  if (standardize)
     out$beta = out$beta/attr(data$X, "scaled:scale")
-  }
   class(out) <- c("mr.ash", "list")
   return(out)
 }

@@ -4,8 +4,7 @@
 \alias{predict.mr.ash}
 \title{predict future observations or extract coefficients from mr_ash fit}
 \usage{
-\method{predict}{mr.ash}(object, newx = NULL, type = c("response",
-  "coefficients"), ...)
+\method{predict}{mr.ash}(object, newx = NULL, type = c("response", "coefficients"), ...)
 }
 \arguments{
 \item{object}{a mr_ash fit}

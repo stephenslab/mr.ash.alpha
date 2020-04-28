@@ -4,9 +4,19 @@
 \alias{gibbs.sampling}
 \title{gibbs sampling}
 \usage{
-gibbs.sampling(X, y, pi, sa2 = (2^((0:19)/20) - 1)^2, max.iter = 1500,
-  burn.in = 500, standardize = FALSE, intercept = TRUE,
-  sigma2 = NULL, beta.init = NULL, verbose = TRUE)
+gibbs.sampling(
+  X,
+  y,
+  pi,
+  sa2 = (2^((0:19)/20) - 1)^2,
+  max.iter = 1500,
+  burn.in = 500,
+  standardize = FALSE,
+  intercept = TRUE,
+  sigma2 = NULL,
+  beta.init = NULL,
+  verbose = TRUE
+)
 }
 \description{
 gibbs sampling
