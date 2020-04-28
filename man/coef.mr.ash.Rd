@@ -10,7 +10,8 @@
 \item{object}{a mr_ash fit}
 }
 \value{
-a p+1 vector, the first element being an intercept, and the remaining p elements being estimated regression coefficients
+a p+1 vector, the first element being an intercept, and the
+  remaining p elements being estimated regression coefficients
 }
 \description{
 extract regression coefficients from mr_ash fit

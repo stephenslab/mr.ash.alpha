@@ -56,8 +56,9 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   return(list(X = X, y = y, Z = Z, alpha = alpha, ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
 }
 
+#' @export
 # define order function
-path.order = function(fit.glmnet) {
+path.order = function (fit.glmnet) {
   # perform lasso regression and reorder regressors by "importance"
   beta_path = coef(fit.glmnet)[-1,]
   K = dim(beta_path)[2]
@@ -75,39 +76,50 @@ path.order = function(fit.glmnet) {
   return (index_order)
 }
 
+#' @export
 abs.order = function(beta) {
   return (order(abs(beta), decreasing = TRUE))
 }
 
+#' @export
 univar.order = function(X, y) {
   colnorm = c(colMeans(X^2))
   return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
 }
 
 #' @title extract regression coefficients from mr_ash fit
+#' 
 #' @param object a mr_ash fit
-#' @return a p+1 vector, the first element being an intercept, and the remaining p elements being estimated regression coefficients
+#' 
+#' @return a p+1 vector, the first element being an intercept, and the
+#'   remaining p elements being estimated regression coefficients
+#' 
 #' @export coef.mr.ash
 #' @export
-coef.mr.ash = function(object, ...){
-  c(object$intercept, object$beta)
-}
+#' 
+coef.mr.ash = function (object, ...)
+  c(object$intercept,object$beta)
 
 #' @title predict future observations or extract coefficients from mr_ash fit
+#' 
 #' @param object a mr_ash fit
+#' 
 #' @param newx a new value for X at which to do predictions
+#' 
 #' @param type if this is coefficients, then calls coef.susie
+#' 
 #' @importFrom stats coef
+#' 
 #' @export predict.mr.ash
 #' @export
+#' 
 predict.mr.ash               = function(object,newx = NULL,
                                         type=c("response","coefficients"),...) {
   
   type <- match.arg(type)
-  if (type=="coefficients"){
-    if(!missing(newx)){
+  if (type == "coefficients"){
+    if(!missing(newx))
       stop("Do not supply newx when predicting coefficients")
-    }
     return(coef(object))
   }
   
@@ -116,144 +128,15 @@ predict.mr.ash               = function(object,newx = NULL,
   return(drop(object$intercept + newx %*% coef(object)[-1]))
 }
 
-
 #' ----------------------------------------------------------------------
 #'
 #'
 #' ----------------------------------------------------------------------
 set_default_tolerance       = function(){
-  epstol    = 1e-10;
-  convtol   = 1e-6; #sqrt(.Machine$double.eps);
+  epstol    = 1e-10
+  convtol   = 1e-6 #sqrt(.Machine$double.eps)
   
   return ( list(epstol = epstol, convtol = convtol ) )
-}
-
-
-#' ----------------------------------------------------------------------
-#'
-#'
-#' ----------------------------------------------------------------------
-logspace                    = function(a = 0, b, length = 10){
-  
-  if (a >= b){
-    stop("b must be strictly greater than a")
-  }
-  
-  if (a > 0){
-    return( exp( seq(log(a), log(b), length = length) ) )
-  } else if (a == 0){
-    return( exp( seq(0, log(b+1), length = length ) ) - 1 )
-  } else{
-    stop("a must be greater than 0")
-  }
-}
-
-
-#' ----------------------------------------------------------------------
-#' Compute the local false sign rate (LFSR) for each variable. This
-#' assumes that the first mixture component is a "spike" (that is, a
-#' normal density with a variance approaching zero).
-#' ----------------------------------------------------------------------
-#' @title compute local false discovery rate
-#' @importFrom stats pnorm rnorm runif rbinom rexp
-#' 
-computelfsrmix <- function (alpha, mu, s) {
-  
-  # Get the number of variables (p) and the number of mixture
-  # components (k).
-  p <- nrow(alpha)
-  k <- ncol(alpha)
-  
-  # For each variable, get the posterior probability that the
-  # regression coefficient is exactly zero.
-  p0 <- alpha[,1]
-  
-  # For each variable, get the posterior probability that the
-  # regression coefficient is negative.
-  if (k == 2)
-    pn <- alpha[,2] * pnorm(0,mu[,2],sqrt(s[,2]))
-  else
-    pn <- rowSums(alpha[,-1] * pnorm(0,mu[,-1],sqrt(s[,-1])))
-  
-  # Compute the local false sign rate (LFSR) following the formula
-  # given in the Biostatistics paper, "False discovery rates: a new
-  # deal".
-  lfsr     <- rep(0,p)
-  b        <- pn > 0.5*(1 - p0)
-  lfsr[b]  <- 1 - pn[b]
-  lfsr[!b] <- p0[!b] + pn[!b]
-  
-  return(lfsr)
-}
-
-get_phi <- function(fit) {
-  # compute residual
-  r            = fit$data$y - fit$data$X %*% fit$beta
-  
-  # compute bw and S2inv
-  bw           = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
-  S2inv        = 1 / outer(fit$data$w, 1/fit$data$sa2, '+');
-  
-  # compute mu, phi
-  mu           = bw * S2inv;
-  phi          = -log(1 + outer(fit$data$w, fit$data$sa2))/2 + mu * (bw / 2 / fit$sigma2);
-  phi          = c(fit$pi) * t(exp(phi - apply(phi,1,max)));
-  phi          = t(phi) / colSums(phi);
-  return (list(phi = phi, mu = mu, r = r))
-}
-
-#' @title compute posterior quantile
-#' @importFrom stats pnorm uniroot
-#' @export
-#' 
-posterior_quantile  <- function(fit, thresh = NULL) {
-  
-  # compute residual
-  r            = fit$data$y - fit$data$X %*% fit$beta
-  
-  # compute bw and S2inv
-  bw           = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
-  S2inv        = 1 / outer(fit$data$w, 1/fit$data$sa2, '+');
-  
-  # compute mu, phi
-  mu           = bw * S2inv;
-  phi          = -log(1 + outer(fit$data$w, fit$data$sa2))/2 + mu * (bw / 2 / fit$sigma2);
-  phi          = c(fit$pi) * t(exp(phi - apply(phi,1,max)));
-  phi          = t(phi) / colSums(phi);
-  
-  if (is.null(thresh))
-    return (phi)
-  
-  # calculate component posterior sds
-  cpm          = mu[,-1]
-  cpsd         = 1 / sqrt(outer(fit$data$w,1/fit$data$sa2[-1],'+'));
-  
-  # nonzero indices
-  postquant    = matrix(0,length(bw),length(thresh));
-  
-  # compute posterior quantiles
-  for (t in 1:length(thresh)) {
-    
-    ind          = which(phi[,1] < thresh[t]);
-    
-    for (i in ind) {
-      
-      # function for posterior median calculation
-      # a unique zero of the function post_cdf is the posterior median
-      post_cdf <- function(x){
-        out = sum(phi[i,-1] * pnorm(x, abs(cpm[i,]), cpsd[i,])) + phi[i,1] - thresh[t]
-      }
-      
-      if (post_cdf(0) >= 0) {
-        postquant[i,t] = 0;
-      } else {
-        postquant[i,t] = uniroot(post_cdf, interval = c(0,1e8))$root * sign(bw[i]);
-      }
-    }
-    
-  }
-  
-  return (postquant)
 }
 
 #' @title gibbs sampling
@@ -266,28 +149,26 @@ gibbs.sampling              = function(X, y, pi, sa2 = (2^((0:19) / 20) - 1)^2,
                                        verbose = TRUE){
   
   # get sizes
-  n            = dim(X)[1];
-  p            = dim(X)[2];
+  n            = nrow(X)
+  p            = ncol(X)
   
   # remove covariates
-  data         = remove_covariate(X, y, NULL, standardize, intercept);
-  if ( is.null(beta.init) ) {
-    data$beta  = as.vector(double(p));
-  } else {
-    data$beta  = as.vector(beta.init);
-  }
+  data         = remove_covariate(X, y, NULL, standardize, intercept)
+  if ( is.null(beta.init) )
+    data$beta  = as.vector(double(p))
+  else
+    data$beta  = as.vector(beta.init)
   
   # initialize r
-  r            = data$y - data$X %*% data$beta;
+  r            = data$y - data$X %*% data$beta
   
   # sigma2
-  if ( is.null(sigma2) ) {
-    sigma2 = c(var(r));
-  }
+  if ( is.null(sigma2) )
+    sigma2 = c(var(r))
   
   # precalculate
-  w            = colSums(data$X^2);
-  data$w       = w;
+  w            = colSums(data$X^2)
+  data$w       = w
   
   # gibbs sampling
   out           = gibbs_sampling(data$X, w, sa2, pi, data$beta, r, sigma2, max.iter, burn.in, verbose)

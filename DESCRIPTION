@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Type: Package
 Package: mr.ash.alpha
-Version: 0.1-6
+Version: 0.1-7
 Date: 2020-04-27
 Title: Large-Scale Bayesian Linear Regression Variable Selection Using 
     Variational Empirical Bayes Approach

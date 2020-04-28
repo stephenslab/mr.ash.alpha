@@ -27,20 +27,20 @@
 #' y           = X %*% beta + rnorm(n)
 #' 
 #' fit.mr.ash  = mr.ash(X,y, method = "caisa")
-#' # fit.mr.ash  = mr.ash(X,y, method = "update_g")
-#' # fit.mr.ash  = mr.ash(X,y, method = "accelerate")
 #' 
 #' Xnew        = matrix(rnorm(n*p),n,p)
 #' ynew        = Xnew %*% beta + rnorm(n)
 #' ypred       = predict(fit.mr.ash, Xnew)
-
+#'
 #' rmse        = norm(ynew - ypred, '2') / sqrt(n)
 #' betahat     = fit.mr.ash$beta
 #' 
 #' @export
 #' 
-mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
-                                       K = 20, method = c("caisa","accelerate","block","sigma_scaled","sigma_indep"),
+mr.ash                      = function(X, y, Z = NULL, sa2 = NULL, K = 20,
+                                       method = c("caisa","accelerate",
+                                                  "block","sigma_scaled",
+                                                  "sigma_indep"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
                                        update.pi = TRUE, pi = NULL,
@@ -52,7 +52,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                        verbose = TRUE){
   
   # get sizes
-  n            = rnow(X)
+  n            = nrow(X)
   p            = ncol(X)
   
   # match method
@@ -63,61 +63,59 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   tol          = modifyList(tol0,tol,keep.null = TRUE)
   
   # remove covariates
-  data         = remove_covariate(X, y, Z, standardize, intercept);
+  data         = remove_covariate(X, y, Z, standardize, intercept)
   
   # initialize beta
   if ( is.null(beta.init) ){
-    data$beta  = as.vector(double(p));
+    data$beta  = as.vector(double(p))
   } else {
     if (standardize) {
-      data$beta  = as.vector(beta.init) * attr(data$X,"scaled:scale");
+      data$beta  = as.vector(beta.init) * attr(data$X,"scaled:scale")
     } else {
-      data$beta  = as.vector(beta.init);
+      data$beta  = as.vector(beta.init)
     }
   }
-  data$beta[1] = data$beta[1] + 0;      # to make sure beta.init is not modified
+  data$beta[1] = data$beta[1] + 0   # to make sure beta.init is not modified
   
   # initialize r
-  r            = data$y - data$X %*% data$beta;
+  r            = data$y - data$X %*% data$beta
   
   # sigma2
-  if ( is.null(sigma2) ) {
-    sigma2 = c(var(r));
-  }
+  if (is.null(sigma2))
+    sigma2 = c(var(r))
   
   # set sa2 if missing
   if ( is.null(sa2) ) {
-    if ( is.null(beta.init) 
+    if ( is.null(beta.init) )
       sa2      = (2^((0:19) / 20) - 1)^2
     else
       sa2      = (2^((0:19) / 5) - 1)^2
   }
-  K            = length(sa2);
+  K            = length(sa2)
   data$sa2     = sa2
   
   # precalculate
-  w            = colSums(data$X^2);
-  data$w       = w;
+  w            = colSums(data$X^2)
+  data$w       = w
   
   # initialize other parameters
   if ( is.null(pi) ) {
     if ( is.null(beta.init) ){
       
-      Phi          = matrix(1,p,K)/K;
-      pi           = rep(1,K)/K;
+      Phi          = matrix(1,p,K)/K
+      pi           = rep(1,K)/K
       
     } else {
       
-      S            = outer(1/w, sa2, '+') * sigma2;
-      Phi          = -data$beta^2/S/2 - log(S)/2;
-      Phi          = exp(Phi - apply(Phi,1,max));
-      Phi          = Phi / rowSums(Phi);
-      pi           = colMeans(Phi);
+      S            = outer(1/w, sa2, '+') * sigma2
+      Phi          = -data$beta^2/S/2 - log(S)/2
+      Phi          = exp(Phi - apply(Phi,1,max))
+      Phi          = Phi / rowSums(Phi)
+      pi           = colMeans(Phi)
       
     }
-  } else {
+  } else
     Phi          = matrix(rep(pi, each = p), nrow = p)
-  }
   
   # run algorithm
   
@@ -163,8 +161,8 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                       update.order, max.iter, min.iter, tol$convtol, tol$epstol, 
                       update.sigma, verbose)
   }
-  out$intercept = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  out$data = data
+  out$intercept     = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
+  out$data         = data
   out$update.order = update.order
   if (standardize)
     out$beta = out$beta/attr(data$X, "scaled:scale")
