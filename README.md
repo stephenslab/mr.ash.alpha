@@ -1,6 +1,6 @@
 # mr.ash.alpha
 
-R package implementing extensions to the "varbvs" methods and
+R package implementing Multiple Regression with Adaptive Shrinkage (Mr.ASH) methods and
 algorithms.
 
 ## Quick Start
@@ -10,9 +10,10 @@ download the git repository, then use the `install_local` function from
 `devtools`:
 
 ```r
-list.files(pattern = "mr.ash.alpha") # Should output "mr.ash.alpha".
-devtools::install_local("mr.ash.alpha")
+devtools::install_local("path_to_repo")
 ```
+
+where `path_to_repo` is the place where this `README.md` is located.
 
 This command should automatically install all required packages if
 they are not installed already.

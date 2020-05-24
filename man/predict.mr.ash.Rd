@@ -16,3 +16,22 @@
 \description{
 predict future observations or extract coefficients from mr_ash fit
 }
+\examples{
+## generate synthetic data
+set.seed(1)
+n           = 200
+p           = 300
+X           = matrix(rnorm(n*p),n,p)
+beta        = double(p)
+beta[1:10]  = 1:10
+y           = X \%*\% beta + rnorm(n)
+
+## fit mr.ash
+fit.mr.ash  = mr.ash(X, y)
+
+## predict
+Xnew        = matrix(rnorm(n*p),n,p)
+ypred       = predict(fit.mr.ash, Xnew)
+
+
+}

@@ -7,15 +7,6 @@
 remove_covariate(X, y, Z, standardize = FALSE, intercept = TRUE)
 }
 \description{
-----------------------------------------------------------------------
-Some miscellaneuous auxiliary functions are listed above.
-Some functions are directly borrowed from the R package varbvs
-https://github.com/pcarbo/varbvs
-----------------------------------------------------------------------
-----------------------------------------------------------------------
-y = Z * alpha + X * beta + epsilon
-remove Z and project X and y onto space orthogonal to Z
-add intercept (a vecror of ones) to Z if intercept == TRUE
-standardize X if standardize == TRUE
-----------------------------------------------------------------------
+This function regresses the effect of Z out from X and y.
+In other words, X and y will be projected into the space orthogonal to Z.
 }

@@ -2,10 +2,10 @@
 % Please edit documentation in R/misc.R
 \name{set_default_tolerance}
 \alias{set_default_tolerance}
-\title{----------------------------------------------------------------------}
+\title{set_default_tolerance}
 \usage{
 set_default_tolerance()
 }
 \description{
-----------------------------------------------------------------------
+
 }

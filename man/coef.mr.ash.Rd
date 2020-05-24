@@ -12,6 +12,23 @@
 \value{
 a p+1 vector, the first element being an intercept, and the
   remaining p elements being estimated regression coefficients
+  
+## generate synthetic data
+set.seed(1)
+n           = 200
+p           = 300
+X           = matrix(rnorm(n*p),n,p)
+beta        = double(p)
+beta[1:10]  = 1:10
+y           = X %*% beta + rnorm(n)
+
+## fit mr.ash
+fit.mr.ash  = mr.ash(X, y)
+
+## coefficient
+coef.mr.ash = coef(fit.mr.ash)
+intercept   = coef.mr.ash[1]
+beta        = coef.mr.ash[-1]
 }
 \description{
 extract regression coefficients from mr_ash fit

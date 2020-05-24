@@ -1,16 +1,13 @@
-#' ----------------------------------------------------------------------
-#' Some miscellaneuous auxiliary functions are listed above.
-#' Some functions are directly borrowed from the R package varbvs
-#' https://github.com/pcarbo/varbvs
-#' ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# Some miscellaneuous auxiliary functions are listed above.
+# Some functions are directly borrowed from the R package varbvs
+# https://github.com/pcarbo/varbvs
+# ----------------------------------------------------------------------
 
-#' ----------------------------------------------------------------------
-#' y = Z * alpha + X * beta + epsilon
-#' remove Z and project X and y onto space orthogonal to Z
-#' add intercept (a vecror of ones) to Z if intercept == TRUE
-#' standardize X if standardize == TRUE
-#' ----------------------------------------------------------------------
 #' @title remove covariate effects
+#' @description This function regresses the effect of Z out from X and y.
+#' In other words, X and y will be projected into the space orthogonal to Z.
+#' 
 #' @importFrom Matrix forceSymmetric
 #' 
 remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
@@ -56,11 +53,37 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   return(list(X = X, y = y, Z = Z, alpha = alpha, ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
 }
 
+#' @title regularization path order
+#' 
+#' @param beta a glmnet fit, or a ncvreg fit
+#' 
+#' @description This function extracts the path order from penalized regression fit.
+#' 
+#' @examples
+#' ### generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ### glmnet fit
+#' library(glmnet)
+#' fit.lasso = glmnet(X, y)
+#' lasso.order = mr.ash.alpha:::path.order(fit.lasso)
+#' 
+#' ### ncvreg fit
+#' library(ncvreg)
+#' fit.scad = ncvreg(X, y)
+#' scad.order = mr.ash.alpha:::path.order(fit.scad)
+#' 
 #' @export
-# define order function
-path.order = function (fit.glmnet) {
+#' 
+path.order = function (fit) {
   # perform lasso regression and reorder regressors by "importance"
-  beta_path = coef(fit.glmnet)[-1,]
+  beta_path = coef(fit)[-1,]
   K = dim(beta_path)[2]
   path_order = c()
   for (k in 1:K) {
@@ -76,12 +99,62 @@ path.order = function (fit.glmnet) {
   return (index_order)
 }
 
+#' @title absolute magnitude order
+#' 
+#' @param beta a vector of regression coefficients
+#' 
+#' @description This function extracts the absolute value order from any fit.
+#' 
+#' @examples
+#' ### generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ### glmnet fit
+#' library(glmnet)
+#' beta.lasso = coef(cv.glmnet(X, y))[-1]
+#' lasso.order = mr.ash.alpha:::abs.order(beta.lasso)
+#' 
+#' ### ncvreg fit
+#' library(ncvreg)
+#' beta.scad = c(coef(cv.ncvreg(X, y))[-1])
+#' scad.order = mr.ash.alpha:::abs.order(beta.scad)
+#' 
 #' @export
-abs.order = function(beta) {
-  return (order(abs(beta), decreasing = TRUE))
+#' 
+absolute.order = function (beta) {
+  
+  # abs order
+  abs_order = c(order(abs(beta), decreasing = TRUE))
+  return (abs_order)
 }
 
+#' @title univariate order
+#' 
+#' @param X An input design matrix.
+#' @param y A vector of response variables.
+#' 
+#' @description This function extracts the univariate regression coefficient order
+#' 
+#' @examples
+#' ### generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' univ.order = univar.order(X,y)
+#' 
 #' @export
+#' 
 univar.order = function(X, y) {
   colnorm = c(colMeans(X^2))
   return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
@@ -93,6 +166,23 @@ univar.order = function(X, y) {
 #' 
 #' @return a p+1 vector, the first element being an intercept, and the
 #'   remaining p elements being estimated regression coefficients
+#'   
+#' ## generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ## fit mr.ash
+#' fit.mr.ash  = mr.ash(X, y)
+#' 
+#' ## coefficient
+#' coef.mr.ash = coef(fit.mr.ash)
+#' intercept   = coef.mr.ash[1]
+#' beta        = coef.mr.ash[-1]
 #' 
 #' @export coef.mr.ash
 #' @export
@@ -109,6 +199,24 @@ coef.mr.ash = function (object, ...)
 #' @param type if this is coefficients, then calls coef.susie
 #' 
 #' @importFrom stats coef
+#' 
+#' @examples
+#' ## generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ## fit mr.ash
+#' fit.mr.ash  = mr.ash(X, y)
+#' 
+#' ## predict
+#' Xnew        = matrix(rnorm(n*p),n,p)
+#' ypred       = predict(fit.mr.ash, Xnew)
+#' 
 #' 
 #' @export predict.mr.ash
 #' @export
@@ -128,16 +236,76 @@ predict.mr.ash               = function(object,newx = NULL,
   return(drop(object$intercept + newx %*% coef(object)[-1]))
 }
 
-#' ----------------------------------------------------------------------
-#'
-#'
-#' ----------------------------------------------------------------------
+#' @title set_default_tolerance
+#' 
+#' @description 
+#' 
 set_default_tolerance       = function(){
-  epstol    = 1e-10
-  convtol   = 1e-6 #sqrt(.Machine$double.eps)
+  epstol    = 1e-12
+  convtol   = 1e-8 #sqrt(.Machine$double.eps)
   
   return ( list(epstol = epstol, convtol = convtol ) )
 }
+
+#' @title get q
+#' 
+#' @param fit An Mr.ASH fit obtained by running \code{mr.ash}. See \sQuote{Examples}.
+#' 
+#' @return 
+#' A list object with the following elements:
+#' 
+#' \item{phi}{A posterior component probability matrix of dimension (p,K);
+#' each row is a vector posterior mixture proportions corresponding to
+#' each regression coefficient.}
+#' 
+#' \item{m}{A posterior component mean matrix of dimension (p,K);
+#' each row is a vector of posterior component means corresponding to
+#' each regression coefficient.}
+#' 
+#' \item{s2}{A posterior component variance matrix of dimension (p,K);
+#' each row is a vector of posterior component variances corresponding to
+#' each regression coefficient.}
+#' 
+#' @description The \code{get.full.posterior} function recovers the estimated
+#' variational posterior, which maximizes the ELBO F(q,g,sigma2). The \code{mr.ash}
+#' function does not store the full posterior for a faster implementation, thus
+#' this function \code{get.full.posterior} recovers the full posterior from the
+#' Mr.ASH fit.
+#' 
+#' @examples
+#' ## generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ## fit mr.ash
+#' fit.mr.ash  = mr.ash(X, y)
+#' 
+#' ## recover full posterior
+#' full.post   = get.full.posterior(fit.mr.ash)
+#' 
+#' @export
+#' 
+get.full.posterior <- function(fit) {
+  # compute residual
+  r            = fit$data$y - fit$data$X %*% fit$beta
+  
+  # compute bw and s2
+  bw           = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
+  s2           = 1 / outer(fit$data$w, 1/fit$data$sa2, '+');
+  
+  # compute m, phi
+  m            = bw * s2;
+  phi          = -log(1 + outer(fit$data$w, fit$data$sa2))/2 + m * (bw / 2 / fit$sigma2);
+  phi          = c(fit$pi) * t(exp(phi - apply(phi,1,max)));
+  phi          = t(phi) / colSums(phi);
+  return (list(phi = phi, m = m, s2 = s2))
+}
+
 
 #' @title gibbs sampling
 #' @export
