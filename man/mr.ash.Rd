@@ -134,7 +134,6 @@ In order to recover the full posterior, see the documnetation for \code{get.full
 See \sQuote{References} for more details about the VEB approach.
 }
 \examples{
-
 ### generate synthetic data
 set.seed(1)
 n           = 200
@@ -165,5 +164,5 @@ Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020),
 Fast and Flexible Empirical Bayes Approach to Prediction in Multiple Regression.
 }
 \seealso{
-get.full.posterior
+The documentation for \code{get.full.posterior} function.
 }
