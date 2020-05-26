@@ -1,24 +1,21 @@
 # ----------------------------------------------------------------------
 # Some miscellaneuous auxiliary functions are listed above.
-# Some functions are directly borrowed from the R package varbvs
+# Some functions are directly copied from the R package varbvs
 # https://github.com/pcarbo/varbvs
 # ----------------------------------------------------------------------
 
-#' @title remove covariate effects
-#' @description This function regresses the effect of Z out from X and y.
-#' In other words, X and y will be projected into the space orthogonal to Z.
+# Regresses the effect of Z out from X and y. In other words, X and y
+# will be projected into the space orthogonal to Z.
 #' 
 #' @importFrom Matrix forceSymmetric
-#' 
+#'
 remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   
   # redefine y
-  
   y = c(as.double(y))
   n = length(y)
   
   # add intercept if intercept == TRUE
-  
   if (intercept == TRUE) {
     if (is.null(Z))
       Z <- matrix(1,n,1)
@@ -50,7 +47,8 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
     X     = X - Z %*% ZtZiZX
   }
   
-  return(list(X = X, y = y, Z = Z, alpha = alpha, ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
+  return(list(X = X, y = y, Z = Z, alpha = alpha,
+              ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
 }
 
 #' @title regularization path order
@@ -118,12 +116,12 @@ path.order = function (fit) {
 #' ### glmnet fit
 #' library(glmnet)
 #' beta.lasso = coef(cv.glmnet(X, y))[-1]
-#' lasso.order = mr.ash.alpha:::abs.order(beta.lasso)
+#' lasso.order = mr.ash.alpha:::absolute.order(beta.lasso)
 #' 
 #' ### ncvreg fit
 #' library(ncvreg)
 #' beta.scad = c(coef(cv.ncvreg(X, y))[-1])
-#' scad.order = mr.ash.alpha:::abs.order(beta.scad)
+#' scad.order = mr.ash.alpha:::absolute.order(beta.scad)
 #' 
 #' @export
 #' 
@@ -236,13 +234,9 @@ predict.mr.ash               = function(object,newx = NULL,
   return(drop(object$intercept + newx %*% coef(object)[-1]))
 }
 
-#' @title set_default_tolerance
-#' 
-#' @description 
-#' 
 set_default_tolerance       = function(){
   epstol    = 1e-12
-  convtol   = 1e-8 #sqrt(.Machine$double.eps)
+  convtol   = 1e-8
   
   return ( list(epstol = epstol, convtol = convtol ) )
 }
@@ -291,6 +285,7 @@ set_default_tolerance       = function(){
 #' @export
 #' 
 get.full.posterior <- function(fit) {
+    
   # compute residual
   r            = fit$data$y - fit$data$X %*% fit$beta
   
@@ -306,10 +301,6 @@ get.full.posterior <- function(fit) {
   return (list(phi = phi, m = m, s2 = s2))
 }
 
-
-#' @title gibbs sampling
-#' @export
-#' 
 gibbs.sampling              = function(X, y, pi, sa2 = (2^((0:19) / 20) - 1)^2,
                                        max.iter = 1500, burn.in = 500,
                                        standardize = FALSE, intercept = TRUE,

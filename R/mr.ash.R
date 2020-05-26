@@ -1,35 +1,39 @@
 #' @title Multiple Regression with Adaptive Shrinkage
 #' 
-#' @description The \code{mr.ash} function implements the Variational
-#' Empirical Bayes (VEB) approach for prediction in multiple linear
-#' regression. It maximizes the approximate marginal likelihood
-#' (a.k.a. evidence lower bound) using the coordinate ascent
-#' algorithm.  See \sQuote{References} for more details about the
-#' algorithms.
+#' @description Implements the Variational Empirical Bayes (VEB)
+#' method for multiple linear regression. It maximizes the approximate
+#' marginal likelihood ("evidence lower bound", or "ELBO") using a
+#' coordinate ascent algorithm.
 #' 
-#' @details 
-#' The VEB approach is based on the multiple linear regression model:
-#' \deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2 I_n),  \beta | \pi, \sigma^2 ~ \sum_{k=1}^K N(0,\sigma^2\sigma_k^2)}
-#' Here \eqn{\sigma_k^2} is the k-th mixture component variance \code{sa2[k]}
-#' and \eqn{K} is the number of mixture components \code{length(sa2)}.
-#' The other parameters are described in the \sQuote{Arguments}.
+#' @details The VEB approach is based on the multiple linear
+#' regression model: \deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2
+#' I_n), \beta | \pi, \sigma^2 ~ \sum_{k=1}^K N(0,\sigma^2\sigma_k^2)}
+#' Here \eqn{\sigma_k^2} is the k-th mixture component variance
+#' \code{sa2[k]} and \eqn{K} is the number of mixture components
+#' \code{length(sa2)}.  The other parameters are described in the
+#' \sQuote{Arguments}.
 #' 
 #' The VEB approach solves the following optimization problem:
-#' \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) - \sum_{j=1}^p D_{KL}(q_j || g)}
-#' The algorithm updates the variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
-#' one at a time while fixing the others, in each outer loop iteration.
+#' \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
+#' \sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
+#' variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
+#' one at a time while fixing the others, in each outer loop
+#' iteration.
 #' 
-#' The algorithm does not store the full variational posterior \eqn{q = (q_1,...,q_p)},
-#' but only stores the variational posterior mean \code{beta} for each regression coefficients.
-#' In order to recover the full posterior, see the documnetation for \code{get.full.posterior} function.
+#' The algorithm does not store the full variational posterior \eqn{q
+#' = (q_1,...,q_p)}, but only stores the variational posterior mean
+#' \code{beta} for each regression coefficients.  In order to recover
+#' the full posterior, see the documnetation for
+#' \code{get.full.posterior} function.
 #' 
 #' See \sQuote{References} for more details about the VEB approach.
 #' 
-#' @seealso The documentation for \code{get.full.posterior} function.
+#' @seealso \code{\link{get.full.posterior}}.
 #'
-#' @param X The input matrix, of dimension (n,p); each column is a single predictor;
-#' and each row is an observation vector. Here n is the number of samples and
-#' p is the number of predictors. Currently sparse matrix formats are not supported.
+#' @param X The input matrix, of dimension (n,p); each column is a
+#' single predictor; and each row is an observation vector. Here n is
+#' the number of samples and p is the number of predictors. Currently
+#' sparse matrix formats are not supported.
 #' 
 #' @param y The response variable. Currently we only allow the linear regression case
 #' which corresponds to family = "gaussian" in glmnet package.
@@ -112,8 +116,10 @@
 #' \item{update.order}{An update order used for the outer loop iterations.}
 #' 
 #' @references
-#' Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020),
-#' Fast and Flexible Empirical Bayes Approach to Prediction in Multiple Regression.
+#' 
+#' Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020), Fast and
+#'     Flexible Empirical Bayes Approach to Prediction in Multiple
+#'     Regression.
 #' 
 #' @useDynLib mr.ash.alpha
 #' 

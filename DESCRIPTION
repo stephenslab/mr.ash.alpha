@@ -1,7 +1,7 @@
 Encoding: UTF-8
 Type: Package
 Package: mr.ash.alpha
-Version: 0.1-8
+Version: 0.1-9
 Date: 2020-05-26
 Title: Multiple Regression with Adaptive Shrinkage
 Authors@R: c(person("Youngseok","Kim",role=c("aut","cre"),
@@ -24,6 +24,9 @@ Imports:
 LinkingTo:
     Rcpp,
     RcppArmadillo (>= 0.9.700.2)
+Suggests:
+    glmnet,
+    ncvreg
 NeedsCompilation: yes
 LazyData: true
 RoxygenNote: 7.1.0
