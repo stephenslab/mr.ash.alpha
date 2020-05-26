@@ -1,4 +1,4 @@
-#' @title Mr.ASH (Multiple Regression with Adaptive Shrikage)
+#' @title Mr.ASH for developers
 #' 
 #' @description The \code{mr.ash} function implements the Variational Empirical Bayes (VEB)
 #' approach for prediction in multiple linear regression. It maximizes the approximate
@@ -20,8 +20,6 @@
 #' The algorithm does not store the full variational posterior \eqn{q = (q_1,...,q_p)},
 #' but only stores the variational posterior mean \code{beta} for each regression coefficients.
 #' In order to recover the full posterior, see the documentation for \code{get.full.posterior} function.
-#' 
-#' 
 #' 
 #' See \sQuote{References} for more details about the VEB approach.
 #' 
@@ -157,8 +155,9 @@
 #' 
 #' @export
 #' 
-mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
-                                       method = c("caisa","sigma","sigma_scaled",
+mr.ash.dev                  = function(X, y, Z = NULL, sa2 = NULL,
+                                       method = c("caisa","accelerate","block",
+                                                  "sigma","sigma_scaled",
                                                   "sigma_indep"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
@@ -264,15 +263,16 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
       out          = caisa_sigma2  (data$X, w, sa2, pi, data$beta, r, sigma2,
                                     max.iter, min.iter, tol$convtol, tol$epstol,
                                     update.sigma2, verbose)
-    # } else if (method == "accelerate") {
-    #   out           = caisa_acc (data$X, w, sa2, pi, data$beta, r, sigma2,
-    #                              max.iter, min.iter, mixsqpiter, tol$convtol, tol$epstol,
-    #                              update.sigma2, verbose)
-    # } else if (method == "block") {
-    #   stepsize      = 1
-    #   out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
-    #                             max.iter, min.iter, tol$convtol, tol$epstol,
-    #                             stepsize, update.sigma2, mode, verbose)
+    } else if (method == "accelerate") {
+      mixsqpiter    = 5
+      out           = caisa_acc (data$X, w, sa2, pi, data$beta, r, sigma2,
+                                 max.iter, min.iter, mixsqpiter, tol$convtol, tol$epstol,
+                                 update.sigma2, verbose)
+    } else if (method == "block") {
+      stepsize      = 1
+      out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
+                                max.iter, min.iter, tol$convtol, tol$epstol,
+                                stepsize, update.sigma2, mode, verbose)
     } else if (method == "sigma_scaled") {
       out          = caisa_em2  (data$y, data$X, w, sa2, pi, data$beta, r, sigma2,
                                  max.iter, min.iter, tol$convtol, tol$epstol,
