@@ -173,9 +173,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   p            = ncol(X)
   
   # check necessary conditions
-  if (is.null(sa2)) {
-    
-  } else {
+  if (!is.null(sa2)) {
     if (any(sa2 < 0)) {
       stop ("all the mixture component variances must be non-negative.")
     }
