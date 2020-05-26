@@ -24,13 +24,15 @@ mr.ash(
 )
 }
 \arguments{
-\item{X}{The input matrix, of dimension (n,p); each column is a single predictor;
-and each row is an observation vector. Here n is the number of samples and
-p is the number of predictors. Currently sparse matrix formats are not supported.}
+\item{X}{The input matrix, of dimension (n,p); each column is a
+single predictor; and each row is an observation vector. Here n is
+the number of samples and p is the number of predictors. Currently
+sparse matrix formats are not supported.}
 
-\item{y}{The response variable. Currently we only allow the linear regression case
-which corresponds to family = "gaussian" in glmnet package.
-Thus we treat y as a real valued quantitative response variable.}
+\item{y}{The response variable. Currently we only allow the linear
+regression case which corresponds to family = "gaussian" in glmnet
+package.  Thus we treat y as a real valued quantitative response
+variable.}
 
 \item{Z}{The covariate matrix, of dimension (n,k); k is the number of covariates.
 The input matrix Z can be modified according to "intercept" argument.
@@ -41,25 +43,28 @@ then we do not include any covariates in the model.
 If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
 That is, \code{Z <- cbind(1,Z)}.)}
 
-\item{sa2}{The vector of mixture component variances. Currently we only allow \code{sa2[1] = 0}.
-for a technical reason. The default grid values are \code{sa2[k] = (2^(0.05 * (k-1)) - 1)^2},
-for k = 1,...,20. Note that \code{sa2[1] = 0} exactly and 
-\code{sa2[20] = 1} approximately.}
+\item{sa2}{The vector of mixture component variances. Currently we
+only allow \code{sa2[1] = 0} for a technical reason. The default
+grid values are \code{sa2[k] = (2^(0.05 * (k-1)) - 1)^2}, for k =
+1,...,20. Note that \code{sa2[1] = 0} exactly and \code{sa2[20] =
+1} approximately.}
 
-\item{method}{In the manuscript (preprint) listed in \sQuote{References}, only
-\code{method = "caisa"} is used, which stands for Cooridinate Ascent Iterative Shinkage
-Algorithm. Other method arguments will work, and produce similar outcomes unless the
+\item{method}{In the manuscript (preprint) listed in
+\sQuote{References}, only \code{method = "caisa"} is used, which
+stands for Cooridinate Ascent Iterative Shinkage Algorithm. Other
+method arguments will work, and produce similar outcomes unless the
 regression setting is extreme.
 
-(For dev 1) The \code{method} arguments caisa, sigma, sigma_scaled, sigma_indep
-use different updates for \eqn{sigma^2}, based on different parametrizations on
-the variational posterior \eqn{q} and \eqn{g}. More precisely, the update for
-\eqn{\sigma^2} depends on whether we use sigma-dependent parametrization for
-\eqn{q} and/or \eqn{g}. See reference for details.
+(For dev 1) The \code{method} arguments caisa, sigma, sigma_scaled,
+sigma_indep use different updates for \eqn{sigma^2}, based on
+different parametrizations on the variational posterior \eqn{q} and
+\eqn{g}. More precisely, the update for \eqn{\sigma^2} depends on
+whether we use sigma-dependent parametrization for \eqn{q} and/or
+\eqn{g}. See reference for details.
 
-(For dev 2) Furthermore, we also have different updates for \eqn{g}, but is not
-implemented in this function \code{mr.ash}. See \code{mr.ash.dev} if you are 
-interested.}
+(For dev 2) Furthermore, we also have different updates for
+\eqn{g}, but is not implemented in this function \code{mr.ash}. See
+\code{mr.ash.dev} if you are interested.}
 
 \item{max.iter}{The maximum number of outer loop iterations allowed.}
 
@@ -68,11 +73,13 @@ interested.}
 \item{beta.init}{The initial value for the variational posterior mean
 of the regression coefficients.}
 
-\item{update.pi}{The boolean parameter indicating whether the mixture proportion
-\eqn{\pi} will be updated or not. In the manuscript, \code{update.pi = TRUE}.}
+\item{update.pi}{The boolean parameter indicating whether the
+mixture proportion \eqn{\pi} will be updated or not. In the
+manuscript, \code{update.pi = TRUE}.}
 
-\item{pi}{The initial value for the mixture proportions \eqn{\pi_1,...,\pi_K}.
-If \code{pi = NULL}, the default value \code{pi[k] = 1/K} for k = 1,...,K will be used.}
+\item{pi}{The initial value for the mixture proportions
+\eqn{\pi_1,...,\pi_K}. If \code{pi = NULL}, the default value
+\code{pi[k] = 1/K} for k = 1,...,K will be used.}
 
 \item{update.sigma2}{The boolean parameter indicating whether the noise variance
 \eqn{\sigma^2} will be updated or not. In the manuscript, \code{update.sigma = TRUE}.}
@@ -122,22 +129,26 @@ marginal likelihood (a.k.a. evidence lower bound) using the coordinate ascent al
 See \sQuote{References} for more details about the algorithms.
 }
 \details{
-The VEB approach is based on the multiple linear regression model:
-\deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2 I_n),  \beta | \pi, \sigma^2 ~ \sum_{k=1}^K N(0,\sigma^2\sigma_k^2)}
-Here \eqn{\sigma_k^2} is the k-th mixture component variance \code{sa2[k]} (note that \eqn{\sigma^2}) is dropped.),
-and \eqn{K} is the number of mixture components \code{length(sa2)}.
-The other parameters are described in the \sQuote{Arguments}.
+The VEB approach is based on the multiple linear
+regression model: \deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2
+I_n), \beta | \pi, \sigma^2 ~ \sum_{k=1}^K N(0,\sigma^2\sigma_k^2)}
+Here \eqn{\sigma_k^2} is the k-th mixture component variance
+\code{sa2[k]} (note that \eqn{\sigma^2}) is dropped.), and \eqn{K}
+is the number of mixture components \code{length(sa2)}.  The other
+parameters are described in the \sQuote{Arguments}.
 
 The VEB approach solves the following optimization problem:
-\deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) - \sum_{j=1}^p D_{KL}(q_j || g)}
-The algorithm updates the variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
-one at a time while fixing the others, in each outer loop iteration.
+\deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
+\sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
+variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
+one at a time while fixing the others, in each outer loop
+iteration.
 
-The algorithm does not store the full variational posterior \eqn{q = (q_1,...,q_p)},
-but only stores the variational posterior mean \code{beta} for each regression coefficients.
-In order to recover the full posterior, see the documentation for \code{get.full.posterior} function.
-
-
+The algorithm does not store the full variational posterior \eqn{q
+= (q_1,...,q_p)}, but only stores the variational posterior mean
+\code{beta} for each regression coefficients.  In order to recover
+the full posterior, see the documentation for
+\code{get.full.posterior} function.
 
 See \sQuote{References} for more details about the VEB approach.
 }
@@ -172,8 +183,9 @@ Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020),
 Fast and Flexible Empirical Bayes Approach to Prediction in Multiple Regression.
 }
 \seealso{
-The documentation for \code{get.full.posterior} function for recovering
-the full posterior from the \code{mr.ash} fit. Also, see the documentation for
-\code{mr.ash.dev} if you are interested in additional functionality that are
-not used in the paper (see \sQuote{References}).
+The documentation for \code{get.full.posterior} function
+for recovering the full posterior from the \code{mr.ash} fit. Also,
+see the documentation for \code{mr.ash.dev} if you are interested
+in additional functionality that are not used in the paper (see
+\sQuote{References}).
 }

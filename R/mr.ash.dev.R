@@ -45,9 +45,10 @@
 #' If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
 #' That is, \code{Z <- cbind(1,Z)}.)
 #' 
-#' @param sa2 The vector of mixture component variances. Currently we only allow \code{sa2[1] = 0}.
-#' for a technical reason. The default grid values are \code{sa2[k] = (2^(0.05 * (k-1)) - 1)^2},
-#' for k = 1,...,20. Note that \code{sa2[1] = 0} exactly and 
+#' @param sa2 The vector of mixture component variances. Currently we
+#' only allow \code{sa2[1] = 0}.  for a technical reason. The default
+#' grid values are \code{sa2[k] = (2^(0.05 * (k-1)) - 1)^2}, for
+#' \code{k = 1:20}. Note that \code{sa2[1] = 0} exactly and
 #' \code{sa2[20] = 1} approximately.
 #' 
 #' @param method In the manuscript (preprint) listed in \sQuote{References}, only
