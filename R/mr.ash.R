@@ -1,9 +1,11 @@
-#' @title Mr.ASH (Multiple Regression with Adaptive Shrikage)
+#' @title Multiple Regression with Adaptive Shrinkage
 #' 
-#' @description The \code{mr.ash} function implements the Variational Empirical Bayes (VEB)
-#' approach for prediction in multiple linear regression. It maximizes the approximate
-#' marginal likelihood (a.k.a. evidence lower bound) using the coordinate ascent algorithm.
-#' See \sQuote{References} for more details about the algorithms.
+#' @description The \code{mr.ash} function implements the Variational
+#' Empirical Bayes (VEB) approach for prediction in multiple linear
+#' regression. It maximizes the approximate marginal likelihood
+#' (a.k.a. evidence lower bound) using the coordinate ascent
+#' algorithm.  See \sQuote{References} for more details about the
+#' algorithms.
 #' 
 #' @details 
 #' The VEB approach is based on the multiple linear regression model:
