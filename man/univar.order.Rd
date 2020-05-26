@@ -7,14 +7,16 @@
 univar.order(X, y)
 }
 \arguments{
-\item{X}{An input design matrix.}
+\item{X}{An input design matrix. This may be centered and/or
+standardized prior to calling function.}
 
 \item{y}{A vector of response variables.}
 }
 \description{
 This function extracts the ordering of the predictors
-    according to the coefficients estimated in a basic univariate
-    regression.
+  according to the coefficients estimated in a basic univariate
+  regression; in particular, the predictors are in decreasing order
+  by magnitude of the univariate regression coefficient estimate.
 }
 \examples{
 ### generate synthetic data

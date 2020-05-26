@@ -1,11 +1,11 @@
 # ----------------------------------------------------------------------
 # Some miscellaneuous auxiliary functions are listed above.
-# Some functions are directly copied from the R package varbvs
+# Some functions are directly copied from varbvs,
 # https://github.com/pcarbo/varbvs
 # ----------------------------------------------------------------------
 
-# Regresses the effect of Z out from X and y. In other words, X and y
-# will be projected into the space orthogonal to Z.
+# Regresses Z out from X and y. In other words, X and y will be
+# projected into the space orthogonal to Z.
 #' 
 #' @importFrom Matrix forceSymmetric
 #'
@@ -15,7 +15,7 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   y = c(as.double(y))
   n = length(y)
   
-  # add intercept if intercept == TRUE
+  # add intercept if intercept = TRUE
   if (intercept == TRUE) {
     if (is.null(Z))
       Z <- matrix(1,n,1)
@@ -29,13 +29,11 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
     ZtZ         = forceSymmetric(crossprod(Z))       # (Z^T Z) symmetric
     ZtZiZy      = as.vector(solve(ZtZ,c(y %*% Z)))   # (Z^T Z)^{-1} Z^T y
     ZtZiZX      = as.matrix(solve(ZtZ,t(Z) %*% X))   # (Z^T Z)^{-1} Z^T X
-    
     X           = scale(X, center = intercept, scale = standardize)
     alpha       = mean(y)
     y           = y - alpha
     
   } else {
-    
     ZtZ         = forceSymmetric(crossprod(Z))       # (Z^T Z) symmetric
     ZtZiZy      = as.vector(solve(ZtZ,c(y %*% Z)))   # (Z^T Z)^{-1} Z^T y
     ZtZiZX      = as.matrix(solve(ZtZ,t(Z) %*% X))   # (Z^T Z)^{-1} Z^T X
@@ -49,6 +47,37 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   
   return(list(X = X, y = y, Z = Z, alpha = alpha,
               ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
+}
+
+#' @title Ordering of Predictors from Univariate Regression
+#' 
+#' @param X An input design matrix. This may be centered and/or
+#'   standardized prior to calling function.
+#' 
+#' @param y A vector of response variables.
+#' 
+#' @description This function extracts the ordering of the predictors
+#'   according to the coefficients estimated in a basic univariate
+#'   regression; in particular, the predictors are in decreasing order
+#'   by magnitude of the univariate regression coefficient estimate.
+#' 
+#' @examples
+#' ### generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' univ.order = univar.order(X,y)
+#' 
+#' @export
+#' 
+univar.order = function(X, y) {
+  colnorm = c(colMeans(X^2))
+  return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
 }
 
 #' @title regularization path order
@@ -131,36 +160,10 @@ absolute.order = function (beta) {
   return (abs_order)
 }
 
-#' @title Ordering of Predictors from Univariate Regression
-#' 
-#' @param X An input design matrix.
-#' 
-#' @param y A vector of response variables.
-#' 
-#' @description This function extracts the ordering of the predictors
-#'     according to the coefficients estimated in a basic univariate
-#'     regression.
-#' 
-#' @examples
-#' ### generate synthetic data
-#' set.seed(1)
-#' n           = 200
-#' p           = 300
-#' X           = matrix(rnorm(n*p),n,p)
-#' beta        = double(p)
-#' beta[1:10]  = 1:10
-#' y           = X %*% beta + rnorm(n)
-#' 
-#' univ.order = univar.order(X,y)
-#' 
-#' @export
-#' 
-univar.order = function(X, y) {
-  colnorm = c(colMeans(X^2))
-  return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
-}
-
 #' @title Extract Regression Coefficients from Mr.ASH Fit
+#'
+#' @description Retrieve posterior mean estimates of the regression
+#'   coefficients in a Mr.ASH model.
 #' 
 #' @param object A mr_ash fit, usually the result of calling
 #'   \code{mr.ash}.
@@ -199,7 +202,8 @@ coef.mr.ash = function (object, ...)
 #' @title Predict Outcomes or Extract Coefficients from Mr.ASH Fit
 #'
 #' @description This function predicts outcomes (y) given the observed
-#'   variables (X) and a Mr.ASH model.
+#' variables (X) and a Mr.ASH model; alternatively, retrieve the
+#' estimates of the regression coefficients.
 #'
 #' @param object A mr_ash fit, usually the result of calling
 #'   \code{mr.ash}.
@@ -265,30 +269,29 @@ set_default_tolerance       = function(){
   return ( list(epstol = epstol, convtol = convtol ) )
 }
 
-#' @title get q
+#' @title Approximation Posterior Expectations from Mr.ASH Fit
+#'
+#' @description Recover the parametres specifying the full approximate
+#' posterior distribution. To streamline the model fitting
+#' implementation, and to reduce memory needs, \code{\link{mr.ash}}
+#' does not store all the parameters needed to specify the approximate
+#' posterior.
 #' 
-#' @param fit An Mr.ASH fit obtained by running \code{mr.ash}. See \sQuote{Examples}.
+#' @param fit A Mr.ASH fit obtained, for example, by running
+#'   \code{mr.ash}.
 #' 
-#' @return 
-#' A list object with the following elements:
+#' @return A list object with the following elements:
 #' 
-#' \item{phi}{A posterior component probability matrix of dimension (p,K);
-#' each row is a vector posterior mixture proportions corresponding to
-#' each regression coefficient.}
+#' \item{phi}{An p x K matrix containing the posterior assignment
+#'   probabilities, where p is the number of predictors, and K is the
+#'   number of mixture components. (Each row of \code{phi} should sum to
+#'   1.)}
 #' 
-#' \item{m}{A posterior component mean matrix of dimension (p,K);
-#' each row is a vector of posterior component means corresponding to
-#' each regression coefficient.}
+#' \item{m}{An p x K matrix containing the posterior means conditional
+#'   on assignment to each mixture component.}
 #' 
-#' \item{s2}{A posterior component variance matrix of dimension (p,K);
-#' each row is a vector of posterior component variances corresponding to
-#' each regression coefficient.}
-#' 
-#' @description The \code{get.full.posterior} function recovers the estimated
-#' variational posterior, which maximizes the ELBO F(q,g,sigma2). The \code{mr.ash}
-#' function does not store the full posterior for a faster implementation, thus
-#' this function \code{get.full.posterior} recovers the full posterior from the
-#' Mr.ASH fit.
+#' \item{s2}{An p x K matrix containing the posterior variances
+#'   conditional on assignment to each mixture component.}
 #' 
 #' @examples
 #' ## generate synthetic data

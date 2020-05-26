@@ -29,7 +29,8 @@ coefficients are returned.
 }
 \description{
 This function predicts outcomes (y) given the observed
-  variables (X) and a Mr.ASH model.
+variables (X) and a Mr.ASH model; alternatively, retrieve the
+estimates of the regression coefficients.
 }
 \examples{
 ## generate synthetic data

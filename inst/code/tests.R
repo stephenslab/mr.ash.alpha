@@ -12,8 +12,10 @@ y          <- drop(-2 + X %*% beta + rnorm(n))
 # Try the different orderings.
 out <- univar.order(X,y)
 
-# Fit the mr.ash model.
+# Fit the mr.ash model, and compute posterior expectations of
+# interest (means, variances, and posterior assignment probabilities).
 fit1 <- mr.ash(X,y)
+out  <- get.full.posterior(fit1)
 
 # Predict the regression outcomes in the training data, and compare
 # against the dround-truth values.

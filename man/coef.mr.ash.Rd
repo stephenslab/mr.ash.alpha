@@ -34,5 +34,6 @@ intercept   = coef.mr.ash[1]
 beta        = coef.mr.ash[-1]
 }
 \description{
-Extract Regression Coefficients from Mr.ASH Fit
+Retrieve posterior mean estimates of the regression
+  coefficients in a Mr.ASH model.
 }

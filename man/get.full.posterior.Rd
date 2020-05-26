@@ -2,34 +2,34 @@
 % Please edit documentation in R/misc.R
 \name{get.full.posterior}
 \alias{get.full.posterior}
-\title{get q}
+\title{Approximation Posterior Expectations from Mr.ASH Fit}
 \usage{
 get.full.posterior(fit)
 }
 \arguments{
-\item{fit}{An Mr.ASH fit obtained by running \code{mr.ash}. See \sQuote{Examples}.}
+\item{fit}{A Mr.ASH fit obtained, for example, by running
+\code{mr.ash}.}
 }
 \value{
 A list object with the following elements:
 
-\item{phi}{A posterior component probability matrix of dimension (p,K);
-each row is a vector posterior mixture proportions corresponding to
-each regression coefficient.}
+\item{phi}{An p x K matrix containing the posterior assignment
+  probabilities, where p is the number of predictors, and K is the
+  number of mixture components. (Each row of \code{phi} should sum to
+  1.)}
 
-\item{m}{A posterior component mean matrix of dimension (p,K);
-each row is a vector of posterior component means corresponding to
-each regression coefficient.}
+\item{m}{An p x K matrix containing the posterior means conditional
+  on assignment to each mixture component.}
 
-\item{s2}{A posterior component variance matrix of dimension (p,K);
-each row is a vector of posterior component variances corresponding to
-each regression coefficient.}
+\item{s2}{An p x K matrix containing the posterior variances
+  conditional on assignment to each mixture component.}
 }
 \description{
-The \code{get.full.posterior} function recovers the estimated
-variational posterior, which maximizes the ELBO F(q,g,sigma2). The \code{mr.ash}
-function does not store the full posterior for a faster implementation, thus
-this function \code{get.full.posterior} recovers the full posterior from the
-Mr.ASH fit.
+Recover the parametres specifying the full approximate
+posterior distribution. To streamline the model fitting
+implementation, and to reduce memory needs, \code{\link{mr.ash}}
+does not store all the parameters needed to specify the approximate
+posterior.
 }
 \examples{
 ## generate synthetic data

@@ -34,14 +34,14 @@ regression case which corresponds to family = "gaussian" in glmnet
 package.  Thus we treat y as a real valued quantitative response
 variable.}
 
-\item{Z}{The covariate matrix, of dimension (n,k); k is the number of covariates.
-The input matrix Z can be modified according to "intercept" argument.
-If \code{Z = NULL} and \code{intercept = TRUE}, then the actual \code{Z} will be
-the matrix having entries 1 of dimension (n,1).
-(\code{Z = NULL} by default, and if \code{intercept = FALSE}
-then we do not include any covariates in the model.
-If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
-That is, \code{Z <- cbind(1,Z)}.)}
+\item{Z}{The covariate matrix, of dimension (n,k); k is the number
+of covariates.  The input matrix Z can be modified according to
+"intercept" argument. If \code{Z = NULL} and \code{intercept =
+TRUE}, then the actual \code{Z} will be the matrix having entries 1
+of dimension (n,1).  (\code{Z = NULL} by default, and if
+\code{intercept = FALSE} then we do not include any covariates in
+the model.  If \code{intercept = TRUE}, then we will add the vector
+of ones to the columns of Z.  That is, \code{Z <- cbind(1,Z)}.)}
 
 \item{sa2}{The vector of mixture component variances. Currently we
 only allow \code{sa2[1] = 0} for a technical reason. The default
