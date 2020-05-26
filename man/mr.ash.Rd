@@ -42,6 +42,16 @@ then we do not include any covariates in the model.
 If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
 That is, \code{Z <- cbind(1,Z)}.)}
 
+\item{sa2}{The vector of mixture component variances. Currently we
+only allow \code{sa2[1] = 0} for a technical reason. The default value
+is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
+
+For Dev: (1) accelerate and block use different updates for g
+(2) caisa, sigma, sigma_scaled, sigma_indep use different updates for sigma2,
+based on different parametrizations
+depending on whether sigma-dependent q, g and beta are used or not.
+See reference for details.}
+
 \item{method}{In the manuscript (preprint) listed in \sQuote{References}, only
 \code{method = "caisa"} is used, which stands for Cooridinate Ascent Iterative Shinkage
 Algorithm. Other method arguments will work, and produce similar outcomes unless the

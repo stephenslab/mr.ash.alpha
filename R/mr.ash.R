@@ -50,7 +50,7 @@
 #' That is, \code{Z <- cbind(1,Z)}.)
 #' 
 #' @param sa2 The vector of mixture component variances. Currently we
-#' only allow \code{sa2[1] = 0}} for a technical reason. The default value
+#' only allow \code{sa2[1] = 0} for a technical reason. The default value
 #' is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
 #' 
 #' For Dev: (1) accelerate and block use different updates for g
