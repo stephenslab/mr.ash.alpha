@@ -10,7 +10,8 @@ path.order(fit)
 \item{beta}{a glmnet fit, or a ncvreg fit}
 }
 \description{
-This function extracts the path order from penalized regression fit.
+This function extracts the path order from penalized
+regression fit.
 }
 \examples{
 ### generate synthetic data
@@ -25,11 +26,11 @@ y           = X \%*\% beta + rnorm(n)
 ### glmnet fit
 library(glmnet)
 fit.lasso = glmnet(X, y)
-lasso.order = mr.ash.alpha:::path.order(fit.lasso)
+lasso.order = path.order(fit.lasso)
 
 ### ncvreg fit
 library(ncvreg)
 fit.scad = ncvreg(X, y)
-scad.order = mr.ash.alpha:::path.order(fit.scad)
+scad.order = path.order(fit.scad)
 
 }

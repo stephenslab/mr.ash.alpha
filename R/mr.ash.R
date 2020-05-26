@@ -1,9 +1,10 @@
 #' @title Multiple Regression with Adaptive Shrinkage
 #' 
-#' @description Implements the Variational Empirical Bayes (VEB)
-#' method for multiple linear regression. It maximizes the approximate
-#' marginal likelihood ("evidence lower bound", or "ELBO") using a
-#' coordinate ascent algorithm.
+#' @description Model fitting algorithms for Multiple Regression with
+#' Adaptive Shrinkage ("Mr.ASH"), a variational empirical Bayes (VEB)
+#' method for multiple linear regression. The fitting algorithms
+#' maximize the approximate marginal likelihood ("evidence lower
+#' bound", or "ELBO") via co-ordinate ascent updates.
 #' 
 #' @details The VEB approach is based on the multiple linear
 #' regression model: \deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2
@@ -31,9 +32,9 @@
 #' @seealso \code{\link{get.full.posterior}}.
 #'
 #' @param X The input matrix, of dimension (n,p); each column is a
-#' single predictor; and each row is an observation vector. Here n is
-#' the number of samples and p is the number of predictors. Currently
-#' sparse matrix formats are not supported.
+#'    single predictor; and each row is an observation vector. Here, n is
+#'    the number of samples and p is the number of predictors. Currently,
+#'    sparse matrix formats are not supported.
 #' 
 #' @param y The response variable. Currently we only allow the linear regression case
 #' which corresponds to family = "gaussian" in glmnet package.
@@ -48,8 +49,9 @@
 #' If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
 #' That is, \code{Z <- cbind(1,Z)}.)
 #' 
-#' @param sa2 The vector of mixture component variances. Currently we only allow `sa2[1] = 0`.
-#' for a technical reason. The default value is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
+#' @param sa2 The vector of mixture component variances. Currently we
+#' only allow \code{sa2[1] = 0}} for a technical reason. The default value
+#' is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
 #' 
 #' For Dev: (1) accelerate and block use different updates for g
 #' (2) caisa, sigma, sigma_scaled, sigma_indep use different updates for sigma2,

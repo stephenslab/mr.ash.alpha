@@ -2,19 +2,34 @@
 % Please edit documentation in R/misc.R
 \name{predict.mr.ash}
 \alias{predict.mr.ash}
-\title{predict future observations or extract coefficients from mr_ash fit}
+\title{Predict Outcomes or Extract Coefficients from Mr.ASH Fit}
 \usage{
 \method{predict}{mr.ash}(object, newx = NULL, type = c("response", "coefficients"), ...)
 }
 \arguments{
-\item{object}{a mr_ash fit}
+\item{object}{A mr_ash fit, usually the result of calling
+\code{mr.ash}.}
 
-\item{newx}{a new value for X at which to do predictions}
+\item{newx}{The input matrix, of dimension (n,p); each column is a
+single predictor; and each row is an observation vector. Here, n is
+the number of samples and p is the number of predictors. When
+\code{newx} is \code{NULL}, the fitted values for the training data
+are provided.}
 
-\item{type}{if this is coefficients, then calls coef.susie}
+\item{type}{The type of output. For \code{type == "response"},
+predicted or fitted outcomes are returned; for \code{type ==
+"coefficients"}, the estimated coefficients are returned.}
+
+\item{...}{Additional arguments passed to the default S3 method.}
+}
+\value{
+For \code{type == "response"}, predicted or fitted outcomes
+are returned; for \code{type == "coefficients"}, the estimated
+coefficients are returned.
 }
 \description{
-predict future observations or extract coefficients from mr_ash fit
+This function predicts outcomes (y) given the observed
+  variables (X) and a Mr.ASH model.
 }
 \examples{
 ## generate synthetic data
@@ -32,6 +47,5 @@ fit.mr.ash  = mr.ash(X, y)
 ## predict
 Xnew        = matrix(rnorm(n*p),n,p)
 ypred       = predict(fit.mr.ash, Xnew)
-
 
 }

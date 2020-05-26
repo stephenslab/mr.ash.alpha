@@ -25,8 +25,8 @@ mr.ash(
 }
 \arguments{
 \item{X}{The input matrix, of dimension (n,p); each column is a
-single predictor; and each row is an observation vector. Here n is
-the number of samples and p is the number of predictors. Currently
+single predictor; and each row is an observation vector. Here, n is
+the number of samples and p is the number of predictors. Currently,
 sparse matrix formats are not supported.}
 
 \item{y}{The response variable. Currently we only allow the linear regression case
@@ -41,15 +41,6 @@ the matrix having entries 1 of dimension (n,1).
 then we do not include any covariates in the model.
 If \code{intercept = TRUE}, then we will add the vector of ones to the columns of Z.
 That is, \code{Z <- cbind(1,Z)}.)}
-
-\item{sa2}{The vector of mixture component variances. Currently we only allow `sa2[1] = 0`.
-for a technical reason. The default value is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
-
-For Dev: (1) accelerate and block use different updates for g
-(2) caisa, sigma, sigma_scaled, sigma_indep use different updates for sigma2,
-based on different parametrizations
-depending on whether sigma-dependent q, g and beta are used or not.
-See reference for details.}
 
 \item{method}{In the manuscript (preprint) listed in \sQuote{References}, only
 \code{method = "caisa"} is used, which stands for Cooridinate Ascent Iterative Shinkage
@@ -111,10 +102,11 @@ orthogonal to Z, and then will be returned.}
 \item{update.order}{An update order used for the outer loop iterations.}
 }
 \description{
-Implements the Variational Empirical Bayes (VEB)
-method for multiple linear regression. It maximizes the approximate
-marginal likelihood ("evidence lower bound", or "ELBO") using a
-coordinate ascent algorithm.
+Model fitting algorithms for Multiple Regression with
+Adaptive Shrinkage ("Mr.ASH"), a variational empirical Bayes (VEB)
+method for multiple linear regression. The fitting algorithms
+maximize the approximate marginal likelihood ("evidence lower
+bound", or "ELBO") via co-ordinate ascent updates.
 }
 \details{
 The VEB approach is based on the multiple linear

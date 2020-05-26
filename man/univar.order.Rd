@@ -2,7 +2,7 @@
 % Please edit documentation in R/misc.R
 \name{univar.order}
 \alias{univar.order}
-\title{univariate order}
+\title{Ordering of Predictors from Univariate Regression}
 \usage{
 univar.order(X, y)
 }
@@ -12,7 +12,9 @@ univar.order(X, y)
 \item{y}{A vector of response variables.}
 }
 \description{
-This function extracts the univariate regression coefficient order
+This function extracts the ordering of the predictors
+    according to the coefficients estimated in a basic univariate
+    regression.
 }
 \examples{
 ### generate synthetic data

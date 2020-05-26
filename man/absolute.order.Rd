@@ -25,11 +25,11 @@ y           = X \%*\% beta + rnorm(n)
 ### glmnet fit
 library(glmnet)
 beta.lasso = coef(cv.glmnet(X, y))[-1]
-lasso.order = mr.ash.alpha:::absolute.order(beta.lasso)
+lasso.order = absolute.order(beta.lasso)
 
 ### ncvreg fit
 library(ncvreg)
 beta.scad = c(coef(cv.ncvreg(X, y))[-1])
-scad.order = mr.ash.alpha:::absolute.order(beta.scad)
+scad.order = absolute.order(beta.scad)
 
 }

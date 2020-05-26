@@ -55,7 +55,8 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
 #' 
 #' @param beta a glmnet fit, or a ncvreg fit
 #' 
-#' @description This function extracts the path order from penalized regression fit.
+#' @description This function extracts the path order from penalized
+#' regression fit.
 #' 
 #' @examples
 #' ### generate synthetic data
@@ -70,17 +71,17 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
 #' ### glmnet fit
 #' library(glmnet)
 #' fit.lasso = glmnet(X, y)
-#' lasso.order = mr.ash.alpha:::path.order(fit.lasso)
+#' lasso.order = path.order(fit.lasso)
 #' 
 #' ### ncvreg fit
 #' library(ncvreg)
 #' fit.scad = ncvreg(X, y)
-#' scad.order = mr.ash.alpha:::path.order(fit.scad)
-#' 
+#' scad.order = path.order(fit.scad)
+#'
 #' @export
 #' 
 path.order = function (fit) {
-  # perform lasso regression and reorder regressors by "importance"
+  # perform lasso regression and reorder regressors by their "importance"
   beta_path = coef(fit)[-1,]
   K = dim(beta_path)[2]
   path_order = c()
@@ -116,28 +117,29 @@ path.order = function (fit) {
 #' ### glmnet fit
 #' library(glmnet)
 #' beta.lasso = coef(cv.glmnet(X, y))[-1]
-#' lasso.order = mr.ash.alpha:::absolute.order(beta.lasso)
+#' lasso.order = absolute.order(beta.lasso)
 #' 
 #' ### ncvreg fit
 #' library(ncvreg)
 #' beta.scad = c(coef(cv.ncvreg(X, y))[-1])
-#' scad.order = mr.ash.alpha:::absolute.order(beta.scad)
+#' scad.order = absolute.order(beta.scad)
 #' 
 #' @export
 #' 
 absolute.order = function (beta) {
-  
-  # abs order
   abs_order = c(order(abs(beta), decreasing = TRUE))
   return (abs_order)
 }
 
-#' @title univariate order
+#' @title Ordering of Predictors from Univariate Regression
 #' 
 #' @param X An input design matrix.
+#' 
 #' @param y A vector of response variables.
 #' 
-#' @description This function extracts the univariate regression coefficient order
+#' @description This function extracts the ordering of the predictors
+#'     according to the coefficients estimated in a basic univariate
+#'     regression.
 #' 
 #' @examples
 #' ### generate synthetic data
@@ -158,12 +160,15 @@ univar.order = function(X, y) {
   return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
 }
 
-#' @title extract regression coefficients from mr_ash fit
+#' @title Extract Regression Coefficients from Mr.ASH Fit
 #' 
-#' @param object a mr_ash fit
+#' @param object A mr_ash fit, usually the result of calling
+#'   \code{mr.ash}.
+#'
+#' @param ... Additional arguments passed to the default S3 method.
 #' 
-#' @return a p+1 vector, the first element being an intercept, and the
-#'   remaining p elements being estimated regression coefficients
+#' @return A p+1 vector, the first element being an intercept, and the
+#'   remaining p elements being estimated regression coefficients.
 #'   
 #' ## generate synthetic data
 #' set.seed(1)
@@ -182,21 +187,38 @@ univar.order = function(X, y) {
 #' intercept   = coef.mr.ash[1]
 #' beta        = coef.mr.ash[-1]
 #' 
+#' @importFrom stats coef
+#' 
 #' @export coef.mr.ash
+#' 
 #' @export
 #' 
 coef.mr.ash = function (object, ...)
   c(object$intercept,object$beta)
 
-#' @title predict future observations or extract coefficients from mr_ash fit
+#' @title Predict Outcomes or Extract Coefficients from Mr.ASH Fit
+#'
+#' @description This function predicts outcomes (y) given the observed
+#'   variables (X) and a Mr.ASH model.
+#'
+#' @param object A mr_ash fit, usually the result of calling
+#'   \code{mr.ash}.
+#'
+#' @param newx The input matrix, of dimension (n,p); each column is a
+#'   single predictor; and each row is an observation vector. Here, n is
+#'   the number of samples and p is the number of predictors. When
+#'   \code{newx} is \code{NULL}, the fitted values for the training data
+#'   are provided.
 #' 
-#' @param object a mr_ash fit
+#' @param type The type of output. For \code{type == "response"},
+#'   predicted or fitted outcomes are returned; for \code{type ==
+#'   "coefficients"}, the estimated coefficients are returned.
 #' 
-#' @param newx a new value for X at which to do predictions
-#' 
-#' @param type if this is coefficients, then calls coef.susie
-#' 
-#' @importFrom stats coef
+#' @param ... Additional arguments passed to the default S3 method.
+#'
+#' @return For \code{type == "response"}, predicted or fitted outcomes
+#' are returned; for \code{type == "coefficients"}, the estimated
+#' coefficients are returned.
 #' 
 #' @examples
 #' ## generate synthetic data
@@ -215,8 +237,10 @@ coef.mr.ash = function (object, ...)
 #' Xnew        = matrix(rnorm(n*p),n,p)
 #' ypred       = predict(fit.mr.ash, Xnew)
 #' 
+#' @importFrom stats predict
 #' 
 #' @export predict.mr.ash
+#' 
 #' @export
 #' 
 predict.mr.ash               = function(object,newx = NULL,
@@ -228,10 +252,10 @@ predict.mr.ash               = function(object,newx = NULL,
       stop("Do not supply newx when predicting coefficients")
     return(coef(object))
   }
-  
-  if(missing(newx)){return(object$fitted)}
-  
-  return(drop(object$intercept + newx %*% coef(object)[-1]))
+  else if(missing(newx))
+    return(object$fitted)
+  else
+    return(drop(object$intercept + newx %*% coef(object)[-1]))
 }
 
 set_default_tolerance       = function(){

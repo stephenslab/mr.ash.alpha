@@ -2,16 +2,19 @@
 % Please edit documentation in R/misc.R
 \name{coef.mr.ash}
 \alias{coef.mr.ash}
-\title{extract regression coefficients from mr_ash fit}
+\title{Extract Regression Coefficients from Mr.ASH Fit}
 \usage{
 \method{coef}{mr.ash}(object, ...)
 }
 \arguments{
-\item{object}{a mr_ash fit}
+\item{object}{A mr_ash fit, usually the result of calling
+\code{mr.ash}.}
+
+\item{...}{Additional arguments passed to the default S3 method.}
 }
 \value{
-a p+1 vector, the first element being an intercept, and the
-  remaining p elements being estimated regression coefficients
+A p+1 vector, the first element being an intercept, and the
+  remaining p elements being estimated regression coefficients.
   
 ## generate synthetic data
 set.seed(1)
@@ -31,5 +34,5 @@ intercept   = coef.mr.ash[1]
 beta        = coef.mr.ash[-1]
 }
 \description{
-extract regression coefficients from mr_ash fit
+Extract Regression Coefficients from Mr.ASH Fit
 }
