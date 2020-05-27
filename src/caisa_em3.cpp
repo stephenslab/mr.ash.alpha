@@ -100,7 +100,6 @@ List caisa_em3         (const arma::mat& X,
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta,
                       Named("sigma2")  = sigma2,
                       Named("pi")      = pi,

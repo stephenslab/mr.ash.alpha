@@ -55,7 +55,6 @@ List caisa_order      (const arma::mat& X,
   arma::mat S2inv        = 1 / outerAddition_order(1/sa2, w);
   S2inv.row(0).fill(epstol);
   
-  
   // ---------------------------------------------------------------------
   // INITIALIZE
   // ---------------------------------------------------------------------
@@ -121,7 +120,6 @@ List caisa_order      (const arma::mat& X,
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta,
                       Named("sigma2")  = sigma2,
                       Named("pi")      = pi,

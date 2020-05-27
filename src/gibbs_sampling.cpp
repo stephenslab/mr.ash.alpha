@@ -43,7 +43,6 @@ List gibbs_sampling   (const arma::mat& X,
   arma::vec beta_save(p, arma::fill::zeros);
   double sigma2_save = 0;
   
-  
   // ---------------------------------------------------------------------
   // INITIALIZE
   // ---------------------------------------------------------------------
@@ -82,7 +81,6 @@ List gibbs_sampling   (const arma::mat& X,
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta_save / (maxiter - burnin),
                       Named("sigma2")  = sigma2_save / (maxiter - burnin));
 }

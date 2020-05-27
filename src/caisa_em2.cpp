@@ -48,8 +48,6 @@ List caisa_em2        (const arma::vec& y, const arma::mat& X,
   arma::vec Xty          = X.t() * y;
   double temp = 0;
   
-  
-  
   // ---------------------------------------------------------------------
   // INITIALIZE
   // ---------------------------------------------------------------------
@@ -85,7 +83,6 @@ List caisa_em2        (const arma::vec& y, const arma::mat& X,
     // ---------------------------------------------------------------------
     // CALCULATE VARIATIONAL OBJECTIVE
     // ---------------------------------------------------------------------
-    
     if (updatesigma) {
       temp                = dot(Xty, beta);
       sigma2              = -temp + std::sqrt(temp * temp + 4 * n * yty);
@@ -122,7 +119,6 @@ List caisa_em2        (const arma::vec& y, const arma::mat& X,
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta,
                       Named("sigma2")  = sigma2,
                       Named("pi")      = pi,

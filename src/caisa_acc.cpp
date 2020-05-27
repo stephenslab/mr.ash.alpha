@@ -69,7 +69,6 @@ List caisa_acc        (const arma::mat& X,
   arma::mat S2inv        = 1 / outerAddition_acc(1/sa2, w);
   S2inv.row(0).fill(epstol);
   
-  
   // ---------------------------------------------------------------------
   // INITIALIZE
   // ---------------------------------------------------------------------
@@ -159,18 +158,11 @@ List caisa_acc        (const arma::mat& X,
         flag                = true;
       }
     }
-    
-    /*if (iter > 0) {
-      if (varobj(iter) > varobj(iter - 1)){
-        break;
-      }
-    }*/
   }
   
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta,
                       Named("sigma2")  = sigma2,
                       Named("pi")      = pi,
@@ -223,7 +215,6 @@ void updatebetaj_acc   (const arma::vec& xj, double wj,
   phij(0)               = 0;
   a2                   += -dot(phij, log(s2inv)) / 2;
   
-  
   return;
 }
 
@@ -240,7 +231,6 @@ arma::mat outerAddition_acc    (const arma::vec& a, const arma::vec& b) {
 // mixture model. For more information, see the help and comments
 // accompanying the mixsqp R function and, in particular, see how
 // mixsqp_rcpp is called inside the mixsqp function.
-
 arma::vec mixsqp_rcpp (arma::mat& L, arma::vec& x0, 
                        double convtolsqp, double convtolactiveset,
                        double zerothresholdsolution, double zerothresholdsearchdir,
@@ -350,7 +340,7 @@ arma::vec mixsqp_rcpp (arma::mat& L, arma::vec& x0,
       else
         Rprintf("%4d %+0.9e %+0.3e%4d %0.2e %0.2e %3d %3d\n",i + 1,obj[i],
                 -gmin[i],(int) nnz[i],stepsize[i-1],dmax[i-1],
-                                                        (int) nqp[i-1],(int) nls[i-1]);
+		(int) nqp[i-1],(int) nls[i-1]);
     }
     
     // CHECK CONVERGENCE

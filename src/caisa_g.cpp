@@ -45,7 +45,6 @@ List caisa_g          (const arma::mat& X,
   arma::mat S2inv        = 1 / outerAddition_g(1/sa2, w);
   S2inv.row(0).fill(epstol);
   
-  
   // ---------------------------------------------------------------------
   // INITIALIZE
   // ---------------------------------------------------------------------
@@ -56,7 +55,6 @@ List caisa_g          (const arma::mat& X,
   double a2;
   bool flag              = true;
   arma::vec piold;
-  
   
   // ---------------------------------------------------------------------
   // START LOOP : CYCLE THROUGH COORDINATE ASCENT UPDATES
@@ -135,7 +133,6 @@ List caisa_g          (const arma::mat& X,
   // ---------------------------------------------------------------------
   // RETURN VALUES
   // ---------------------------------------------------------------------
-  
   return List::create(Named("beta")    = beta,
                       Named("sigma2")  = sigma2,
                       Named("pi")      = pi,
@@ -184,21 +181,6 @@ void updatebetaj_g     (const arma::vec& xj, double wj,
     phij                = exp(phij - max(phij));
     phij                = phij / sum(phij);
   }
-  
-  // Newton-Rhapson root finding
-  // double c = 0;
-  // double f;
-  // double g;
-  // for (int i = 0; i < 20; i++) {
-  //   f = arma::sum(pi / (1 - c * Lj)) - 1;
-  //   g = arma::sum((pi % Lj) / arma::square(1 - c * Lj));
-  //   c = c - f/g;
-  // }
-  
-  // update phi
-  // arma::vec phij        = pi % Lj / (1 - c * Lj);
-  // phij                  = phij / arma::sum(phij);
-  // phi.row(j)            = trans(phij);
   
   // update pi
   pi                   += phij / p;
