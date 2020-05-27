@@ -80,9 +80,9 @@ also have different updates for \eqn{g}, but is not implemented in
 this function \code{mr.ash}. See \code{mr.ash.dev} if you are
 interested.]}
 
-\item{max.iter}{The maximum number of "outer loop" iterations allowed.}
+\item{max.iter}{The maximum number of outer loop iterations allowed.}
 
-\item{min.iter}{The minimum number of "inner loop" iterations allowed.}
+\item{min.iter}{The minimum number of outer loop iterations allowed.}
 
 \item{beta.init}{The initial estimate of the (approximate)
 posterior mean regression coefficients. This should be \code{NULL},
@@ -113,13 +113,15 @@ after removing linear effects of the intercept and any covariances.}
 columns of X variable, prior to the model fitting. The coefficients
 are always returned on the original scale.}
 
-\item{intercept}{The logical flag for including intercept (\code{intercept = TRUE})
-to the model or not (\code{intercept = FALSE}).}
+\item{intercept}{If \code{intercept = TRUE}, an intercept is
+included in the regression model.}
 
-\item{tol}{The default tolerance is \code{epstol = 1e-12} and \code{convtol = 1e-8}.
-See the documentation for \code{set_default_tolerance}. \code{epstol} stands for the
-safeguard tolerance for mixture proportions (e.g. when \code{pi[1] * log(pi[1])} is
-computed), and \code{convtol} stands for convergence tolerance.}
+\item{tol}{The default tolerance is \code{epstol = 1e-12} and
+\code{convtol = 1e-8}.  See the documentation for
+\code{set_default_tolerance}. \code{epstol} stands for the
+safeguard tolerance for mixture proportions (e.g. when \code{pi[1]
+* log(pi[1])} is computed), and \code{convtol} stands for
+convergence tolerance.}
 }
 \value{
 A list object with the following elements:
