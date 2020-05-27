@@ -41,10 +41,11 @@ FALSE}, no intercept or covariates are inclued the model. If
 intercept is added as a covariate to \code{Z}.}
 
 \item{sa2}{The vector of mixture component variances. The variances
-should be in increasing order, starting at zero. When \code{sa2 =
+should be in increasing order, starting at zero; that is,
+\code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2 =
 NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
-- 1)^2}, for \code{k = 1:20}. For this default setting, \code{sa2[1]
-= 0}, and \code{sa2[20]} is roughly 1.}
+- 1)^2}, for \code{k = 1:20}. For this default setting,
+\code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.}
 
 \item{method}{In the manuscript (see \sQuote{References}), only
 \code{method = "caisa"} is used ("Cooridinate Ascent Iterative
