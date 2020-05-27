@@ -94,6 +94,8 @@
 #' 
 #' @param sigma2 The initial value for the noise variance \eqn{\sigma^2}.
 #' If \code{sigma2 = NULL}, the default value \code{var(y-X\%*\%beta)} will be used.
+#'
+#' @param update.order Describe input argument "update.order" here.
 #' 
 #' @param standardize The logical flag for standardization of the columns of X variable,
 #' prior to the model fitting. The coefficients are always returned on the original scale.
