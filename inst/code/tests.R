@@ -20,6 +20,8 @@ i3  <- absolute.order(coef(fit)[-1])
 fit1 <- mr.ash(X,y)
 out  <- get.full.posterior(fit1)
 
+fit2 <- mr.ash(X,y,sa2 = sa2)
+
 # Predict the regression outcomes in the training data, and compare
 # against the dround-truth values.
 yest <- predict(fit1,X)

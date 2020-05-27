@@ -1,5 +1,3 @@
-#' @rdname mr.ash
-#' 
 #' @title Multiple Regression with Adaptive Shrinkage
 #' 
 #' @description Model fitting algorithms for Multiple Regression with
@@ -53,16 +51,17 @@
 #'   \code{Z} is not \code{NULL} and \code{intercept = TRUE}, then the
 #'   intercept is added as a covariate to \code{Z}.
 #' 
-#' @param sa2 The vector of mixture component variances. The first
-#'   variance \code{sa2[1] must be set to zero. When \code{sa2 = NULL},
-#'   the default setting is used, \code{sa2[k] = (2^(0.05*(k-1)) -
-#'   1)^2}, for \code{k = 1:20}. For the default setting, \code{sa2[1] =
-#'   0}, and \code{sa2[20]} is roughly 1.}
+#' @param sa2 The vector of mixture component variances. The variances
+#'   should be in increasing order, starting at zero. When \code{sa2 =
+#'   NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
+#'   - 1)^2}, for \code{k = 1:20}. For this default setting, \code{sa2[1]
+#'   = 0}, and \code{sa2[20]} is roughly 1.
 #' 
 #' @param method In the manuscript (see \sQuote{References}), only
 #' \code{method = "caisa"} is used ("Cooridinate Ascent Iterative
 #' Shinkage Algorithm"). Other method arguments will work, and produce
-#' similar outcomes unless the regression setting is extreme. [(For
+#' similar outcomes unless the regression setting is extreme. [Explain
+#' here that "block" and "accelerate" settings are experimental. (For
 #' dev 1) The \code{method} arguments caisa, sigma, sigma_scaled,
 #' sigma_indep use different updates for \eqn{sigma^2}, based on
 #' different parametrizations on the variational posterior \eqn{q} and
@@ -88,7 +87,7 @@
 #' 
 #' @param pi The initial estimate of the mixture proportions
 #'   \eqn{\pi_1,...,\pi_K}. If \code{pi = NULL}, the default value
-#'   \code{pi[k] = 1/K} for k = 1,...,K will be used. 
+#'   \code{pi[k] = 1/K} for \code{k = 1:K} will be used. 
 #' 
 #' @param update.sigma2 If \code{update.sigma2 = TRUE}, the residual
 #' variance \eqn{sigma^2} is estimated from the data.  In the manuscript,
@@ -110,8 +109,7 @@
 #'   included in the regression model.
 #' 
 #' @param tol The default tolerance is \code{epstol = 1e-12} and
-#' \code{convtol = 1e-8}.  See the documentation for
-#' \code{set_default_tolerance}. \code{epstol} stands for the
+#' \code{convtol = 1e-8}. \code{epstol} stands for the
 #' safeguard tolerance for mixture proportions (e.g. when \code{pi[1]
 #' * log(pi[1])} is computed), and \code{convtol} stands for
 #' convergence tolerance.
@@ -182,7 +180,8 @@
 #' 
 mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                                        method = c("caisa","sigma","sigma_scaled",
-                                                  "sigma_indep"),
+                                                  "sigma_indep","accelerate",
+                                                  "block"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
                                        update.pi = TRUE, pi = NULL,
@@ -294,6 +293,16 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
       out          = caisa_em3  (data$X, w, sa2, pi, data$beta, r, sigma2,
                                  max.iter, min.iter, tol$convtol, tol$epstol,
                                  update.sigma2, verbose)
+    } else if (method == "accelerate") {
+      mixsqpiter    = 5
+      out           = caisa_acc (data$X, w, sa2, pi, data$beta, r, sigma2,
+                                 max.iter, min.iter, mixsqpiter, tol$convtol, tol$epstol,
+                                 update.sigma2, verbose)
+    } else if (method == "block") {
+      stepsize      = 1
+      out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
+                                max.iter, min.iter, tol$convtol, tol$epstol,
+                                stepsize, update.sigma2, mode, verbose)
     }
   } else if (is.numeric(update.order)) {
     o   = rep(update.order - 1, max.iter)
@@ -314,7 +323,10 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   class(out) <- c("mr.ash", "list")
   
   if (out$pi[K] > tol$epstol) {
-    warning(paste0("the estimated mixtuer proportion pi[",K,"] is non-zero -- consider increasing the range of grid variances until sa2[",K,"] is zero\n",sep = ""))
+    warning("The mixture proportion associated with the largest prior variance ",
+            "is greater than zero; this indicates that the model fit could be ",
+            "improved by using a larger setting of the prior variance. Consider ",
+            "increasing the range of the variances sa2.")
   }
   
   return(out)
