@@ -42,63 +42,69 @@
 #'   the number of samples and p is the number of predictors. Currently,
 #'   sparse matrix formats are not supported.
 #' 
-#' @param y The response variable. Currently we only allow the linear
-#' regression case which corresponds to family = "gaussian" in glmnet
-#' package.  Thus we treat y as a real valued quantitative response
-#' variable.
+#' @param y The observed quantitative responses, a vector of length p.
 #' 
-#' @param Z The covariate matrix, of dimension (n,k); k is the number
-#' of covariates.  The input matrix Z can be modified according to
-#' "intercept" argument. If \code{Z = NULL} and \code{intercept =
-#' TRUE}, then the actual \code{Z} will be the matrix having entries 1
-#' of dimension (n,1).  (\code{Z = NULL} by default, and if
-#' \code{intercept = FALSE} then we do not include any covariates in
-#' the model.  If \code{intercept = TRUE}, then we will add the vector
-#' of ones to the columns of Z.  That is, \code{Z <- cbind(1,Z)}.)
+#' @param Z The covariate matrix, of dimension (n,k), where k is the
+#'   number of covariates.  The input matrix Z can be modified according
+#'   to "intercept" argument. If \code{Z = NULL} and \code{intercept =
+#'   TRUE}, then the actual \code{Z} will be the matrix having entries 1
+#'   of dimension (n,1). If \code{Z = NULL} and \code{intercept =
+#'   FALSE}, no intercept or covariates are inclued the model. If
+#'   \code{Z} is not \code{NULL} and \code{intercept = TRUE}, then the
+#'   intercept is added as a covariate to \code{Z}.
 #' 
-#' @param sa2 The vector of mixture component variances. Currently we
-#'   only allow \code{sa2[1] = 0} for a technical reason. The default
-#'   value is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.
+#' @param sa2 The vector of mixture component variances. The first
+#'   variance \code{sa2[1] must be set to zero. When \code{sa2 = NULL},
+#'   the default setting is used, \code{sa2[k] = (2^(0.05*(k-1)) -
+#'   1)^2}, for \code{k = 1:20}. For the default setting, \code{sa2[1] =
+#'   0}, and \code{sa2[20]} is roughly 1.}
 #' 
-#' @param method In the manuscript (preprint) listed in
-#' \sQuote{References}, only \code{method = "caisa"} is used, which
-#' stands for Cooridinate Ascent Iterative Shinkage Algorithm. Other
-#' method arguments will work, and produce similar outcomes unless the
-#' regression setting is extreme. [(For dev 1) The \code{method}
-#' arguments caisa, sigma, sigma_scaled, sigma_indep use different
-#' updates for \eqn{sigma^2}, based on different parametrizations on
-#' the variational posterior \eqn{q} and \eqn{g}. More precisely, the
-#' update for \eqn{\sigma^2} depends on whether we use sigma-dependent
-#' parametrization for \eqn{q} and/or \eqn{g}. See reference for
-#' details. (For dev 2) Furthermore, we also have different updates for
-#' \eqn{g}, but is not implemented in this function \code{mr.ash}. See
-#' \code{mr.ash.dev} if you are interested.]
+#' @param method In the manuscript (see \sQuote{References}), only
+#' \code{method = "caisa"} is used ("Cooridinate Ascent Iterative
+#' Shinkage Algorithm"). Other method arguments will work, and produce
+#' similar outcomes unless the regression setting is extreme. [(For
+#' dev 1) The \code{method} arguments caisa, sigma, sigma_scaled,
+#' sigma_indep use different updates for \eqn{sigma^2}, based on
+#' different parametrizations on the variational posterior \eqn{q} and
+#' \eqn{g}. More precisely, the update for \eqn{\sigma^2} depends on
+#' whether we use sigma-dependent parametrization for \eqn{q} and/or
+#' \eqn{g}. See reference for details. (For dev 2) Furthermore, we
+#' also have different updates for \eqn{g}, but is not implemented in
+#' this function \code{mr.ash}. See \code{mr.ash.dev} if you are
+#' interested.]
 #' 
-#' @param max.iter The maximum number of outer loop iterations allowed.
+#' @param max.iter The maximum number of "outer loop" iterations allowed.
 #' 
-#' @param min.iter The minimum number of inner loop iterations allowed.
+#' @param min.iter The minimum number of "inner loop" iterations allowed.
 #' 
-#' @param beta.init The initial value for the variational posterior mean
-#' of the regression coefficients.
+#' @param beta.init The initial estimate of the (approximate)
+#'   posterior mean regression coefficients. This should be \code{NULL},
+#'   or a vector of length p. When \code{beta.init = NULL}, the
+#'   posterior mean coefficients are all initially zero.
 #' 
-#' @param update.pi The boolean parameter indicating whether the
-#' mixture proportion \eqn{\pi} will be updated or not. In the
-#' manuscript, \code{update.pi = TRUE}.
+#' @param update.pi If \code{update.pi = TRUE}, the mixture
+#'   proportions in the mixture-of-normals prior are estimated from the
+#'   data. In the manuscript, \code{update.pi = TRUE}.
 #' 
-#' @param pi The initial value for the mixture proportions
-#' \eqn{\pi_1,...,\pi_K}. If \code{pi = NULL}, the default value
-#' \code{pi[k] = 1/K} for k = 1,...,K will be used.
+#' @param pi The initial estimate of the mixture proportions
+#'   \eqn{\pi_1,...,\pi_K}. If \code{pi = NULL}, the default value
+#'   \code{pi[k] = 1/K} for k = 1,...,K will be used. 
 #' 
-#' @param update.sigma2 The boolean parameter indicating whether the noise variance
-#' \eqn{\sigma^2} will be updated or not. In the manuscript, \code{update.sigma = TRUE}.
+#' @param update.sigma2 If \code{update.sigma2 = TRUE}, the residual
+#' variance \eqn{sigma^2} is estimated from the data.  In the manuscript,
+#' \code{update.sigma = TRUE}.
 #' 
-#' @param sigma2 The initial value for the noise variance \eqn{\sigma^2}.
-#' If \code{sigma2 = NULL}, the default value \code{var(y-X\%*\%beta)} will be used.
+#' @param sigma2 The initial estimate of the residual variance,
+#'   \eqn{\sigma^2}. If \code{sigma2 = NULL}, the residual variance is
+#'   initialized to the empirical variance of the residuals based on the
+#'   initial estimates of the regression coefficients, \code{beta.init},
+#'   after removing linear effects of the intercept and any covariances.
 #'
 #' @param update.order Describe input argument "update.order" here.
 #' 
-#' @param standardize The logical flag for standardization of the columns of X variable,
-#' prior to the model fitting. The coefficients are always returned on the original scale.
+#' @param standardize The logical flag for standardization of the
+#'   columns of X variable, prior to the model fitting. The coefficients
+#'   are always returned on the original scale.
 #' 
 #' @param intercept The logical flag for including intercept (\code{intercept = TRUE})
 #' to the model or not (\code{intercept = FALSE}).
