@@ -17,7 +17,7 @@ i3  <- absolute.order(coef(fit)[-1])
 
 # Fit the mr.ash model, and compute posterior expectations of
 # interest (means, variances, and posterior assignment probabilities).
-fit1 <- mr.ash(X,y,update.order = NULL)
+fit1 <- mr.ash(X,y)
 out  <- get.full.posterior(fit1)
 
 # Predict the regression outcomes in the training data, and compare

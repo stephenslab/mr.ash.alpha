@@ -120,26 +120,32 @@
 #' 
 #' @return A list object with the following elements:
 #' 
-#' \item{intercept}{An intercept.}
+#' \item{intercept}{The estimated intercept.}
 #' 
-#' \item{beta}{A vector of estimated regression coefficients (variational posterior means), 
-#' after fixed effects (e.g. intercept) from covariates are subtracted out.}
+#' \item{beta}{A vector containing posterior mean estimates of the
+#'   regression coefficients for all predictors.}
 #' 
-#' \item{sigma2}{A scalar value of estimated noise variance (approximate maximum likelihood).}
+#' \item{sigma2}{The estimated residual variance.}
 #' 
-#' \item{pi}{A vector of estimated mixture proportions of length K, where \code{K = length(sa2)}.}
+#' \item{pi}{A vector of containing the estimated mixture
+#'   proportions}.
 #' 
-#' \item{iter}{The number of total outer loop iterations implemented in the coordinate ascent algorithm.}
+#' \item{iter}{The number of outer-loop iterations that were
+#'   performed.}
 #' 
-#' \item{varobj}{A sequence of variational objective values (which equals the negative evidence lower bound).
-#' \code{length(varobj)} should be equal to \code{iter}.}
+#' \item{update.order}{The ordering used for performing the
+#'   coordinate-wise updates.}
 #' 
-#' \item{data}{A preprocessed data used as the actual input for the algorithm. When \code{Z = NULL}
-#' and \code{intercept = TRUE}, then the columns of X and y will be centered, and returned.
-#' In general, Z will be regressed out, or equivalently, X and y will be projected into the space
-#' orthogonal to Z, and then will be returned.}
+#' \item{varobj}{A vector, with \code{length(varobj) = numiter},
+#'   containing the value of the variational objective (equal to the
+#'   negative of the "evidence lower bound") attained at each outer-loop
+#'   iteration of the model fitting algorithm.}
 #' 
-#' \item{update.order}{An update order used for the outer loop iterations.}
+#' \item{data}{A preprocessed data used as the actual input for the
+#' algorithm. When \code{Z = NULL} and \code{intercept = TRUE}, then
+#' the columns of X and y will be centered, and returned.  In general,
+#' Z will be regressed out, or equivalently, X and y will be projected
+#' into the space orthogonal to Z, and then will be returned.}
 #' 
 #' @seealso \code{\link{get.full.posterior}}
 #' 
