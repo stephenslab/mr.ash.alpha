@@ -10,7 +10,7 @@ beta[1:10] <- rnorm(10)
 y          <- drop(-2 + X %*% beta + rnorm(n))
 
 # Try the different orderings.
-fit <- glmnet::cv.glmnet(X,y)
+fit <- glmnet::glmnet(X,y)
 i1  <- univar.order(X,y)
 i2  <- path.order(fit)
 i3  <- absolute.order(coef(fit)[-1])

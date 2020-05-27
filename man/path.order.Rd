@@ -7,14 +7,18 @@
 path.order(fit)
 }
 \arguments{
-\item{fit}{a glmnet fit, or a ncvreg fit}
+\item{fit}{The output of a function such as \code{glmnet} from the
+\code{glmnet} package or \code{ncvreg} from the \code{ncvfeg} that
+estimates a "regularization path" for all predictors.}
 }
 \value{
 An ordering of the predictors.
 }
 \description{
-This function extracts the path order from penalized
-regression fit.
+This function determines an ordering of the predictors
+  based on the regularization path of the penalized regression; in
+  particular, the predictors are ordered based on the order in which
+  the coefficients become nonzero as the penalty strength decreases.
 }
 \examples{
 ### generate synthetic data
