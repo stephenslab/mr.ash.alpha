@@ -51,15 +51,17 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
 
 #' @title Ordering of Predictors from Univariate Regression
 #' 
-#' @param X An input design matrix. This may be centered and/or
-#'   standardized prior to calling function.
-#' 
-#' @param y A vector of response variables.
-#' 
 #' @description This function extracts the ordering of the predictors
 #'   according to the coefficients estimated in a basic univariate
 #'   regression; in particular, the predictors are in decreasing order
 #'   by magnitude of the univariate regression coefficient estimate.
+#' 
+#' @param X An input design matrix. This may be centered and/or
+#'   standardized prior to calling function.
+#' 
+#' @param y A vector of response variables.
+#'
+#' @return An ordering of the predictors.
 #' 
 #' @examples
 #' ### generate synthetic data
@@ -80,58 +82,14 @@ univar.order = function(X, y) {
   return (order(abs(c(t(X) %*% y) / colnorm), decreasing = TRUE))
 }
 
-#' @title regularization path order
+#' @title Ordering of Predictors from Coefficient Estimates 
 #' 
-#' @param beta a glmnet fit, or a ncvreg fit
+#' @param beta A vector of estimated regression coefficients.
 #' 
-#' @description This function extracts the path order from penalized
-#' regression fit.
-#' 
-#' @examples
-#' ### generate synthetic data
-#' set.seed(1)
-#' n           = 200
-#' p           = 300
-#' X           = matrix(rnorm(n*p),n,p)
-#' beta        = double(p)
-#' beta[1:10]  = 1:10
-#' y           = X %*% beta + rnorm(n)
-#' 
-#' ### glmnet fit
-#' library(glmnet)
-#' fit.lasso = glmnet(X, y)
-#' lasso.order = path.order(fit.lasso)
-#' 
-#' ### ncvreg fit
-#' library(ncvreg)
-#' fit.scad = ncvreg(X, y)
-#' scad.order = path.order(fit.scad)
+#' @description This function orders the predictors by decreasing
+#'   order of the magnitude of the estimated regression coefficient.
 #'
-#' @export
-#' 
-path.order = function (fit) {
-  # perform lasso regression and reorder regressors by their "importance"
-  beta_path = coef(fit)[-1,]
-  K = dim(beta_path)[2]
-  path_order = c()
-  for (k in 1:K) {
-    crt_path = which(beta_path[,k] != 0)
-    if (length(crt_path) != 0 & length(path_order) == 0) {
-      path_order = c(path_order, crt_path)
-    } else if(length(crt_path) != 0) {
-      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
-    }
-  }
-  path_order = unname(path_order)
-  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
-  return (index_order)
-}
-
-#' @title absolute magnitude order
-#' 
-#' @param beta a vector of regression coefficients
-#' 
-#' @description This function extracts the absolute value order from any fit.
+#' @return An ordering of the predictors.
 #' 
 #' @examples
 #' ### generate synthetic data
@@ -158,6 +116,54 @@ path.order = function (fit) {
 absolute.order = function (beta) {
   abs_order = c(order(abs(beta), decreasing = TRUE))
   return (abs_order)
+}
+
+#' @title Ordering of Predictors by Regularization Path
+#' 
+#' @param fit a glmnet fit, or a ncvreg fit
+#' 
+#' @description This function extracts the path order from penalized
+#' regression fit.
+#' 
+#' @return An ordering of the predictors.
+#' 
+#' @examples
+#' ### generate synthetic data
+#' set.seed(1)
+#' n           = 200
+#' p           = 300
+#' X           = matrix(rnorm(n*p),n,p)
+#' beta        = double(p)
+#' beta[1:10]  = 1:10
+#' y           = X %*% beta + rnorm(n)
+#' 
+#' ### glmnet fit
+#' library(glmnet)
+#' fit.lasso = glmnet(X, y)
+#' lasso.order = path.order(fit.lasso)
+#' 
+#' ### ncvreg fit
+#' library(ncvreg)
+#' fit.scad = ncvreg(X, y)
+#' scad.order = path.order(fit.scad)
+#'
+#' @export
+#' 
+path.order = function (fit) {
+  beta_path = coef(fit)[-1,]
+  K = dim(beta_path)[2]
+  path_order = c()
+  for (k in 1:K) {
+    crt_path = which(beta_path[,k] != 0)
+    if (length(crt_path) != 0 & length(path_order) == 0) {
+      path_order = c(path_order, crt_path)
+    } else if(length(crt_path) != 0) {
+      path_order = c(path_order, crt_path[-which(crt_path %in% path_order)] )
+    }
+  }
+  path_order = unname(path_order)
+  index_order = c(path_order, seq(1,dim(beta_path)[1])[-path_order])
+  return (index_order)
 }
 
 #' @title Extract Regression Coefficients from Mr.ASH Fit

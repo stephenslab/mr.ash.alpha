@@ -10,7 +10,10 @@ beta[1:10] <- rnorm(10)
 y          <- drop(-2 + X %*% beta + rnorm(n))
 
 # Try the different orderings.
-out <- univar.order(X,y)
+fit <- glmnet::cv.glmnet(X,y)
+i1  <- univar.order(X,y)
+i2  <- path.order(fit)
+i3  <- absolute.order(coef(fit)[-1])
 
 # Fit the mr.ash model, and compute posterior expectations of
 # interest (means, variances, and posterior assignment probabilities).

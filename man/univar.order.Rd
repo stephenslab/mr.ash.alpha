@@ -12,6 +12,9 @@ standardized prior to calling function.}
 
 \item{y}{A vector of response variables.}
 }
+\value{
+An ordering of the predictors.
+}
 \description{
 This function extracts the ordering of the predictors
   according to the coefficients estimated in a basic univariate

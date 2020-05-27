@@ -2,15 +2,19 @@
 % Please edit documentation in R/misc.R
 \name{absolute.order}
 \alias{absolute.order}
-\title{absolute magnitude order}
+\title{Ordering of Predictors from Coefficient Estimates}
 \usage{
 absolute.order(beta)
 }
 \arguments{
-\item{beta}{a vector of regression coefficients}
+\item{beta}{A vector of estimated regression coefficients.}
+}
+\value{
+An ordering of the predictors.
 }
 \description{
-This function extracts the absolute value order from any fit.
+This function orders the predictors by decreasing
+  order of the magnitude of the estimated regression coefficient.
 }
 \examples{
 ### generate synthetic data

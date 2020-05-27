@@ -2,12 +2,15 @@
 % Please edit documentation in R/misc.R
 \name{path.order}
 \alias{path.order}
-\title{regularization path order}
+\title{Ordering of Predictors by Regularization Path}
 \usage{
 path.order(fit)
 }
 \arguments{
-\item{beta}{a glmnet fit, or a ncvreg fit}
+\item{fit}{a glmnet fit, or a ncvreg fit}
+}
+\value{
+An ordering of the predictors.
 }
 \description{
 This function extracts the path order from penalized
