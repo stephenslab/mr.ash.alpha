@@ -2,7 +2,7 @@
 % Please edit documentation in R/mr.ash.R
 \name{mr.ash}
 \alias{mr.ash}
-\title{Mr.ASH (Multiple Regression with Adaptive Shrikage)}
+\title{Multiple Regression with Adaptive Shrinkage}
 \usage{
 mr.ash(
   X,
@@ -25,8 +25,8 @@ mr.ash(
 }
 \arguments{
 \item{X}{The input matrix, of dimension (n,p); each column is a
-single predictor; and each row is an observation vector. Here n is
-the number of samples and p is the number of predictors. Currently
+single predictor; and each row is an observation vector. Here, n is
+the number of samples and p is the number of predictors. Currently,
 sparse matrix formats are not supported.}
 
 \item{y}{The response variable. Currently we only allow the linear
@@ -45,26 +45,21 @@ of ones to the columns of Z.  That is, \code{Z <- cbind(1,Z)}.)}
 
 \item{sa2}{The vector of mixture component variances. Currently we
 only allow \code{sa2[1] = 0} for a technical reason. The default
-grid values are \code{sa2[k] = (2^(0.05 * (k-1)) - 1)^2}, for k =
-1,...,20. Note that \code{sa2[1] = 0} exactly and \code{sa2[20] =
-1} approximately.}
+value is \code{sa2[k] = 2^(k-1) - 1}, for k = 1,...,20.}
 
 \item{method}{In the manuscript (preprint) listed in
 \sQuote{References}, only \code{method = "caisa"} is used, which
 stands for Cooridinate Ascent Iterative Shinkage Algorithm. Other
 method arguments will work, and produce similar outcomes unless the
-regression setting is extreme.
-
-(For dev 1) The \code{method} arguments caisa, sigma, sigma_scaled,
-sigma_indep use different updates for \eqn{sigma^2}, based on
-different parametrizations on the variational posterior \eqn{q} and
-\eqn{g}. More precisely, the update for \eqn{\sigma^2} depends on
-whether we use sigma-dependent parametrization for \eqn{q} and/or
-\eqn{g}. See reference for details.
-
-(For dev 2) Furthermore, we also have different updates for
+regression setting is extreme. [(For dev 1) The \code{method}
+arguments caisa, sigma, sigma_scaled, sigma_indep use different
+updates for \eqn{sigma^2}, based on different parametrizations on
+the variational posterior \eqn{q} and \eqn{g}. More precisely, the
+update for \eqn{\sigma^2} depends on whether we use sigma-dependent
+parametrization for \eqn{q} and/or \eqn{g}. See reference for
+details. (For dev 2) Furthermore, we also have different updates for
 \eqn{g}, but is not implemented in this function \code{mr.ash}. See
-\code{mr.ash.dev} if you are interested.}
+\code{mr.ash.dev} if you are interested.]}
 
 \item{max.iter}{The maximum number of outer loop iterations allowed.}
 
@@ -123,10 +118,11 @@ orthogonal to Z, and then will be returned.}
 \item{update.order}{An update order used for the outer loop iterations.}
 }
 \description{
-The \code{mr.ash} function implements the Variational Empirical Bayes (VEB)
-approach for prediction in multiple linear regression. It maximizes the approximate
-marginal likelihood (a.k.a. evidence lower bound) using the coordinate ascent algorithm.
-See \sQuote{References} for more details about the algorithms.
+Model fitting algorithms for Multiple Regression with
+Adaptive Shrinkage ("Mr.ASH"), a variational empirical Bayes (VEB)
+method for multiple linear regression. The fitting algorithms
+maximize the approximate marginal likelihood ("evidence lower
+bound", or "ELBO") via co-ordinate ascent updates.
 }
 \details{
 The VEB approach is based on the multiple linear
@@ -179,8 +175,9 @@ betahat     = predict(fit.mr.ash, type = "coefficients")
 
 }
 \references{
-Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020),
-Fast and Flexible Empirical Bayes Approach to Prediction in Multiple Regression.
+Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020). Fast and
+flexible empirical Bayes approach to prediction in multiple
+regression.
 }
 \seealso{
 The documentation for \code{get.full.posterior} function
@@ -188,4 +185,6 @@ for recovering the full posterior from the \code{mr.ash} fit. Also,
 see the documentation for \code{mr.ash.dev} if you are interested
 in additional functionality that are not used in the paper (see
 \sQuote{References}).
+
+\code{\link{get.full.posterior}}
 }
