@@ -26,8 +26,8 @@ mr.ash(
 \arguments{
 \item{X}{The input matrix, of dimension (n,p); each column is a
 single predictor; and each row is an observation vector. Here, n is
-the number of samples and p is the number of predictors. Currently,
-sparse matrix formats are not supported.}
+the number of samples and p is the number of predictors. The matrix
+cannot be sparse.}
 
 \item{y}{The observed quantitative responses, a vector of length p.}
 
@@ -45,19 +45,16 @@ should be in increasing order, starting at zero; that is,
 \code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2 =
 NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
 - 1)^2}, for \code{k = 1:20}. For this default setting,
-\code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1. Currently we
-only allow \code{sa2[1] = 0}.}
+\code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.}
 
 \item{method}{In the manuscript (see \sQuote{References}), only
 \code{method = "caisa"} is used ("Cooridinate Ascent Iterative
 Shinkage Algorithm"). Other method arguments will work, and produce
 similar outcomes unless the regression setting is extreme.
-
 (For dev 1) All the other settings but \code{method = "caisa"} are
 purely experimental and under construction. 
 The \code{method} arguments "block" and "accelerate" use different
 updates for \eqn{g}.
-
 (For dev 2) The \code{method} arguments "caisa", "sigma", "sigma_scaled",
 "sigma_indep" use different updates for \eqn{sigma^2}, based on
 different parametrizations on the variational posterior \eqn{q} and
@@ -92,20 +89,22 @@ initialized to the empirical variance of the residuals based on the
 initial estimates of the regression coefficients, \code{beta.init},
 after removing linear effects of the intercept and any covariances.}
 
-\item{update.order}{The predetermined order on the cyclic updates of
-variational factors \eqn{q_1,...,q_p}. \code{update.order} can be 
-any permutation of a vector \eqn{(1,...,p)}, \code{NULL} or \code{"random"}.
-For instance, \code{update.order = rev(1:p)}.
-The default setting is \code{update.orde r =NULL}, 
-which equals \eqn{(1,...,p)}. If \code{update.order = "random"}, then for
-each outer loop iteration, the update order will be a random permutation of
-\eqn{(1,...,p)}.}
+\item{update.order}{The order in which the co-ordinate ascent
+updates for estimating the posterior mean coefficients are
+performed. \code{update.order} can be \code{NULL}, \code{"random"},
+or any permutation of \eqn{(1,...,p)}, where \code{p} is the number
+of columns in the input matrix \code{X}. When \code{update.order}
+is \code{NULL}, the co-ordinate ascent updates are performed in
+order in which they appear in \code{X}; this is equivalent to
+setting \code{update.order = 1:p}. When \code{update.order =
+"random"}, the co-ordinate ascent updates are performed in a
+random order.}
 
 \item{standardize}{The logical flag for standardization of the
 columns of X variable, prior to the model fitting. The coefficients
 are always returned on the original scale.}
 
-\item{intercept}{If \code{intercept = TRUE}, an intercept is
+\item{intercept}{When \code{intercept = TRUE}, an intercept is
 included in the regression model.}
 
 \item{tol}{Additional settings controlling behaviour of the model
@@ -116,7 +115,7 @@ weights is less than \code{convtol*K}; when \code{update.pi =
 FALSE}, the outer-loop updates stop when the largest change in the
 estimates of the posterior mean coefficients is less than
 \code{convtol*K}. \code{tol$epstol} is a small, positive number
-added to the likelihoods to avoid logarithms of zero}
+added to the likelihoods to avoid logarithms of zero.}
 }
 \value{
 A list object with the following elements:
@@ -144,34 +143,28 @@ orthogonal to Z, and then will be returned.}
 }
 \description{
 Model fitting algorithms for Multiple Regression with
-Adaptive Shrinkage ("Mr.ASH"), a variational empirical Bayes (VEB)
-method for multiple linear regression. The fitting algorithms
-maximize the approximate marginal likelihood ("evidence lower
-bound", or "ELBO") via co-ordinate ascent updates.
+  Adaptive Shrinkage ("Mr.ASH"). Mr.ASH is a variational empirical
+  Bayes (VEB) method for multiple linear regression. The fitting
+  algorithms maximize the approximate marginal likelihood (the "evidence
+  lower bound", or "ELBO") via coordinate-wise updates.
 }
 \details{
-The VEB approach is based on the multiple linear
-regression model: \deqn{y|X,\beta,\sigma^2 ~ N(X\beta, \sigma^2
-I_n), \beta | \pi, \sigma^2 ~ \sum_{k=1}^K N(0,\sigma^2\sigma_k^2)}
-Here \eqn{\sigma_k^2} is the k-th mixture component variance
-\code{sa2[k]} (note that \eqn{\sigma^2}) is dropped.), and \eqn{K}
-is the number of mixture components \code{length(sa2)}.  The other
-parameters are described in the \sQuote{Arguments}.
+Mr.ASH adopts the following multiple linear regression
+  model: \deqn{y | X, \beta, \sigma^2 \sim N(X \beta, \sigma^2 I_n),}
+  in which the regression coefficients admit the following
+  mixture-of-normals prior: \deqn{\beta | \pi, \sigma^2 ~
+  \sum_{k=1}^K N(0, \sigma^2 \ sigma_k^2)}. Each mixture component is
+  a normal density with zero mean and variance \eqn{\sigma^2
+  \sigma_k^2}.
 
-The VEB approach solves the following optimization problem:
-\deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
-\sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
-variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
-one at a time while fixing the others, in each outer loop
-iteration.
+  The VEB approach solves the following optimization problem:
+  \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
+  \sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
+  variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
+  one at a time while fixing the others, in each outer loop
+  iteration.
 
-The algorithm does not store the full variational posterior \eqn{q
-= (q_1,...,q_p)}, but only stores the variational posterior mean
-\code{beta} for each regression coefficients.  In order to recover
-the full posterior, see the documentation for
-\code{get.full.posterior} function.
-
-See \sQuote{References} for more details about the VEB approach.
+  See \sQuote{References} for more details about the VEB approach.
 }
 \examples{
 ### generate synthetic data
@@ -205,11 +198,7 @@ flexible empirical Bayes approach to prediction in multiple
 regression.
 }
 \seealso{
-The documentation for \code{get.full.posterior} function
-for recovering the full posterior from the \code{mr.ash} fit. Also,
-see the documentation for \code{mr.ash.dev} if you are interested
-in additional functionality that are not used in the paper (see
-\sQuote{References}).
+\code{\link{get.full.posterior}}
 
 \code{\link{get.full.posterior}}
 }

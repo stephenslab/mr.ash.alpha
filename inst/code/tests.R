@@ -17,10 +17,8 @@ i3  <- absolute.order(coef(fit)[-1])
 
 # Fit the mr.ash model, and compute posterior expectations of
 # interest (means, variances, and posterior assignment probabilities).
-fit1 <- mr.ash(X,y)
+fit1 <- mr.ash(X,y,update.order = NULL)
 out  <- get.full.posterior(fit1)
-
-fit2 <- mr.ash(X,y,sa2 = sa2)
 
 # Predict the regression outcomes in the training data, and compare
 # against the dround-truth values.
