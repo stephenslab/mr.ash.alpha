@@ -98,11 +98,15 @@ are always returned on the original scale.}
 \item{intercept}{If \code{intercept = TRUE}, an intercept is
 included in the regression model.}
 
-\item{tol}{The default tolerance is \code{epstol = 1e-12} and
-\code{convtol = 1e-8}. \code{epstol} stands for the
-safeguard tolerance for mixture proportions (e.g. when \code{pi[1]
-* log(pi[1])} is computed), and \code{convtol} stands for
-convergence tolerance.}
+\item{tol}{Additional settings controlling behaviour of the model
+fitting algorithm. \code{tol$convtol} controls the termination
+criterion for the model fitting. When \code{update.pi = TRUE}, the
+outer-loop updates stop when the largest change in the mixture
+weights is less than \code{convtol*K}; when \code{update.pi =
+FALSE}, the outer-loop updates stop when the largest change in the
+estimates of the posterior mean coefficients is less than
+\code{convtol*K}. \code{tol$epstol} is a small, positive number
+added to the likelihoods to avoid logarithms of zero}
 }
 \value{
 A list object with the following elements:
