@@ -56,22 +56,25 @@
 #'   \code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2 =
 #'   NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
 #'   - 1)^2}, for \code{k = 1:20}. For this default setting,
-#'   \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
+#'   \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1. Currently we
+#'   only allow \code{sa2[1] = 0}.
 #' 
 #' @param method In the manuscript (see \sQuote{References}), only
 #' \code{method = "caisa"} is used ("Cooridinate Ascent Iterative
 #' Shinkage Algorithm"). Other method arguments will work, and produce
-#' similar outcomes unless the regression setting is extreme. [Explain
-#' here that "block" and "accelerate" settings are experimental. (For
-#' dev 1) The \code{method} arguments caisa, sigma, sigma_scaled,
-#' sigma_indep use different updates for \eqn{sigma^2}, based on
+#' similar outcomes unless the regression setting is extreme.
+#' 
+#' (For dev 1) All the other settings but \code{method = "caisa"} are
+#' purely experimental and under construction. 
+#' The \code{method} arguments "block" and "accelerate" use different
+#' updates for \eqn{g}.
+#' 
+#' (For dev 2) The \code{method} arguments "caisa", "sigma", "sigma_scaled",
+#' "sigma_indep" use different updates for \eqn{sigma^2}, based on
 #' different parametrizations on the variational posterior \eqn{q} and
 #' \eqn{g}. More precisely, the update for \eqn{\sigma^2} depends on
 #' whether we use sigma-dependent parametrization for \eqn{q} and/or
-#' \eqn{g}. See reference for details. (For dev 2) Furthermore, we
-#' also have different updates for \eqn{g}, but is not implemented in
-#' this function \code{mr.ash}. See \code{mr.ash.dev} if you are
-#' interested.]
+#' \eqn{g}. See reference for details. 
 #' 
 #' @param max.iter The maximum number of outer loop iterations allowed.
 #' 
@@ -100,7 +103,14 @@
 #'   initial estimates of the regression coefficients, \code{beta.init},
 #'   after removing linear effects of the intercept and any covariances.
 #'
-#' @param update.order Describe input argument "update.order" here.
+#' @param update.order The predetermined order on the cyclic updates of
+#' variational factors \eqn{q_1,...,q_p}. \code{update.order} can be 
+#' any permutation of a vector \eqn{(1,...,p)}, \code{NULL} or \code{"random"}.
+#' For instance, \code{update.order = rev(1:p)}.
+#' The default setting is \code{update.orde r =NULL}, 
+#' which equals \eqn{(1,...,p)}. If \code{update.order = "random"}, then for
+#' each outer loop iteration, the update order will be a random permutation of
+#' \eqn{(1,...,p)}.
 #' 
 #' @param standardize The logical flag for standardization of the
 #'   columns of X variable, prior to the model fitting. The coefficients
