@@ -4,24 +4,24 @@
 #'   Adaptive Shrinkage ("Mr.ASH"). Mr.ASH is a variational empirical
 #'   Bayes (VEB) method for multiple linear regression. The fitting
 #'   algorithms maximize the approximate marginal likelihood (the "evidence
-#'   lower bound", or "ELBO") via coordinate-wise updates.
+#'   lower bound", or ELBO) via coordinate-wise updates.
 #' 
-#' @details Mr.ASH adopts the following multiple linear regression
-#'   model: \deqn{y | X, \beta, \sigma^2 \sim N(X \beta, \sigma^2 I_n),}
-#'   in which the regression coefficients admit the following
-#'   mixture-of-normals prior: \deqn{\beta | \pi, \sigma^2 ~
-#'   \sum_{k=1}^K N(0, \sigma^2 \ sigma_k^2)}. Each mixture component is
-#'   a normal density with zero mean and variance \eqn{\sigma^2
-#'   \sigma_k^2}.
+#' @details Mr.ASH is a statistical inference method for the following
+#' multiple linear regression model: \deqn{y | X, \beta, \sigma^2 ~
+#' N(X \beta, \sigma I_n),} in which the regression coefficients
+#' \eqn{\beta} admit a mixture-of-normals prior, \deqn{\beta | \pi,
+#' \sigma ~ \sum_{k=1}^K N(0, \sigma^2 \sigma_k^2).} Each mixture
+#' component in the prior is a normal density centered at zero, with
+#' variance \eqn{\sigma^2 \sigma_k^2}.
 #' 
-#'   The VEB approach solves the following optimization problem:
-#'   \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
-#'   \sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
-#'   variational factors \eqn{q_1,\ldots,q_p}, \eqn{g} and \eqn{\sigma^2}
-#'   one at a time while fixing the others, in each outer loop
-#'   iteration.
+#' The VEB approach solves the following optimization problem:
+#' \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
+#' \sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
+#' variational factors \eqn{q_1,\ldots,q_p}, \eqn{g} and \eqn{\sigma^2}
+#' one at a time while fixing the others, in each outer loop
+#' iteration.
 #' 
-#'   See \sQuote{References} for more details about the VEB approach.
+#' See \sQuote{References} for more details about the VEB approach.
 #'
 #' @param X The input matrix, of dimension (n,p); each column is a
 #'   single predictor; and each row is an observation vector. Here, n is
