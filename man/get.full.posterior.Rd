@@ -25,11 +25,11 @@ A list object with the following elements:
   conditional on assignment to each mixture component.}
 }
 \description{
-Recover the parametres specifying the full approximate
-posterior distribution. To streamline the model fitting
-implementation, and to reduce memory needs, \code{\link{mr.ash}}
-does not store all the parameters needed to specify the approximate
-posterior.
+Recover the parameters specifying the variational
+  approximation to the posterior distribution of the regression
+  coefficients. To streamline the model fitting implementation, and
+  to reduce memory requirements, \code{\link{mr.ash}} does not store
+  all the parameters needed to specify the approximate posterior.
 }
 \examples{
 ## generate synthetic data

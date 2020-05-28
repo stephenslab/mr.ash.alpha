@@ -29,14 +29,15 @@ single predictor; and each row is an observation vector. Here, n is
 the number of samples and p is the number of predictors. The matrix
 cannot be sparse.}
 
-\item{y}{The observed quantitative responses, a vector of length p.}
+\item{y}{The observed continuously-valued responses, a vector of
+length p.}
 
 \item{Z}{The covariate matrix, of dimension (n,k), where k is the
 number of covariates. This feature is not yet implemented;
 \code{Z} must be set to \code{NULL}.}
 
-\item{sa2}{The vector of mixture component variances. The variances
-should be in increasing order, starting at zero; that is,
+\item{sa2}{The vector of prior mixture component variances. The
+variances should be in increasing order, starting at zero; that is,
 \code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2}
 is \code{NULL}, the default setting is used, \code{sa2[k] =
 (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default

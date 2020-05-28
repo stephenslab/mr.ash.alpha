@@ -4,10 +4,8 @@
 # https://github.com/pcarbo/varbvs
 # ----------------------------------------------------------------------
 
-#' @title remove covariate effect
-#' @description Regresses \eqn{Z} out from \eqn{X} and \eqn{y}.
-#' In other words, \eqn{X} and \eqn{y} will be
-#' projected into the space orthogonal to \eqn{Z}.
+# Remove covariate effects Regresses Z out from X and y; that is, X
+# and y are projected into the space orthogonal to Z.
 #' 
 #' @importFrom Matrix forceSymmetric
 #'
@@ -58,8 +56,9 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
 #' 
 #' @description This function extracts the ordering of the predictors
 #'   according to the coefficients estimated in a basic univariate
-#'   regression; in particular, the predictors are in decreasing order
-#'   by magnitude of the univariate regression coefficient estimate.
+#'   regression; in particular, the predictors are ordered in decreasing
+#'   order by magnitude of the univariate regression coefficient
+#'   estimate.
 #' 
 #' @param X An input design matrix. This may be centered and/or
 #'   standardized prior to calling function.
@@ -130,9 +129,10 @@ absolute.order = function (beta) {
 #'   estimates a "regularization path" for all predictors.
 #' 
 #' @description This function determines an ordering of the predictors
-#'   based on the regularization path of the penalized regression; in
+#'  based on the regularization path of the penalized regression; in
 #'   particular, the predictors are ordered based on the order in which
-#'   the coefficients become nonzero as the penalty strength decreases.
+#'   the coefficients are included in the model as the penalty strength
+#'   decreases.
 #' 
 #' @return An ordering of the predictors.
 #' 
@@ -180,13 +180,14 @@ path.order = function (fit) {
 #' @description Retrieve posterior mean estimates of the regression
 #'   coefficients in a Mr.ASH model.
 #' 
-#' @param object A mr_ash fit, usually the result of calling
+#' @param object A Mr.ASH fit, usually the result of calling
 #'   \code{mr.ash}.
 #'
 #' @param ... Additional arguments passed to the default S3 method.
 #' 
-#' @return A p+1 vector, the first element being an intercept, and the
-#'   remaining p elements being estimated regression coefficients.
+#' @return A p+1 vector. The first element gives the estimated
+#'   intercept, and the remaining p elements are the estimated
+#'   regression coefficients.
 #'   
 #' ## generate synthetic data
 #' set.seed(1)
@@ -290,11 +291,11 @@ set_default_tolerance       = function(){
 
 #' @title Approximation Posterior Expectations from Mr.ASH Fit
 #'
-#' @description Recover the parametres specifying the full approximate
-#' posterior distribution. To streamline the model fitting
-#' implementation, and to reduce memory needs, \code{\link{mr.ash}}
-#' does not store all the parameters needed to specify the approximate
-#' posterior.
+#' @description Recover the parameters specifying the variational
+#'   approximation to the posterior distribution of the regression
+#'   coefficients. To streamline the model fitting implementation, and
+#'   to reduce memory requirements, \code{\link{mr.ash}} does not store
+#'   all the parameters needed to specify the approximate posterior.
 #' 
 #' @param fit A Mr.ASH fit obtained, for example, by running
 #'   \code{mr.ash}.

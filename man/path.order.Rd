@@ -16,9 +16,10 @@ An ordering of the predictors.
 }
 \description{
 This function determines an ordering of the predictors
-  based on the regularization path of the penalized regression; in
+ based on the regularization path of the penalized regression; in
   particular, the predictors are ordered based on the order in which
-  the coefficients become nonzero as the penalty strength decreases.
+  the coefficients are included in the model as the penalty strength
+  decreases.
 }
 \examples{
 ### generate synthetic data

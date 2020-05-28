@@ -18,8 +18,9 @@ An ordering of the predictors.
 \description{
 This function extracts the ordering of the predictors
   according to the coefficients estimated in a basic univariate
-  regression; in particular, the predictors are in decreasing order
-  by magnitude of the univariate regression coefficient estimate.
+  regression; in particular, the predictors are ordered in decreasing
+  order by magnitude of the univariate regression coefficient
+  estimate.
 }
 \examples{
 ### generate synthetic data

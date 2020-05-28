@@ -7,14 +7,15 @@
 \method{coef}{mr.ash}(object, ...)
 }
 \arguments{
-\item{object}{A mr_ash fit, usually the result of calling
+\item{object}{A Mr.ASH fit, usually the result of calling
 \code{mr.ash}.}
 
 \item{...}{Additional arguments passed to the default S3 method.}
 }
 \value{
-A p+1 vector, the first element being an intercept, and the
-  remaining p elements being estimated regression coefficients.
+A p+1 vector. The first element gives the estimated
+  intercept, and the remaining p elements are the estimated
+  regression coefficients.
   
 ## generate synthetic data
 set.seed(1)
