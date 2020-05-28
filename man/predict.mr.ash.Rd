@@ -16,21 +16,21 @@ the number of samples and p is the number of predictors. When
 \code{newx} is \code{NULL}, the fitted values for the training data
 are provided.}
 
-\item{type}{The type of output. For \code{type == "response"},
-predicted or fitted outcomes are returned; for \code{type ==
+\item{type}{The type of output. For \code{type = "response"},
+predicted or fitted outcomes are returned; for \code{type =
 "coefficients"}, the estimated coefficients are returned.}
 
 \item{...}{Additional arguments passed to the default S3 method.}
 }
 \value{
-For \code{type == "response"}, predicted or fitted outcomes
-are returned; for \code{type == "coefficients"}, the estimated
+For \code{type = "response"}, predicted or fitted outcomes
+are returned; for \code{type = "coefficients"}, the estimated
 coefficients are returned.
 }
 \description{
 This function predicts outcomes (y) given the observed
-variables (X) and a Mr.ASH model; alternatively, retrieve the
-estimates of the regression coefficients.
+  variables (X) and a Mr.ASH model; alternatively, retrieve the
+  estimates of the regression coefficients.
 }
 \examples{
 ## generate synthetic data

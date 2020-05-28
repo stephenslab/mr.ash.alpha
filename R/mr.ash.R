@@ -22,8 +22,6 @@
 #'   iteration.
 #' 
 #'   See \sQuote{References} for more details about the VEB approach.
-#' 
-#' @seealso \code{\link{get.full.posterior}}
 #'
 #' @param X The input matrix, of dimension (n,p); each column is a
 #'   single predictor; and each row is an observation vector. Here, n is
@@ -48,6 +46,7 @@
 #'   is \code{NULL}, the default setting is used, \code{sa2[k] =
 #'   (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
 #'   setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
+#'   \code{sa2[1]} must be 0.
 #' 
 #' @param method \code{method = "caisa"}, an abbreviation of
 #'   "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
@@ -150,7 +149,7 @@
 #'   data matrix. Additionally, \code{data$sa2} gives the prior variances
 #'   used.}
 #' 
-#' @seealso \code{\link{get.full.posterior}}
+#' @seealso \code{\link{get.full.posterior}}, \code{\link{predict.mr.ash}}
 #' 
 #' @references
 #'
