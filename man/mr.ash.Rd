@@ -148,26 +148,38 @@ A list object with the following elements:
 Model fitting algorithms for Multiple Regression with
   Adaptive Shrinkage ("Mr.ASH"). Mr.ASH is a variational empirical
   Bayes (VEB) method for multiple linear regression. The fitting
-  algorithms maximize the approximate marginal likelihood (the "evidence
-  lower bound", or ELBO) via coordinate-wise updates.
+ algorithms (locally) maximize the approximate marginal likelihood
+  (the "evidence lower bound", or ELBO) via coordinate-wise updates.
 }
 \details{
 Mr.ASH is a statistical inference method for the following
 multiple linear regression model: \deqn{y | X, \beta, \sigma^2 ~
 N(X \beta, \sigma I_n),} in which the regression coefficients
 \eqn{\beta} admit a mixture-of-normals prior, \deqn{\beta | \pi,
-\sigma ~ \sum_{k=1}^K N(0, \sigma^2 \sigma_k^2).} Each mixture
-component in the prior is a normal density centered at zero, with
-variance \eqn{\sigma^2 \sigma_k^2}.
+\sigma ~ g = \sum_{k=1}^K N(0, \sigma^2 \sigma_k^2).} Each mixture
+component in the prior, \eqn{g}, is a normal density centered at
+zero, with variance \eqn{\sigma^2 \sigma_k^2}.
 
-The VEB approach solves the following optimization problem:
-\deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
-\sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
-variational factors \eqn{q_1,\ldots,q_p}, \eqn{g} and \eqn{\sigma^2}
-one at a time while fixing the others, in each outer loop
-iteration.
+The fitting algorithm, it run for a large enough number of
+iterations, will find an approximate posterior for the regression
+coefficients, denoted by \eqn{q(\beta)}, residual variance
+parameter \eqn{sigma^2}, and prior mixture weights \eqn{\pi_1,
+\ldots, \pi_K} maximizing the evidence lower bound, \deqn{F(q, \pi,
+\sigma^2) = E_q \log p(y | X, \beta, \sigma^2) - \sum_{j=1}^p
+D_{KL}(q_j || g),} where \eqn{D_{KL}(q_j || g)} denotes the
+Kullback-Leibler (KL) divergence, a measure of the "distance"
+between (approximate) posterior \eqn{q_j(\beta_j)} and prior
+\eqn{g(\beta_j)}. The fitting algorithm iteratively updates the
+approximate posteriors \eqn{q_1, \ldots, q_p}, separately for each
+\eqn{j = 1, \ldots, p} (in an order determined by
+\code{update.order}), then separately updates the mixture weights
+and \eqn{\pi} and residual variance \eqn{\sigma^2}. This
+coordinate-wise update scheme iterates until the convergence
+criterion is met, or until the algorithm hits an upper bound on
+the number of iterations (specified by \code{max.iter}).
 
-See \sQuote{References} for more details about the VEB approach.
+See \sQuote{References} for more details about the model and
+algorithm.
 }
 \examples{
 ### generate synthetic data
