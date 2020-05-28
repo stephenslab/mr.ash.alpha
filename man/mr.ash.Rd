@@ -56,7 +56,7 @@ coefficients (the approximate E-step) and the model parameters
 M-step. Other settings of \code{method = "caisa"} are considered
 experimental. In particular, \code{method = "block"} and
 \code{method = "accelerate"} take different approaches to updating
-the mixture weights; \code{method = "sigma_indep"}, \code{\method =
+the mixture weights; \code{method = "sigma_indep"}, \code{method =
 "sigma"} and \code{"sigma_scaled"}, take different approaches to
 updating the residual variance \eqn{sigma^2}.}
 
@@ -127,7 +127,7 @@ A list object with the following elements:
 \item{sigma2}{The estimated residual variance.}
 
 \item{pi}{A vector of containing the estimated mixture
-  proportions}.
+  proportions.}
 
 \item{iter}{The number of outer-loop iterations that were
   performed.}
