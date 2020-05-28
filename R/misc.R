@@ -16,7 +16,7 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
   n = length(y)
   
   # add intercept if intercept = TRUE
-  if (intercept == TRUE) {
+  if (intercept) {
     if (is.null(Z))
       Z <- matrix(1,n,1)
     else
@@ -212,8 +212,8 @@ coef.mr.ash = function (object, ...)
 #' @title Predict Outcomes or Extract Coefficients from Mr.ASH Fit
 #'
 #' @description This function predicts outcomes (y) given the observed
-#' variables (X) and a Mr.ASH model; alternatively, retrieve the
-#' estimates of the regression coefficients.
+#'   variables (X) and a Mr.ASH model; alternatively, retrieve the
+#'   estimates of the regression coefficients.
 #'
 #' @param object A mr_ash fit, usually the result of calling
 #'   \code{mr.ash}.
@@ -224,14 +224,14 @@ coef.mr.ash = function (object, ...)
 #'   \code{newx} is \code{NULL}, the fitted values for the training data
 #'   are provided.
 #' 
-#' @param type The type of output. For \code{type == "response"},
-#'   predicted or fitted outcomes are returned; for \code{type ==
+#' @param type The type of output. For \code{type = "response"},
+#'   predicted or fitted outcomes are returned; for \code{type =
 #'   "coefficients"}, the estimated coefficients are returned.
 #' 
 #' @param ... Additional arguments passed to the default S3 method.
 #'
-#' @return For \code{type == "response"}, predicted or fitted outcomes
-#' are returned; for \code{type == "coefficients"}, the estimated
+#' @return For \code{type = "response"}, predicted or fitted outcomes
+#' are returned; for \code{type = "coefficients"}, the estimated
 #' coefficients are returned.
 #' 
 #' @examples
@@ -268,8 +268,12 @@ predict.mr.ash               = function(object,newx = NULL,
   }
   else if(missing(newx))
     return(object$fitted)
-  else
+  else {
+    if (!all(object$data$Z == 1))
+      stop("predict.mr.ash is not implemented for covariates Z other than ",
+           "intercept")
     return(drop(object$intercept + newx %*% coef(object)[-1]))
+  }
 }
 
 set_default_tolerance       = function(){
