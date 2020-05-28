@@ -31,14 +31,8 @@
 #' @param y The observed quantitative responses, a vector of length p.
 #' 
 #' @param Z The covariate matrix, of dimension (n,k), where k is the
-#'   number of covariates.  The input matrix Z may be internally
-#'   modified according to "intercept" argument. If \code{Z} is
-#'   \code{NULL} and \code{intercept = TRUE}, then \code{Z} will be the
-#'   matrix having entries 1 of dimension (n,1). If \code{Z} is
-#'   \code{NULL} and \code{intercept = FALSE}, no intercept or
-#'   covariates are included the model. If \code{Z} is not \code{NULL}
-#'   and \code{intercept = TRUE}, the intercept is added as a covariate
-#'   to \code{Z}.
+#'   number of covariates. This feature is not yet implemented;
+#'   \code{Z} must be set to \code{NULL}.
 #' 
 #' @param sa2 The vector of mixture component variances. The variances
 #'   should be in increasing order, starting at zero; that is,
@@ -46,7 +40,6 @@
 #'   is \code{NULL}, the default setting is used, \code{sa2[k] =
 #'   (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
 #'   setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
-#'   \code{sa2[1]} must be 0.
 #' 
 #' @param method \code{method = "caisa"}, an abbreviation of
 #'   "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
@@ -153,12 +146,8 @@
 #' 
 #' @references
 #'
-#' Y. Kim, W. Wang, P. Carbonetto, M. Stephens (2020), Fast and
-#' flexible empirical Bayes approach to prediction in multiple
-#' regression.
-#' 
 #' Y. Kim (2020), Bayesian shrinkage methods for high dimensional
-#' regression.
+#' regression. Ph.D. thesis, University of Chicago.
 #' 
 #' @useDynLib mr.ash.alpha
 #' 
@@ -221,7 +210,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   
   # check Z
   if (!is.null(Z)) {
-    stop ("currently only Z = NULL is accepted.")
+    stop("covariates are not currently fully implemented; Z should be set to NULL")
   }
   
   # match method
@@ -339,7 +328,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   
   ## polish return object
   out$intercept    = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  data$beta        = NULL
+  data["beta"]     = NULL
   out$data         = data
   out$update.order = update.order
   
