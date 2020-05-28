@@ -47,20 +47,18 @@ NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
 - 1)^2}, for \code{k = 1:20}. For this default setting,
 \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.}
 
-\item{method}{In the manuscript (see \sQuote{References}), only
-\code{method = "caisa"} is used ("Cooridinate Ascent Iterative
-Shinkage Algorithm"). Other method arguments will work, and produce
-similar outcomes unless the regression setting is extreme.
-(For dev 1) All the other settings but \code{method = "caisa"} are
-purely experimental and under construction. 
-The \code{method} arguments "block" and "accelerate" use different
-updates for \eqn{g}.
-(For dev 2) The \code{method} arguments "caisa", "sigma", "sigma_scaled",
-"sigma_indep" use different updates for \eqn{sigma^2}, based on
-different parametrizations on the variational posterior \eqn{q} and
-\eqn{g}. More precisely, the update for \eqn{\sigma^2} depends on
-whether we use sigma-dependent parametrization for \eqn{q} and/or
-\eqn{g}. See reference for details.}
+\item{method}{\code{method = "caisa"}, an abbreviation of
+"Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
+by approximate EM; it iteratively updates the variational
+approximation to the posterior distribution of the regression
+coefficients (the approximate E-step) and the model parameters
+(mixture weights and residual covariance) in an approximate
+M-step. Other settings of \code{method = "caisa"} are considered
+experimental. In particular, \code{method = "block"} and
+\code{method = "accelerate"} take different approaches to updating
+the mixture weights; \code{method = "sigma_indep"}, \code{\method =
+"sigma"} and \code{"sigma_scaled"}, take different approaches to
+updating the residual variance \eqn{sigma^2}.}
 
 \item{max.iter}{The maximum number of outer loop iterations allowed.}
 
@@ -98,7 +96,8 @@ is \code{NULL}, the co-ordinate ascent updates are performed in
 order in which they appear in \code{X}; this is equivalent to
 setting \code{update.order = 1:p}. When \code{update.order =
 "random"}, the co-ordinate ascent updates are performed in a
-randomly generated order.}
+randomly generated order, and this random ordering is different at
+each outer-loop iteration.}
 
 \item{standardize}{The logical flag for standardization of the
 columns of X variable, prior to the model fitting. The coefficients
@@ -134,18 +133,14 @@ A list object with the following elements:
   performed.}
 
 \item{update.order}{The ordering used for performing the
-  coordinate-wise updates.}
+  coordinate-wise updates. For \code{update.order = "random"}, the
+  orderings for outer-loop iterations are provided in a vector of
+  length \code{p*max.iter}, where }
 
 \item{varobj}{A vector, with \code{length(varobj) = numiter},
   containing the value of the variational objective (equal to the
   negative of the "evidence lower bound") attained at each outer-loop
-  iteration of the model fitting algorithm.}
-
-\item{data}{A preprocessed data used as the actual input for the
-algorithm. When \code{Z = NULL} and \code{intercept = TRUE}, then
-the columns of X and y will be centered, and returned.  In general,
-Z will be regressed out, or equivalently, X and y will be projected
-into the space orthogonal to Z, and then will be returned.}
+  iteration of the model fitting.}
 }
 \description{
 Model fitting algorithms for Multiple Regression with

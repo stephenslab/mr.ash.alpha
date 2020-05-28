@@ -1,4 +1,5 @@
 # A short script implementing a few tests of mr.ash.alpha.
+library(varbvs)
 
 # Simulate a data set.
 set.seed(1)
@@ -19,6 +20,8 @@ i3  <- absolute.order(coef(fit)[-1])
 # interest (means, variances, and posterior assignment probabilities).
 fit1 <- mr.ash(X,y)
 out  <- get.full.posterior(fit1)
+
+fit1 <- varbvsmix(X,NULL,y)
 
 # Predict the regression outcomes in the training data, and compare
 # against the dround-truth values.
