@@ -134,10 +134,9 @@ A list object with the following elements:
   orderings for outer-loop iterations are provided in a vector of
   length \code{p*max.iter}, where \code{p} is the number of predictors.}
 
-\item{varobj}{A vector, with \code{length(varobj) = numiter},
-  containing the value of the variational objective (equal to the
-  negative of the "evidence lower bound") attained at each outer-loop
-  iteration of the model fitting.}
+\item{varobj}{A vector of length \code{numiter}, containing the
+  value of the variational objective (equal to the negative "evidence
+  lower bound") attained at each (outer-loop) model fitting iteration.}
 
 \item{data}{The preprocessed data (X, Z, y) provided as input to the model
   fitting algorithm. \code{data$w} is equal to
