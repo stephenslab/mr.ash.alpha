@@ -4,12 +4,20 @@
 # https://github.com/pcarbo/varbvs
 # ----------------------------------------------------------------------
 
-# Regresses Z out from X and y. In other words, X and y will be
-# projected into the space orthogonal to Z.
+#' @title remove covariate effect
+#' @description Regresses \eqn{Z} out from \eqn{X} and \eqn{y}.
+#' In other words, \eqn{X} and \eqn{y} will be
+#' projected into the space orthogonal to \eqn{Z}.
 #' 
 #' @importFrom Matrix forceSymmetric
 #'
 remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
+  
+  # check if Z is null and intercept = FALSE
+  if (is.null(Z) & (intercept == FALSE)) {
+    return(list(X = X, y = y, Z = Z,
+                ZtZiZX = rep(0,dim(X)[2]), ZtZiZy = 0))
+  }
   
   # redefine y
   y = c(as.double(y))
@@ -21,8 +29,6 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
       Z <- matrix(1,n,1)
     else
       Z <- cbind(1,Z)
-  } else {
-    return(list(X = X, y = y))
   }
   
   if (ncol(Z) == 1) {
@@ -40,12 +46,11 @@ remove_covariate <- function (X, y, Z, standardize = FALSE, intercept = TRUE) {
     
     #   y = y - Z (Z^T Z)^{-1} Z^T y
     #   X = X - Z (Z^T Z)^{-1} Z^T X  
-    alpha = c(Z %*% ZtZiZy)
-    y     = y - alpha
+    y     = y - c(Z %*% ZtZiZy)
     X     = X - Z %*% ZtZiZX
   }
   
-  return(list(X = X, y = y, Z = Z, alpha = alpha,
+  return(list(X = X, y = y, Z = Z,
               ZtZiZX = ZtZiZX, ZtZiZy = ZtZiZy))
 }
 
