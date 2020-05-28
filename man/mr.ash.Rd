@@ -141,6 +141,12 @@ A list object with the following elements:
   containing the value of the variational objective (equal to the
   negative of the "evidence lower bound") attained at each outer-loop
   iteration of the model fitting.}
+
+\item{data}{The preprocessed data provided as input to the model
+  fitting algorithm. \code{data$w} is equal to
+  \code{diag(crossprod(X))}, in which \code{X} is the preprocessed
+  data. Additionally, \code{data$sa2} gives the prior variances
+  used.}
 }
 \description{
 Model fitting algorithms for Multiple Regression with

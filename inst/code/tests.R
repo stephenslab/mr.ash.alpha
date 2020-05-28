@@ -21,7 +21,8 @@ i3  <- absolute.order(coef(fit)[-1])
 fit1 <- mr.ash(X,y)
 out  <- get.full.posterior(fit1)
 
-fit1 <- varbvsmix(X,NULL,y)
+# fit1 <- varbvsmix(X,NULL,y,sa = update.sigma = TRUE,update.sa = FALSE,
+#                   update.w = TRUE)
 
 # Predict the regression outcomes in the training data, and compare
 # against the dround-truth values.

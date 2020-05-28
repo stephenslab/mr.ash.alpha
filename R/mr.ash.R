@@ -141,6 +141,12 @@
 #'   containing the value of the variational objective (equal to the
 #'   negative of the "evidence lower bound") attained at each outer-loop
 #'   iteration of the model fitting.}
+#'
+#' \item{data}{The preprocessed data provided as input to the model
+#'   fitting algorithm. \code{data$w} is equal to
+#'   \code{diag(crossprod(X))}, in which \code{X} is the preprocessed
+#'   data. Additionally, \code{data$sa2} gives the prior variances
+#'   used.}
 #' 
 #' @seealso \code{\link{get.full.posterior}}
 #' 
@@ -321,7 +327,10 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
                       update.sigma2, verbose)
   }
   out$intercept     = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  out$update.order = update.order
+  out$data          = data
+  out$data["alpha"] = NULL
+  out$data["beta"]  = NULL
+  out$update.order  = update.order
   if (standardize)
     out$beta = out$beta/attr(data$X, "scaled:scale")
   class(out) <- c("mr.ash", "list")
