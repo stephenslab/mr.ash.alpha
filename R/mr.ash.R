@@ -17,7 +17,7 @@
 #'   The VEB approach solves the following optimization problem:
 #'   \deqn{F(q,g,\sigma^2) = E_q \log p(y|X,\beta,\sigma^2) -
 #'   \sum_{j=1}^p D_{KL}(q_j || g)} The algorithm updates the
-#'   variational factors \eqn{q_1,...,q_p}, \eqn{g} and \eqn{\sigma^2}
+#'   variational factors \eqn{q_1,\ldots,q_p}, \eqn{g} and \eqn{\sigma^2}
 #'   one at a time while fixing the others, in each outer loop
 #'   iteration.
 #' 
@@ -33,20 +33,21 @@
 #' @param y The observed quantitative responses, a vector of length p.
 #' 
 #' @param Z The covariate matrix, of dimension (n,k), where k is the
-#'   number of covariates.  The input matrix Z can be modified according
-#'   to "intercept" argument. If \code{Z = NULL} and \code{intercept =
-#'   TRUE}, then the actual \code{Z} will be the matrix having entries 1
-#'   of dimension (n,1). If \code{Z = NULL} and \code{intercept =
-#'   FALSE}, no intercept or covariates are inclued the model. If
-#'   \code{Z} is not \code{NULL} and \code{intercept = TRUE}, then the
-#'   intercept is added as a covariate to \code{Z}.
+#'   number of covariates.  The input matrix Z may be internally
+#'   modified according to "intercept" argument. If \code{Z} is
+#'   \code{NULL} and \code{intercept = TRUE}, then \code{Z} will be the
+#'   matrix having entries 1 of dimension (n,1). If \code{Z} is
+#'   \code{NULL} and \code{intercept = FALSE}, no intercept or
+#'   covariates are included the model. If \code{Z} is not \code{NULL}
+#'   and \code{intercept = TRUE}, the intercept is added as a covariate
+#'   to \code{Z}.
 #' 
 #' @param sa2 The vector of mixture component variances. The variances
 #'   should be in increasing order, starting at zero; that is,
-#'   \code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2 =
-#'   NULL}, the default setting is used, \code{sa2[k] = (2^(0.05*(k-1))
-#'   - 1)^2}, for \code{k = 1:20}. For this default setting,
-#'   \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
+#'   \code{sort(sa2)} should be the same as \code{sa2}. When \code{sa2}
+#'   is \code{NULL}, the default setting is used, \code{sa2[k] =
+#'   (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
+#'   setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
 #' 
 #' @param method \code{method = "caisa"}, an abbreviation of
 #'   "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
@@ -67,16 +68,17 @@
 #' 
 #' @param beta.init The initial estimate of the (approximate)
 #'   posterior mean regression coefficients. This should be \code{NULL},
-#'   or a vector of length p. When \code{beta.init = NULL}, the
-#'   posterior mean coefficients are all initially zero.
+#'   or a vector of length p. When \code{beta.init} is \code{NULL}, the
+#'   posterior mean coefficients are all initially set to zero.
 #' 
 #' @param update.pi If \code{update.pi = TRUE}, the mixture
 #'   proportions in the mixture-of-normals prior are estimated from the
 #'   data. In the manuscript, \code{update.pi = TRUE}.
 #' 
 #' @param pi The initial estimate of the mixture proportions
-#'   \eqn{\pi_1,...,\pi_K}. If \code{pi = NULL}, the default value
-#'   \code{pi[k] = 1/K} for \code{k = 1:K} will be used. 
+#'   \eqn{\pi_1, \ldots, \pi_K}. If \code{pi} is \code{NULL}, the
+#'   mixture weights are initialized to \code{rep(1/K,K)}}, where
+#'   \code{K = length(sa2).
 #' 
 #' @param update.sigma2 If \code{update.sigma2 = TRUE}, the residual
 #'   variance \eqn{sigma^2} is estimated from the data.  In the manuscript,
@@ -91,7 +93,7 @@
 #' @param update.order The order in which the co-ordinate ascent
 #'   updates for estimating the posterior mean coefficients are
 #'   performed. \code{update.order} can be \code{NULL}, \code{"random"},
-#'   or any permutation of \eqn{(1,...,p)}, where \code{p} is the number
+#'   or any permutation of \eqn{(1,\ldots,p)}, where \code{p} is the number
 #'   of columns in the input matrix \code{X}. When \code{update.order}
 #'   is \code{NULL}, the co-ordinate ascent updates are performed in
 #'   order in which they appear in \code{X}; this is equivalent to
@@ -135,17 +137,17 @@
 #' \item{update.order}{The ordering used for performing the
 #'   coordinate-wise updates. For \code{update.order = "random"}, the
 #'   orderings for outer-loop iterations are provided in a vector of
-#'   length \code{p*max.iter}, where }
+#'   length \code{p*max.iter}, where \code{p} is the number of predictors.}
 #' 
 #' \item{varobj}{A vector, with \code{length(varobj) = numiter},
 #'   containing the value of the variational objective (equal to the
 #'   negative of the "evidence lower bound") attained at each outer-loop
 #'   iteration of the model fitting.}
 #'
-#' \item{data}{The preprocessed data provided as input to the model
+#' \item{data}{The preprocessed data (X, Z, y) provided as input to the model
 #'   fitting algorithm. \code{data$w} is equal to
 #'   \code{diag(crossprod(X))}, in which \code{X} is the preprocessed
-#'   data. Additionally, \code{data$sa2} gives the prior variances
+#'   data matrix. Additionally, \code{data$sa2} gives the prior variances
 #'   used.}
 #' 
 #' @seealso \code{\link{get.full.posterior}}
@@ -278,7 +280,6 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   verbose        = TRUE
   
   # run algorithm
-  
   if ( is.null(update.order) ) {
     update.order   = 1:p
     if (method == "caisa") {
