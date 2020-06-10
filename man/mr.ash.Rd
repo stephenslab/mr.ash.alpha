@@ -136,7 +136,12 @@ A list object with the following elements:
 
 \item{varobj}{A vector of length \code{numiter}, containing the
   value of the variational objective (equal to the negative "evidence
-  lower bound") attained at each (outer-loop) model fitting iteration.}
+  lower bound") attained at each (outer-loop) model fitting
+  iteration. Note that the objective does not account for the
+  intercept term, even when \code{intercept = TRUE}; therefore, this
+  value shoudl be interpreted as being an approximation to the
+  marginal likelihood \emph{conditional} on the estimate of the
+  intercept.}
 
 \item{data}{The preprocessed data (X, Z, y) provided as input to the model
   fitting algorithm. \code{data$w} is equal to
