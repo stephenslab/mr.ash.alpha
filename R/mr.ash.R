@@ -288,6 +288,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
     }
   } else
     Phi             = matrix(rep(pi, each = p), nrow = p)
+  pi <- pi + 0
   
   # verbose = TRUE (TO DO LIST)
   verbose           = TRUE
