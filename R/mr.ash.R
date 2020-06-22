@@ -54,7 +54,12 @@
 #'   (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
 #'   setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
 #' 
-#' @param method \code{method = "caisa"}, an abbreviation of
+#' @param method_q \code{method = "sigma_dep_q"}, \code{method =
+#'   "sigma_indep_q"} and \code{"sigma_scaled_beta"}, take different approaches to
+#'   updating the residual variance \eqn{sigma^2}.
+#' 
+#'  
+#' @param method_g \code{method = "caisa"}, an abbreviation of
 #'   "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
 #'   by approximate EM; it iteratively updates the variational
 #'   approximation to the posterior distribution of the regression
@@ -63,9 +68,7 @@
 #'   M-step. Other settings of \code{method = "caisa"} are considered
 #'   experimental. In particular, \code{method = "block"} and
 #'   \code{method = "accelerate"} take different approaches to updating
-#'   the mixture weights; \code{method = "sigma_indep"}, \code{method =
-#'   "sigma"} and \code{"sigma_scaled"}, take different approaches to
-#'   updating the residual variance \eqn{sigma^2}.
+#'   the mixture weights.
 #' 
 #' @param max.iter The maximum number of outer loop iterations allowed.
 #' 
@@ -183,7 +186,9 @@
 #' y           = X %*% beta + rnorm(n)
 #' 
 #' ### fit Mr.ASH
-#' fit.mr.ash  = mr.ash(X,y, method = "caisa")
+#' fit.mr.ash  = mr.ash(X,y, method_q = "sigma_indep_q")
+#' fit.mr.ash  = mr.ash(X,y, method_q = "sigma_scaled_beta")
+#' fit.mr.ash  = mr.ash(X,y, method_q = "sigma_dep_q")
 #' 
 #' ### prediction routine
 #' Xnew        = matrix(rnorm(n*p),n,p)
@@ -200,9 +205,8 @@
 #' @export
 #' 
 mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
-                                       method = c("caisa","sigma","sigma_scaled",
-                                                  "sigma_indep","accelerate",
-                                                  "block"),
+                                       method_q = c("sigma_dep_q","sigma_indep_q"),
+                                       method_g = c("caisa","accelerate","block"),
                                        max.iter = 1000, min.iter = 1,
                                        beta.init = NULL,
                                        update.pi = TRUE, pi = NULL,
@@ -231,7 +235,8 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   }
   
   # match method
-  method            = match.arg(method)
+  method_q          = match.arg(method_q)
+  method_g          = match.arg(method_g)
   
   # set default tolerances unless specified
   tol0              = set_default_tolerance()
@@ -257,7 +262,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   
   # sigma2
   if (is.null(sigma2))
-    sigma2 = c(var(r))
+    sigma2 = c(var.n(r))
   
   # set sa2 if missing
   if ( is.null(sa2) ) {
@@ -269,6 +274,9 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   # precompute x_j^T x_j
   w                 = colSums(data$X^2)
   data$w            = w
+  
+  # change sa2 depending on w
+  data$sa2          = data$sa2 / data$w * n
   
   # initialize other parameters
   if ( is.null(pi) ) {
@@ -288,7 +296,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
     }
   } else
     Phi             = matrix(rep(pi, each = p), nrow = p)
-  pi <- pi + 0
+  pi[1]            <- pi[1] + 0
   
   # verbose = TRUE (TO DO LIST)
   verbose           = TRUE
@@ -296,64 +304,31 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   # run algorithm
   
   if ( is.null(update.order) ) {
-    update.order    = 1:p
-    if (method == "caisa") {
-      if (update.pi) {
-        out         = caisa_em   (data$X, w, sa2, pi, data$beta, r, sigma2,
-                                  max.iter, min.iter, tol$convtol, tol$epstol,
-                                  update.sigma2, verbose)
-      } else {
-        out         = caisa_fix_pi(data$X, w, sa2, pi, data$beta, r, sigma2,
-                                   max.iter, min.iter, tol$convtol, tol$epstol,
-                                   update.sigma2, verbose)
-      }
-    } else if (method == "sigma") {
-      out           = caisa_sigma2  (data$X, w, sa2, pi, data$beta, r, sigma2,
-                                     max.iter, min.iter, tol$convtol, tol$epstol,
-                                     update.sigma2, verbose)
-    } else if (method == "sigma_scaled") {
-      out           = caisa_em2  (data$y, data$X, w, sa2, pi, data$beta, r, sigma2,
-                                  max.iter, min.iter, tol$convtol, tol$epstol,
-                                  update.sigma2, verbose)
-      out$beta      = out$beta * sqrt(out$sigma2)
-    } else if (method == "sigma_indep") {
-      out           = caisa_em3  (data$X, w, sa2, pi, data$beta, r, sigma2,
-                                  max.iter, min.iter, tol$convtol, tol$epstol,
-                                  update.sigma2, verbose)
-    } else if (method == "accelerate") {
-      mixsqpiter    = 5
-      out           = caisa_acc (data$X, w, sa2, pi, data$beta, r, sigma2,
-                                 max.iter, min.iter, mixsqpiter, tol$convtol, tol$epstol,
-                                 update.sigma2, verbose)
-    } else if (method == "block") {
-      stepsize      = 1
-      out           = caisa_g  (data$X, w, sa2, Phi, pi, data$beta, r, sigma2,
-                                max.iter, min.iter, tol$convtol, tol$epstol,
-                                stepsize, update.sigma2, mode, verbose)
-    }
+    o               = rep(0:(p-1), max.iter)
   } else if (is.numeric(update.order)) {
     o               = rep(update.order - 1, max.iter)
-    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, 
-                                  o, max.iter, min.iter, tol$convtol, tol$epstol, 
-                                  update.sigma2, verbose)
   } else if (update.order == "random") {
-    update.order    = random_order(p, max.iter)
-    out             = caisa_order(data$X, w, sa2, pi, data$beta, r, sigma2, 
-                                  update.order, max.iter, min.iter, tol$convtol, tol$epstol, 
-                                  update.sigma2, verbose)
-    update.order    = update.order + 1
+    o               = random_order(p, max.iter)
+  }
+  
+  out               = caisa_rcpp (data$X, data$y, w, sa2, pi, data$beta, r, sigma2, o,
+                                  max.iter, min.iter, tol$convtol, tol$epstol,
+                                  method_q, update.pi, update.sigma2, verbose)
+  
+  if (method_q == "sigma_scaled_beta") {
+    out$beta        = out$beta * sqrt(out$sigma2)
   }
   
   ## polish return object
-  out$intercept    = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
-  data["beta"]     = NULL
-  out$data         = data
-  out$update.order = update.order
+  out$intercept     = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
+  data["beta"]      = NULL
+  out$data          = data
+  out$update.order  = o
   
   ## rescale beta is needed
   if (standardize)
-    out$beta       = out$beta / attr(data$X, "scaled:scale")
-  class(out)      <- c("mr.ash", "list")
+    out$beta        = out$beta / attr(data$X, "scaled:scale")
+  class(out)       <- c("mr.ash", "list")
   
   ## warn if necessary
   if (out$pi[K] > tol$epstol) {

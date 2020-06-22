@@ -383,3 +383,10 @@ gibbs.sampling              = function(X, y, pi, sa2 = (2^((0:19) / 20) - 1)^2,
   
   return (out)
 }
+
+#' @export
+#' 
+var.n                       = function(x) {
+  a             = x - mean(x)
+  return (sum(a^2) / length(a))
+}

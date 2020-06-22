@@ -9,7 +9,8 @@ mr.ash(
   y,
   Z = NULL,
   sa2 = NULL,
-  method = c("caisa", "sigma", "sigma_scaled", "sigma_indep", "accelerate", "block"),
+  method_q = c("sigma_dep_q", "sigma_indep_q"),
+  method_g = c("caisa", "accelerate", "block"),
   max.iter = 1000,
   min.iter = 1,
   beta.init = NULL,
@@ -43,7 +44,11 @@ is \code{NULL}, the default setting is used, \code{sa2[k] =
 (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
 setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.}
 
-\item{method}{\code{method = "caisa"}, an abbreviation of
+\item{method_q}{\code{method = "sigma_dep_q"}, \code{method =
+"sigma_indep_q"} and \code{"sigma_scaled_beta"}, take different approaches to
+updating the residual variance \eqn{sigma^2}.}
+
+\item{method_g}{\code{method = "caisa"}, an abbreviation of
 "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
 by approximate EM; it iteratively updates the variational
 approximation to the posterior distribution of the regression
@@ -52,9 +57,7 @@ coefficients (the approximate E-step) and the model parameters
 M-step. Other settings of \code{method = "caisa"} are considered
 experimental. In particular, \code{method = "block"} and
 \code{method = "accelerate"} take different approaches to updating
-the mixture weights; \code{method = "sigma_indep"}, \code{method =
-"sigma"} and \code{"sigma_scaled"}, take different approaches to
-updating the residual variance \eqn{sigma^2}.}
+the mixture weights.}
 
 \item{max.iter}{The maximum number of outer loop iterations allowed.}
 
@@ -197,7 +200,9 @@ beta[1:10]  = 1:10
 y           = X \%*\% beta + rnorm(n)
 
 ### fit Mr.ASH
-fit.mr.ash  = mr.ash(X,y, method = "caisa")
+fit.mr.ash  = mr.ash(X,y, method_q = "sigma_indep_q")
+fit.mr.ash  = mr.ash(X,y, method_q = "sigma_scaled_beta")
+fit.mr.ash  = mr.ash(X,y, method_q = "sigma_dep_q")
 
 ### prediction routine
 Xnew        = matrix(rnorm(n*p),n,p)
