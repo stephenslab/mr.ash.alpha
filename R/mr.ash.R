@@ -54,21 +54,20 @@
 #'   (2^(0.05*(k-1)) - 1)^2}, for \code{k = 1:20}. For this default
 #'   setting, \code{sa2[1] = 0}, and \code{sa2[20]} is roughly 1.
 #' 
-#' @param method_q \code{method = "sigma_dep_q"}, \code{method =
-#'   "sigma_indep_q"} and \code{"sigma_scaled_beta"}, take different approaches to
-#'   updating the residual variance \eqn{sigma^2}.
-#' 
-#'  
+#' @param method_q The algorithm used to update the variational
+#'   approximation to the posterior distribution of the regression
+#'   coefficients, \code{method = "sigma_dep_q"}, \code{method =
+#'   "sigma_indep_q"} and \code{"sigma_scaled_beta"}, take different
+#'   approaches to updating the residual variance \eqn{sigma^2}.
+#'
 #' @param method_g \code{method = "caisa"}, an abbreviation of
 #'   "Cooridinate Ascent Iterative Shinkage Algorithm", fits the model
 #'   by approximate EM; it iteratively updates the variational
 #'   approximation to the posterior distribution of the regression
 #'   coefficients (the approximate E-step) and the model parameters
 #'   (mixture weights and residual covariance) in an approximate
-#'   M-step. Other settings of \code{method = "caisa"} are considered
-#'   experimental. In particular, \code{method = "block"} and
-#'   \code{method = "accelerate"} take different approaches to updating
-#'   the mixture weights.
+#'   M-step. Settings \code{method = "block"} and
+#'   \code{method = "accelerate"} are considered experimental.
 #' 
 #' @param max.iter The maximum number of outer loop iterations allowed.
 #' 

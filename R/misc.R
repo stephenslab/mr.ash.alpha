@@ -377,15 +377,13 @@ gibbs.sampling              = function(X, y, pi, sa2 = (2^((0:19) / 20) - 1)^2,
   data$w       = w
   
   # gibbs sampling
-  out           = gibbs_sampling(data$X, w, sa2, pi, data$beta, r, sigma2, max.iter, burn.in, verbose)
+  out           = gibbs.sampling(data$X, w, sa2, pi, data$beta, r, sigma2, max.iter, burn.in, verbose)
   out$data      = data
   out$mu        = c(data$ZtZiZy - data$ZtZiZX %*% out$beta)
   
   return (out)
 }
 
-#' @export
-#' 
 var.n                       = function(x) {
   a             = x - mean(x)
   return (sum(a^2) / length(a))
