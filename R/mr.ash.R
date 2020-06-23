@@ -275,7 +275,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   data$w            = w
   
   # change sa2 depending on w
-  data$sa2          = data$sa2 / data$w * n
+  data$sa2          = data$sa2 / median(data$w) * n
   
   # initialize other parameters
   if ( is.null(pi) ) {
