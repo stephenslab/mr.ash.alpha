@@ -330,11 +330,13 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   class(out)       <- c("mr.ash", "list")
   
   ## warn if necessary
-  if (out$pi[K] > tol$epstol) {
-    warning("The mixture proportion associated with the largest prior variance ",
-            "is greater than zero; this indicates that the model fit could be ",
-            "improved by using a larger setting of the prior variance. Consider ",
-            "increasing the range of the variances \"sa2\".")
+  if (update.pi & out$pi[K] > 1/K) {
+    warning(sprintf(paste("The mixture proportion associated with the",
+                          "largest prior variance is greater than %0.2e;",
+                          "this indicates that the model fit could be",
+                          "improved by using a larger setting of the",
+                          "prior variance. Consider increasing the range",
+                          "of the variances \"sa2\"."),1/K))
   }
   
   return(out)

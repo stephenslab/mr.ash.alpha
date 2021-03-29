@@ -334,17 +334,17 @@ set_default_tolerance       = function(){
 get.full.posterior <- function(fit) {
     
   # compute residual
-  r            = fit$data$y - fit$data$X %*% fit$beta
+  r = fit$data$y - fit$data$X %*% fit$beta
   
   # compute bw and s2
-  bw           = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
-  s2           = 1 / outer(fit$data$w, 1/fit$data$sa2, '+');
+  bw = as.vector((t(fit$data$X) %*% r) + fit$data$w * fit$beta)
+  s2 = fit$sigma2 / outer(fit$data$w, 1/fit$data$sa2, '+')
   
   # compute m, phi
-  m            = bw * s2;
-  phi          = -log(1 + outer(fit$data$w, fit$data$sa2))/2 + m * (bw / 2 / fit$sigma2);
-  phi          = c(fit$pi) * t(exp(phi - apply(phi,1,max)));
-  phi          = t(phi) / colSums(phi);
+  m   = bw * s2
+  phi = -log(1 + outer(fit$data$w,fit$data$sa2))/2 + m * (bw/2/fit$sigma2)
+  phi = c(fit$pi) * t(exp(phi - apply(phi,1,max)))
+  phi = t(phi) / colSums(phi)
   return (list(phi = phi, m = m, s2 = s2))
 }
 
