@@ -263,6 +263,10 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   if (is.null(sigma2))
     sigma2 = c(var.n(r))
   
+  # precompute x_j^T x_j
+  w                 = colSums(data$X^2)
+  data$w            = w
+  
   # set sa2 if missing
   if ( is.null(sa2) ) {
     sa2             = (2^((0:19) / 20) - 1)^2
@@ -270,10 +274,6 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   }
   K                 = length(sa2)
   data$sa2          = sa2
-  
-  # precompute x_j^T x_j
-  w                 = colSums(data$X^2)
-  data$w            = w
   
   # initialize other parameters
   if ( is.null(pi) ) {
