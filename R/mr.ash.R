@@ -270,7 +270,7 @@ mr.ash                      = function(X, y, Z = NULL, sa2 = NULL,
   # set sa2 if missing
   if ( is.null(sa2) ) {
     sa2             = (2^((0:19) / 20) - 1)^2
-    sa2             = data$sa2 / median(data$w) * n
+    sa2             = sa2 / median(data$w) * n
   }
   K                 = length(sa2)
   data$sa2          = sa2
