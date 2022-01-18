@@ -90,7 +90,7 @@ Rcpp::List caisa_rcpp       (const arma::mat& X, const arma::vec& y,
     // CALCULATE VARIATIONAL OBJECTIVE 2
     // ---------------------------------------------------------------------
     varobj(iter)          = varobj(iter) / sigma2 / 2.0 +
-                            log(2.0 * PI * sigma2) / 2.0 * n -
+                            log(2.0 * M_PI * sigma2) / 2.0 * n -
                             dot(pi, log(piold + epstol)) * p + a2;
     
     for (j = 1; j < K; j++){

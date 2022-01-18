@@ -1,6 +1,7 @@
 
 #ifndef MR_ASH_H
 #define MR_ASH_H
+#include <math.h>
 #include <RcppArmadillo.h>
 
 // This depends statement is needed to tell R where to find the
