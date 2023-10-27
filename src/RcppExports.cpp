@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // caisa_rcpp
 Rcpp::List caisa_rcpp(const arma::mat& X, const arma::vec& y, const arma::vec& w, const arma::vec& sa2, arma::vec& pi, arma::vec& beta, arma::vec& r, double sigma2, const arma::uvec& o, int maxiter, int miniter, double convtol, double epstol, std::string method_q, bool updatepi, bool updatesigma, bool verbose);
 RcppExport SEXP _mr_ash_alpha_caisa_rcpp(SEXP XSEXP, SEXP ySEXP, SEXP wSEXP, SEXP sa2SEXP, SEXP piSEXP, SEXP betaSEXP, SEXP rSEXP, SEXP sigma2SEXP, SEXP oSEXP, SEXP maxiterSEXP, SEXP miniterSEXP, SEXP convtolSEXP, SEXP epstolSEXP, SEXP method_qSEXP, SEXP updatepiSEXP, SEXP updatesigmaSEXP, SEXP verboseSEXP) {
