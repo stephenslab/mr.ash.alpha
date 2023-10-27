@@ -341,7 +341,7 @@ get.full.posterior <- function(fit) {
   s2 = fit$sigma2 / outer(fit$data$w, 1/fit$data$sa2, '+')
   
   # compute m, phi
-  m   = bw * s2
+  m   = bw * s2 / fit$sigma2
   phi = -log(1 + outer(fit$data$w,fit$data$sa2))/2 + m * (bw/2/fit$sigma2)
   phi = c(fit$pi) * t(exp(phi - apply(phi,1,max)))
   phi = t(phi) / colSums(phi)
